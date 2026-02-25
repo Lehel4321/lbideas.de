@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lehel Balog</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:      #111110;
+    --surface: #1a1a18;
+    --line:    #272724;
+    --muted:   #6b6b64;
+    --soft:    #9c9c93;
+    --text:    #e8e8e0;
+    --accent:  #c9a96e;
+    --serif:   'DM Serif Display', serif;
+    --sans:    'DM Sans', sans-serif;
+  }
+
+  *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    font-weight: 300;
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* NAV */
+  nav {
+    position: fixed; top:0; left:0; right:0; z-index:50;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 1.5rem 4rem;
+    background: rgba(17,17,16,0.92);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--line);
+  }
+
+  .nav-name {
+    font-family: var(--serif);
+    font-size: 1.1rem;
+    color: var(--text);
+    text-decoration: none;
+  }
+
+  .nav-links { display:flex; gap:2.5rem; list-style:none; }
+
+  .nav-links a {
+    font-size: 0.8rem;
+    font-weight: 400;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+  .nav-links a:hover { color: var(--text); }
+
+  .lang-toggle { display:flex; gap:0.4rem; }
+
+  .lang-btn {
+    font-family: var(--sans);
+    font-size: 0.72rem;
+    font-weight: 400;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 0.3rem 0.7rem;
+    border: 1px solid var(--line);
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.2s;
+    border-radius: 2px;
+  }
+  .lang-btn.active { border-color: var(--accent); color: var(--accent); }
+  .lang-btn:hover  { color: var(--text); border-color: var(--soft); }
+
+  /* LAYOUT */
+  .wrap { max-width: 900px; margin: 0 auto; padding: 0 2rem; }
+
+  section { padding: 7rem 0; }
+
+  hr { border:none; border-top: 1px solid var(--line); }
+
+  /* HERO */
+  .hero {
+    min-height: 100vh;
+    display: flex; align-items: center;
+    padding: 10rem 2rem 6rem;
+    max-width: 900px; margin: 0 auto;
+  }
+
+  .hero-eye {
+    font-size: 0.78rem; font-weight:400;
+    letter-spacing: 0.15em; text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 1.8rem;
+    opacity:0; animation: rise 0.7s 0.1s forwards;
+  }
+
+  h1 {
+    font-family: var(--serif);
+    font-size: clamp(4rem, 9vw, 7.5rem);
+    line-height: 1.02;
+    letter-spacing: -0.01em;
+    margin-bottom: 1.8rem;
+    opacity:0; animation: rise 0.7s 0.25s forwards;
+  }
+
+  h1 em { font-style: italic; color: var(--accent); }
+
+  .hero-bio {
+    font-size: 1rem; font-weight:300;
+    color: var(--soft); max-width: 500px; line-height:1.85;
+    margin-bottom: 2.8rem;
+    opacity:0; animation: rise 0.7s 0.4s forwards;
+  }
+
+  .hero-actions {
+    display: flex; gap:1.5rem; align-items: center;
+    opacity:0; animation: rise 0.7s 0.55s forwards;
+  }
+
+  .btn-primary {
+    font-size: 0.8rem; font-weight:500;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    padding: 0.85rem 2.2rem;
+    background: var(--accent); color: var(--bg);
+    text-decoration: none; border-radius: 2px;
+    transition: opacity 0.2s, transform 0.2s;
+  }
+  .btn-primary:hover { opacity:0.82; transform:translateY(-1px); }
+
+  .btn-ghost {
+    font-size: 0.8rem; font-weight:400;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--muted); text-decoration: none;
+    border-bottom: 1px solid var(--line); padding-bottom:2px;
+    transition: color 0.2s, border-color 0.2s;
+  }
+  .btn-ghost:hover { color:var(--text); border-color:var(--soft); }
+
+  /* SECTION HEAD */
+  .sec-head {
+    display: flex; align-items: baseline; gap:1.5rem;
+    margin-bottom: 3rem;
+  }
+  .sec-num {
+    font-family: var(--serif); font-style:italic;
+    font-size: 0.88rem; color: var(--accent);
+  }
+  .sec-title {
+    font-family: var(--serif);
+    font-size: clamp(2rem,4vw,2.8rem);
+    font-weight:400; letter-spacing:-0.01em;
+  }
+
+  /* SKILLS */
+  .skills-table { border-top: 1px solid var(--line); }
+
+  .skill-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 1rem 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .skill-label { font-size: 0.95rem; font-weight:400; }
+
+  .skill-pill {
+    font-size: 0.68rem; font-weight:400;
+    letter-spacing: 0.09em; text-transform:uppercase;
+    padding: 0.2rem 0.65rem;
+    border: 1px solid var(--line); color: var(--muted);
+    border-radius: 20px;
+  }
+  .skill-pill.core { color: var(--accent); border-color: rgba(201,169,110,0.35); }
+
+  /* EXPERIENCE */
+  .exp-item {
+    display: grid; grid-template-columns: 1fr 2.2fr;
+    gap: 3rem;
+    padding: 3rem 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .exp-item:first-of-type { border-top: 1px solid var(--line); }
+
+  .exp-date {
+    font-size: 0.75rem; font-weight:400;
+    letter-spacing: 0.09em; text-transform:uppercase;
+    color: var(--muted); margin-bottom:0.5rem;
+  }
+  .exp-company {
+    font-family: var(--serif);
+    font-size: 1.2rem; line-height:1.2;
+    margin-bottom: 0.25rem;
+  }
+  .exp-location { font-size:0.78rem; color:var(--muted); }
+
+  .exp-role {
+    font-size: 0.78rem; font-weight:500;
+    letter-spacing: 0.08em; text-transform:uppercase;
+    color: var(--accent); margin-bottom:1.1rem;
+  }
+
+  .exp-list { list-style:none; display:flex; flex-direction:column; gap:0.45rem; }
+  .exp-list li {
+    font-size: 0.9rem; color: var(--soft);
+    padding-left: 1.1rem; position:relative; line-height:1.65;
+  }
+  .exp-list li::before { content:'–'; position:absolute; left:0; color:var(--line); }
+
+  /* PROJECTS */
+  .proj-table { border-top: 1px solid var(--line); }
+
+  .proj-row {
+    display: grid; grid-template-columns: 160px 1fr 100px;
+    gap: 2rem; align-items: start;
+    padding: 1.8rem 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .proj-co {
+    font-size: 0.72rem; font-weight:400;
+    letter-spacing: 0.08em; text-transform:uppercase;
+    color: var(--muted); margin-top:0.1rem;
+  }
+
+  .proj-name {
+    font-family: var(--serif); font-size:1.05rem;
+    margin-bottom: 0.4rem; line-height:1.3;
+  }
+
+  .proj-desc { font-size:0.87rem; color:var(--soft); line-height:1.65; }
+
+  .proj-tech {
+    font-size: 0.68rem; font-weight:400;
+    letter-spacing: 0.07em; text-transform:uppercase;
+    color: var(--muted); text-align:right; margin-top:0.1rem;
+  }
+
+  /* APPS */
+  .apps-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 1px; background: var(--line);
+    border: 1px solid var(--line);
+  }
+
+  .app-card {
+    background: var(--surface);
+    padding: 2.2rem;
+    position: relative;
+    transition: background 0.2s;
+  }
+  .app-card:hover { background: #1e1e1c; }
+
+  .app-badge {
+    font-size: 0.62rem; font-weight:400;
+    letter-spacing:0.1em; text-transform:uppercase;
+    color: var(--muted); border:1px solid var(--line);
+    padding: 0.18rem 0.55rem; border-radius:20px;
+    display: inline-block; margin-bottom:1.3rem;
+  }
+
+  .app-icon {
+    font-size: 1.5rem; margin-bottom:0.9rem; display:block;
+  }
+
+  .app-name {
+    font-family: var(--serif); font-size:1.1rem; margin-bottom:0.5rem;
+  }
+
+  .app-desc { font-size:0.85rem; color:var(--soft); line-height:1.7; }
+
+  /* LANGUAGES */
+  .lang-strip {
+    display: grid; grid-template-columns: repeat(4,1fr);
+    border-top: 1px solid var(--line);
+    border-left: 1px solid var(--line);
+  }
+
+  .lang-cell {
+    padding: 2rem 1.8rem;
+    border-right: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+  }
+
+  .lang-name { font-family:var(--serif); font-size:1.15rem; margin-bottom:0.35rem; }
+  .lang-lvl  { font-size:0.72rem; font-weight:400; letter-spacing:0.1em; text-transform:uppercase; color:var(--accent); }
+  .lang-sub  { font-size:0.75rem; color:var(--muted); margin-top:0.15rem; }
+
+  /* CONTACT */
+  .contact-grid {
+    display: grid; grid-template-columns:1fr 1fr;
+    gap: 5rem; align-items:start;
+  }
+
+  .contact-title {
+    font-family: var(--serif);
+    font-size: clamp(2rem,4vw,3rem);
+    line-height: 1.15; margin-bottom:1.4rem;
+  }
+  .contact-title em { font-style:italic; color:var(--accent); }
+
+  .contact-text { font-size:0.9rem; color:var(--soft); line-height:1.85; margin-bottom:2rem; }
+
+  .contact-line { display:flex; align-items:center; gap:0.9rem; margin-bottom:0.9rem; }
+
+  .contact-icon {
+    width:32px; height:32px; background:var(--line);
+    display:flex; align-items:center; justify-content:center;
+    font-size:0.85rem; border-radius:2px; flex-shrink:0;
+  }
+
+  .contact-val { font-size:0.88rem; color:var(--soft); }
+  .contact-val a { color:var(--text); text-decoration:none; border-bottom:1px solid var(--line); padding-bottom:1px; transition:border-color 0.2s; }
+  .contact-val a:hover { border-color:var(--accent); }
+
+  .form { display:flex; flex-direction:column; gap:1rem; }
+
+  .form input, .form textarea {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    color: var(--text);
+    font-family: var(--sans); font-size:0.88rem; font-weight:300;
+    padding: 0.9rem 1.1rem;
+    outline: none; resize:none;
+    transition: border-color 0.2s; border-radius:2px;
+  }
+  .form input::placeholder, .form textarea::placeholder { color:var(--muted); }
+  .form input:focus, .form textarea:focus { border-color: var(--accent); }
+
+  /* FOOTER */
+  footer {
+    border-top: 1px solid var(--line);
+    padding: 2.5rem 2rem;
+    display: flex; justify-content:space-between; align-items:center;
+    max-width:900px; margin:0 auto;
+  }
+  .foot-name { font-family:var(--serif); font-size:0.95rem; color:var(--soft); }
+  .foot-copy { font-size:0.75rem; color:var(--muted); }
+
+  /* REVEAL */
+  .reveal {
+    opacity:0; transform:translateY(14px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+  }
+  .reveal.in { opacity:1; transform:translateY(0); }
+
+  @keyframes rise {
+    from { opacity:0; transform:translateY(16px); }
+    to   { opacity:1; transform:translateY(0); }
+  }
+
+  /* RESPONSIVE */
+  @media (max-width:768px) {
+    nav { padding:1.2rem 1.5rem; }
+    .nav-links { display:none; }
+    .hero { padding:8rem 1.5rem 5rem; }
+    .wrap { padding:0 1.5rem; }
+    section { padding:5rem 0; }
+    .exp-item  { grid-template-columns:1fr; gap:1rem; }
+    .proj-row  { grid-template-columns:1fr; gap:0.4rem; }
+    .proj-tech { display:none; }
+    .apps-grid { grid-template-columns:1fr; }
+    .lang-strip{ grid-template-columns:repeat(2,1fr); }
+    .contact-grid { grid-template-columns:1fr; gap:3rem; }
+    footer { flex-direction:column; gap:0.6rem; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="#" class="nav-name">Lehel Balog</a>
+  <ul class="nav-links">
+    <li><a href="#skills"     data-en="Skills"      data-de="Fähigkeiten">Skills</a></li>
+    <li><a href="#experience" data-en="Experience"  data-de="Erfahrung">Experience</a></li>
+    <li><a href="#projects"   data-en="Projects"    data-de="Projekte">Projects</a></li>
+    <li><a href="#apps"       data-en="Apps"        data-de="Apps">Apps</a></li>
+    <li><a href="#contact"    data-en="Contact"     data-de="Kontakt">Contact</a></li>
+  </ul>
+  <div class="lang-toggle">
+    <button class="lang-btn active" onclick="setLang('en')">EN</button>
+    <button class="lang-btn"        onclick="setLang('de')">DE</button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div>
+    <p class="hero-eye" data-en="SPS Programmer · Software Developer" data-de="SPS-Programmierer · Software-Entwickler">SPS Programmer · Software Developer</p>
+    <h1>Lehel<br><em>Balog</em></h1>
+    <p class="hero-bio" data-en="10+ years building industrial automation systems and machine control software. Based in Neu-Ulm, Germany." data-de="10+ Jahre Entwicklung von Automationssystemen und Maschinensteuerungssoftware. Wohnhaft in Neu-Ulm, Deutschland.">
+      10+ years building industrial automation systems and machine control software. Based in Neu-Ulm, Germany.
+    </p>
+    <div class="hero-actions">
+      <a href="#contact" class="btn-primary" data-en="Get in touch"    data-de="Kontakt aufnehmen">Get in touch</a>
+      <a href="#projects" class="btn-ghost"   data-en="View projects"  data-de="Projekte ansehen">View projects</a>
+    </div>
+  </div>
+</div>
+
+<hr>
+
+<!-- SKILLS -->
+<section id="skills">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="sec-num">01</span>
+      <h2 class="sec-title" data-en="Skills & Tools" data-de="Fähigkeiten & Tools">Skills & Tools</h2>
+    </div>
+    <div class="skills-table reveal">
+      <div class="skill-row"><span class="skill-label">Siemens TIA Portal</span>      <span class="skill-pill core" data-en="Core" data-de="Kern">Core</span></div>
+      <div class="skill-row"><span class="skill-label">WinCC Flexible / SCADA</span>  <span class="skill-pill core" data-en="Core" data-de="Kern">Core</span></div>
+      <div class="skill-row"><span class="skill-label">FUP / KOP / AWL / SCL</span>   <span class="skill-pill core" data-en="Core" data-de="Kern">Core</span></div>
+      <div class="skill-row"><span class="skill-label">S7-PLCSIM Advanced</span>       <span class="skill-pill core" data-en="Core" data-de="Kern">Core</span></div>
+      <div class="skill-row"><span class="skill-label">SQL</span>                      <span class="skill-pill" data-en="Intermediate" data-de="Mittel">Intermediate</span></div>
+      <div class="skill-row"><span class="skill-label">Java</span>                     <span class="skill-pill" data-en="Intermediate" data-de="Mittel">Intermediate</span></div>
+      <div class="skill-row"><span class="skill-label">C#</span>                       <span class="skill-pill" data-en="Intermediate" data-de="Mittel">Intermediate</span></div>
+      <div class="skill-row"><span class="skill-label">Python</span>                   <span class="skill-pill" data-en="Intermediate" data-de="Mittel">Intermediate</span></div>
+    </div>
+  </div>
+</section>
+
+<hr>
+
+<!-- EXPERIENCE -->
+<section id="experience">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="sec-num">02</span>
+      <h2 class="sec-title" data-en="Experience" data-de="Erfahrung">Experience</h2>
+    </div>
+
+    <div class="exp-item reveal">
+      <div>
+        <div class="exp-date">09.2022 – <span data-en="Present" data-de="Heute">Present</span></div>
+        <div class="exp-company">Metzner<br>Maschinenbau GmbH</div>
+        <div class="exp-location" data-en="Neu-Ulm, Germany" data-de="Neu-Ulm, Deutschland">Neu-Ulm, Germany</div>
+      </div>
+      <div>
+        <div class="exp-role" data-en="SPS Programmer / Software Developer" data-de="SPS-Programmierer / Software-Entwickler">SPS Programmer / Software Developer</div>
+        <ul class="exp-list">
+          <li data-en="Machine control software development in Siemens SPS" data-de="Entwicklung und Programmerstellung für Maschinensteuerung in Siemens SPS">Machine control software development in Siemens SPS</li>
+          <li data-en="HMI design and operator interface creation" data-de="Gestaltung der Bedienoberflächen">HMI design and operator interface creation</li>
+          <li data-en="Parameterization of stepper and servo motors" data-de="Parametrisierung von Schritt- und Servomotoren">Parameterization of stepper and servo motors</li>
+          <li data-en="Independent project execution with customers and suppliers" data-de="Selbständige Projektabwicklung mit Kunden und Lieferanten">Independent project execution with customers and suppliers</li>
+          <li data-en="On-site commissioning and international customer support" data-de="Inbetriebnahmen und internationale Kundenbetreuung">On-site commissioning and international customer support</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="exp-item reveal">
+      <div>
+        <div class="exp-date">09.2019 – 09.2022</div>
+        <div class="exp-company">Rothenbacher GmbH</div>
+        <div class="exp-location" data-en="Dornstadt, Germany" data-de="Dornstadt, Deutschland">Dornstadt, Germany</div>
+      </div>
+      <div>
+        <div class="exp-role" data-en="SPS Programmer / Software Developer" data-de="SPS-Programmierer / Software-Entwickler">SPS Programmer / Software Developer</div>
+        <ul class="exp-list">
+          <li data-en="Design, development and optimization of control and regulation programs" data-de="Konzeption, Entwicklung und Optimierung von Regel- und Steuerprogrammen">Design, development and optimization of control and regulation programs</li>
+          <li data-en="SCADA visualization and process monitoring" data-de="Visualisierung von Abläufen">SCADA visualization and process monitoring</li>
+          <li data-en="Standardized and modular software development" data-de="Standardisierte und modularisierte Softwareentwicklung">Standardized and modular software development</li>
+          <li data-en="Independent fault analysis and troubleshooting" data-de="Eigenständige Fehleranalyse und Fehlerbehebung">Independent fault analysis and troubleshooting</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="exp-item reveal">
+      <div>
+        <div class="exp-date">09.2014 – 08.2019</div>
+        <div class="exp-company">Technosam SRL</div>
+        <div class="exp-location" data-en="Satu Mare, Romania" data-de="Satu-Mare, Rumänien">Satu Mare, Romania</div>
+      </div>
+      <div>
+        <div class="exp-role" data-en="SPS Programmer / Software Developer" data-de="SPS-Programmierer / Software-Entwickler">SPS Programmer / Software Developer</div>
+        <ul class="exp-list">
+          <li data-en="Development and optimization of control programs including project management" data-de="Entwicklung und Optimierung von Steuerprogrammen inkl. Projektleitung">Development and optimization of control programs including project management</li>
+          <li data-en="SCADA systems for water treatment and municipal networks" data-de="Steuerungssysteme für Wasserkläranlagen und städtische Netzwerke">SCADA systems for water treatment and municipal networks</li>
+          <li data-en="Fault diagnosis, maintenance and repair of control systems" data-de="Fehlerdiagnose, Maintenance und Störungsanalyse/-behebung">Fault diagnosis, maintenance and repair of control systems</li>
+          <li data-en="Customer consulting and collaboration with external firms" data-de="Kundenberatung und Zusammenarbeit mit externen Firmen">Customer consulting and collaboration with external firms</li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<hr>
+
+<!-- PROJECTS -->
+<section id="projects">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="sec-num">03</span>
+      <h2 class="sec-title" data-en="Projects" data-de="Projekte">Projects</h2>
+    </div>
+    <div class="proj-table reveal">
+
+      <div class="proj-row">
+        <div class="proj-co">Metzner Maschinenbau</div>
+        <div>
+          <div class="proj-name" data-en="L&L Fully Automatic Aluminum Parts Machine" data-de="L&L Vollautomatische Aluminiumteil-Maschine">L&L Fully Automatic Aluminum Parts Machine</div>
+          <div class="proj-desc" data-en="Feed belt, eccentric knife, punch and conveyor with quality inspection and reject sorting. Synchronized belt and knife to maximize parts per minute." data-de="Zuführband, Exzentermesser, Locher und Qualitätsprüfung. Synchronisierung zur Maximierung der Teile/Minute.">Feed belt, eccentric knife, punch and conveyor with quality inspection and reject sorting. Synchronized belt and knife to maximize parts per minute.</div>
+        </div>
+        <div class="proj-tech">Siemens SPS</div>
+      </div>
+
+      <div class="proj-row">
+        <div class="proj-co">Metzner Maschinenbau</div>
+        <div>
+          <div class="proj-name" data-en="Dynamic Cutting & Cable Processing" data-de="Dynamit-Schneidemaschinen & Kabelverarbeitung">Dynamic Cutting & Cable Processing</div>
+          <div class="proj-desc" data-en="Pipe and cable processing machines with precision servo motion control." data-de="Rohr- und Kabelbearbeitungsmaschinen mit Präzisions-Servo-Bewegungssteuerung.">Pipe and cable processing machines with precision servo motion control.</div>
+        </div>
+        <div class="proj-tech">Siemens SPS</div>
+      </div>
+
+      <div class="proj-row">
+        <div class="proj-co">Rothenbacher GmbH</div>
+        <div>
+          <div class="proj-name" data-en="Dosing & Mixing Plant" data-de="Dosier- und Mischanlage">Dosing & Mixing Plant</div>
+          <div class="proj-desc" data-en="Process visualization and control for Schottenwerke with Siemens S7 and WinCC 7.3 SCADA." data-de="Prozessvisualisierung für Schottenwerke mit Siemens S7 und WinCC 7.3 SCADA.">Process visualization and control for Schottenwerke with Siemens S7 and WinCC 7.3 SCADA.</div>
+        </div>
+        <div class="proj-tech">S7 + WinCC</div>
+      </div>
+
+      <div class="proj-row">
+        <div class="proj-co">Rothenbacher GmbH</div>
+        <div>
+          <div class="proj-name" data-en="SQL–PLC Communication Bridge" data-de="SQL–PLC Kommunikationsbrücke">SQL–PLC Communication Bridge</div>
+          <div class="proj-desc" data-en="Real-time data exchange between SQL database and Siemens S7 PLC." data-de="Echtzeit-Datenaustausch zwischen SQL-Datenbank und Siemens S7 SPS.">Real-time data exchange between SQL database and Siemens S7 PLC.</div>
+        </div>
+        <div class="proj-tech">SQL + S7</div>
+      </div>
+
+      <div class="proj-row">
+        <div class="proj-co">Rothenbacher GmbH</div>
+        <div>
+          <div class="proj-name" data-en="Puffing Plant – Grain Expansion" data-de="Puffing-Anlage – Kornausdehnung">Puffing Plant – Grain Expansion</div>
+          <div class="proj-desc" data-en="Steam and pressure-based grain expansion with Siemens S7 and WinCC visualization." data-de="Kornausdehnung mittels Dampf und Druck, Siemens S7 mit WinCC Visualisierung.">Steam and pressure-based grain expansion with Siemens S7 and WinCC visualization.</div>
+        </div>
+        <div class="proj-tech">S7 + WinCC</div>
+      </div>
+
+      <div class="proj-row">
+        <div class="proj-co">Technosam SRL</div>
+        <div>
+          <div class="proj-name" data-en="SCADA for Municipal Water Networks" data-de="SCADA für städtische Wasserversorgung">SCADA for Municipal Water Networks</div>
+          <div class="proj-desc" data-en="Water treatment and municipal supply network monitoring with Siemens S7 and WinCC SCADA." data-de="Wasserklärung und Versorgungsnetzüberwachung mit Siemens S7 und WinCC SCADA.">Water treatment and municipal supply network monitoring with Siemens S7 and WinCC SCADA.</div>
+        </div>
+        <div class="proj-tech">S7 + WinCC</div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<hr>
+
+<!-- APPS -->
+<section id="apps">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="sec-num">04</span>
+      <h2 class="sec-title" data-en="Apps & Tools" data-de="Apps & Tools">Apps & Tools</h2>
+    </div>
+    <div class="apps-grid reveal">
+
+      <div class="app-card">
+        <span class="app-badge" data-en="Coming soon" data-de="Demnächst">Coming soon</span>
+        <span class="app-icon">📅</span>
+        <div class="app-name" data-en="Personal Calendar" data-de="Persönlicher Kalender">Personal Calendar</div>
+        <div class="app-desc" data-en="A custom-built calendar for personal scheduling and productivity." data-de="Ein maßgeschneiderter Kalender für persönliche Planung.">A custom-built calendar for personal scheduling and productivity.</div>
+      </div>
+
+      <div class="app-card">
+        <span class="app-badge" data-en="Coming soon" data-de="Demnächst">Coming soon</span>
+        <span class="app-icon">📐</span>
+        <div class="app-name" data-en="Motion Profile Calculator" data-de="Bewegungsprofil-Rechner">Motion Profile Calculator</div>
+        <div class="app-desc" data-en="Calculate servo and stepper motor motion profiles — built from real automation experience." data-de="Servo- und Schrittmotor-Bewegungsprofile berechnen — aus echter Automationspraxis.">Calculate servo and stepper motor motion profiles — built from real automation experience.</div>
+      </div>
+
+      <div class="app-card">
+        <span class="app-badge" data-en="Coming soon" data-de="Demnächst">Coming soon</span>
+        <span class="app-icon">🔩</span>
+        <div class="app-name" data-en="More coming…" data-de="Weitere folgen…">More coming…</div>
+        <div class="app-desc" data-en="More engineering tools are in development." data-de="Weitere Engineering-Tools sind in Entwicklung.">More engineering tools are in development.</div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<hr>
+
+<!-- LANGUAGES -->
+<section id="languages">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="sec-num">05</span>
+      <h2 class="sec-title" data-en="Languages" data-de="Sprachen">Languages</h2>
+    </div>
+    <div class="lang-strip reveal">
+      <div class="lang-cell">
+        <div class="lang-name" data-en="Hungarian" data-de="Ungarisch">Hungarian</div>
+        <div class="lang-lvl"  data-en="Native"    data-de="Muttersprache">Native</div>
+      </div>
+      <div class="lang-cell">
+        <div class="lang-name" data-en="German"       data-de="Deutsch">German</div>
+        <div class="lang-lvl">B2</div>
+        <div class="lang-sub" data-en="Independent"   data-de="Selbstständig">Independent</div>
+      </div>
+      <div class="lang-cell">
+        <div class="lang-name" data-en="English"      data-de="Englisch">English</div>
+        <div class="lang-lvl">C1</div>
+        <div class="lang-sub" data-en="Proficient"    data-de="Kompetent">Proficient</div>
+      </div>
+      <div class="lang-cell">
+        <div class="lang-name" data-en="Romanian"     data-de="Rumänisch">Romanian</div>
+        <div class="lang-lvl">B2</div>
+        <div class="lang-sub" data-en="Independent"   data-de="Selbstständig">Independent</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr>
+
+<!-- CONTACT -->
+<section id="contact">
+  <div class="wrap">
+    <div class="contact-grid">
+      <div class="reveal">
+        <h2 class="contact-title" data-en="Let's work<br><em>together</em>" data-de="Lass uns<br><em>zusammenarbeiten</em>">Let's work<br><em>together</em></h2>
+        <p class="contact-text" data-en="Have a project, a question about automation, or just want to connect — feel free to reach out." data-de="Ein Projekt, eine Frage zur Automation oder einfach Kontakt aufnehmen — meld dich gerne.">
+          Have a project, a question about automation, or just want to connect — feel free to reach out.
+        </p>
+        <div class="contact-line">
+          <div class="contact-icon">✉</div>
+          <div class="contact-val"><a href="mailto:baloglehel91@gmail.com">baloglehel91@gmail.com</a></div>
+        </div>
+        <div class="contact-line">
+          <div class="contact-icon">📍</div>
+          <div class="contact-val" data-en="Neu-Ulm, Germany" data-de="Neu-Ulm, Deutschland">Neu-Ulm, Germany</div>
+        </div>
+      </div>
+      <div class="form reveal">
+        <input  type="text"  data-placeholder-en="Your name"    data-placeholder-de="Ihr Name"      placeholder="Your name">
+        <input  type="email" data-placeholder-en="Your email"   data-placeholder-de="Ihre E-Mail"   placeholder="Your email">
+        <textarea rows="5"   data-placeholder-en="Your message" data-placeholder-de="Ihre Nachricht" placeholder="Your message"></textarea>
+        <a href="mailto:baloglehel91@gmail.com" class="btn-primary" data-en="Send message →" data-de="Nachricht senden →">Send message →</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <span class="foot-name">Lehel Balog</span>
+  <span class="foot-copy">© 2025 · lbideas.de</span>
+</footer>
+
+<script>
+  function setLang(lang) {
+    document.querySelectorAll('.lang-btn').forEach((b,i) =>
+      b.classList.toggle('active', (i===0&&lang==='en')||(i===1&&lang==='de'))
+    );
+    document.querySelectorAll('[data-en]').forEach(el => {
+      if (el.tagName==='INPUT'||el.tagName==='TEXTAREA') return;
+      el.innerHTML = el.getAttribute('data-'+lang) || '';
+    });
+    document.querySelectorAll('[data-placeholder-en]').forEach(el => {
+      el.placeholder = el.getAttribute('data-placeholder-'+lang) || '';
+    });
+  }
+
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('in'); });
+  }, { threshold: 0.08 });
+
+  document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+</script>
+</body>
+</html>
