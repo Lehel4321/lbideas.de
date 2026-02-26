@@ -29,6 +29,7 @@
     font-weight: 300;
     line-height: 1.7;
     -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
   }
 
   /* NAV */
@@ -36,8 +37,9 @@
     position: fixed; top:0; left:0; right:0; z-index:50;
     display: flex; align-items: center; justify-content: space-between;
     padding: 1.5rem 4rem;
-    background: rgba(17,17,16,0.92);
+    background: rgba(17,17,16,0.96);
     backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
     border-bottom: 1px solid var(--line);
   }
 
@@ -46,6 +48,8 @@
     font-size: 1.1rem;
     color: var(--text);
     text-decoration: none;
+    z-index: 60;
+    position: relative;
   }
 
   .nav-links { display:flex; gap:2.5rem; list-style:none; }
@@ -60,6 +64,8 @@
     transition: color 0.2s;
   }
   .nav-links a:hover { color: var(--text); }
+
+  .nav-right { display: flex; align-items: center; gap: 1rem; }
 
   .lang-toggle { display:flex; gap:0.4rem; }
 
@@ -76,9 +82,87 @@
     cursor: pointer;
     transition: all 0.2s;
     border-radius: 2px;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
   }
   .lang-btn.active { border-color: var(--accent); color: var(--accent); }
   .lang-btn:hover  { color: var(--text); border-color: var(--soft); }
+
+  /* HAMBURGER */
+  .hamburger {
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    gap: 5px;
+    width: 36px;
+    height: 36px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+    z-index: 60;
+    position: relative;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+
+  .hamburger span {
+    display: block;
+    height: 1px;
+    background: var(--text);
+    border-radius: 1px;
+    transition: all 0.3s ease;
+    transform-origin: center;
+  }
+
+  .hamburger.open span:nth-child(1) { transform: translateY(6px) rotate(45deg); }
+  .hamburger.open span:nth-child(2) { opacity: 0; transform: scaleX(0); }
+  .hamburger.open span:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
+
+  /* MOBILE MENU */
+  .mobile-menu {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 40;
+    background: var(--bg);
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 0;
+    padding: 5rem 2rem 3rem;
+    opacity: 0;
+    transform: translateY(-8px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    pointer-events: none;
+  }
+
+  .mobile-menu.open {
+    display: flex;
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: all;
+  }
+
+  .mobile-menu a {
+    font-family: var(--serif);
+    font-size: clamp(2rem, 8vw, 3rem);
+    color: var(--soft);
+    text-decoration: none;
+    padding: 0.6rem 0;
+    border-bottom: 1px solid var(--line);
+    width: 100%;
+    text-align: center;
+    transition: color 0.2s;
+  }
+
+  .mobile-menu a:hover, .mobile-menu a:active { color: var(--accent); }
+
+  .mobile-menu-footer {
+    margin-top: auto;
+    display: flex;
+    gap: 0.5rem;
+  }
 
   /* LAYOUT */
   .wrap { max-width: 900px; margin: 0 auto; padding: 0 2rem; }
@@ -89,7 +173,7 @@
 
   /* HERO */
   .hero {
-    min-height: 100vh;
+    min-height: 100svh;
     display: flex; align-items: center;
     padding: 10rem 2rem 6rem;
     max-width: 900px; margin: 0 auto;
@@ -122,7 +206,7 @@
   }
 
   .hero-actions {
-    display: flex; gap:1.5rem; align-items: center;
+    display: flex; gap:1.5rem; align-items: center; flex-wrap: wrap;
     opacity:0; animation: rise 0.7s 0.55s forwards;
   }
 
@@ -133,8 +217,12 @@
     background: var(--accent); color: var(--bg);
     text-decoration: none; border-radius: 2px;
     transition: opacity 0.2s, transform 0.2s;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    display: inline-block;
   }
   .btn-primary:hover { opacity:0.82; transform:translateY(-1px); }
+  .btn-primary:active { opacity:0.7; transform:translateY(0); }
 
   .btn-ghost {
     font-size: 0.8rem; font-weight:400;
@@ -142,6 +230,8 @@
     color: var(--muted); text-decoration: none;
     border-bottom: 1px solid var(--line); padding-bottom:2px;
     transition: color 0.2s, border-color 0.2s;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
   }
   .btn-ghost:hover { color:var(--text); border-color:var(--soft); }
 
@@ -167,6 +257,7 @@
     display: flex; justify-content: space-between; align-items: center;
     padding: 1rem 0;
     border-bottom: 1px solid var(--line);
+    gap: 1rem;
   }
 
   .skill-label { font-size: 0.95rem; font-weight:400; }
@@ -177,6 +268,8 @@
     padding: 0.2rem 0.65rem;
     border: 1px solid var(--line); color: var(--muted);
     border-radius: 20px;
+    white-space: nowrap;
+    flex-shrink: 0;
   }
   .skill-pill.core { color: var(--accent); border-color: rgba(201,169,110,0.35); }
 
@@ -326,10 +419,12 @@
     background: var(--surface);
     border: 1px solid var(--line);
     color: var(--text);
-    font-family: var(--sans); font-size:0.88rem; font-weight:300;
+    font-family: var(--sans); font-size: 1rem; font-weight:300;
     padding: 0.9rem 1.1rem;
     outline: none; resize:none;
     transition: border-color 0.2s; border-radius:2px;
+    -webkit-appearance: none;
+    appearance: none;
   }
   .form input::placeholder, .form textarea::placeholder { color:var(--muted); }
   .form input:focus, .form textarea:focus { border-color: var(--accent); }
@@ -356,20 +451,300 @@
     to   { opacity:1; transform:translateY(0); }
   }
 
-  /* RESPONSIVE */
+  /* ===================== MOBILE ===================== */
   @media (max-width:768px) {
-    nav { padding:1.2rem 1.5rem; }
+    /* Nav */
+    nav { padding:1.1rem 1.25rem; }
     .nav-links { display:none; }
-    .hero { padding:8rem 1.5rem 5rem; }
-    .wrap { padding:0 1.5rem; }
-    section { padding:5rem 0; }
-    .exp-item  { grid-template-columns:1fr; gap:1rem; }
-    .proj-row  { grid-template-columns:1fr; gap:0.4rem; }
-    .proj-tech { display:none; }
-    .apps-grid { grid-template-columns:1fr; }
-    .lang-strip{ grid-template-columns:repeat(2,1fr); }
-    .contact-grid { grid-template-columns:1fr; gap:3rem; }
-    footer { flex-direction:column; gap:0.6rem; }
+    .hamburger { display:flex; }
+
+    /* Hero */
+    .hero {
+      padding: 7rem 1.25rem 4rem;
+      min-height: 100svh;
+    }
+
+    h1 { font-size: clamp(3.4rem, 14vw, 4.5rem); }
+
+    .hero-bio { font-size: 0.95rem; }
+
+    .hero-actions { gap: 1rem; }
+
+    .btn-primary {
+      padding: 1rem 2rem;
+      font-size: 0.78rem;
+    }
+
+    /* Wrap */
+    .wrap { padding: 0 1.25rem; }
+
+    /* Sections */
+    section { padding: 4.5rem 0; }
+
+    /* Skills — same, looks fine */
+    .skill-label { font-size: 0.88rem; }
+
+    /* Experience — stack vertically */
+    .exp-item {
+      grid-template-columns: 1fr;
+      gap: 0.6rem;
+      padding: 2rem 0;
+    }
+
+    .exp-company { font-size: 1.05rem; }
+
+    .exp-meta {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
+
+    .exp-date { margin-bottom: 0; }
+
+    /* Projects — card style on mobile */
+    .proj-table { border-top: none; }
+
+    .proj-row {
+      grid-template-columns: 1fr;
+      gap: 0.4rem;
+      padding: 1.5rem 1.25rem;
+      border: 1px solid var(--line);
+      border-top: none;
+      background: var(--surface);
+    }
+
+    .proj-row:first-child { border-top: 1px solid var(--line); }
+
+    .proj-tech { display: none; }
+
+    .proj-co { margin-bottom: 0.15rem; }
+
+    .proj-name { font-size: 1rem; }
+
+    .proj-desc { font-size: 0.83rem; }
+
+    /* Apps — single column */
+    .apps-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .app-card { padding: 1.75rem 1.25rem; }
+
+    /* Languages — 2 col */
+    .lang-strip { grid-template-columns: repeat(2,1fr); }
+
+    .lang-cell { padding: 1.5rem 1.25rem; }
+
+    /* Contact */
+    .contact-grid {
+      grid-template-columns: 1fr;
+      gap: 2.5rem;
+    }
+
+    .contact-title { font-size: clamp(2rem, 8vw, 2.5rem); }
+
+    /* Form inputs — bigger tap targets */
+    .form input, .form textarea {
+      padding: 1rem 1.1rem;
+    }
+
+    /* Footer */
+    footer {
+      flex-direction: column;
+      gap: 0.5rem;
+      text-align: center;
+      padding: 2rem 1.25rem;
+    }
+  }
+
+  /* MOTION CALCULATOR */
+  .mc-wrapper {
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    gap: 2rem;
+    align-items: start;
+  }
+
+  .mc-left {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .mc-inputs {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    padding: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .mc-param { display: flex; flex-direction: column; gap: 0.25rem; }
+
+  .mc-label {
+    font-size: 0.7rem;
+    font-weight: 400;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .mc-input-row {
+    display: flex;
+    align-items: center;
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: 2px;
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+  .mc-input-row:focus-within { border-color: var(--accent); }
+
+  .mc-input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 0.95rem;
+    font-weight: 400;
+    padding: 0.55rem 0.8rem;
+    outline: none;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+  .mc-input::-webkit-inner-spin-button { opacity: 0.3; }
+
+  .mc-unit {
+    font-size: 0.68rem;
+    color: var(--muted);
+    padding: 0 0.7rem;
+    border-left: 1px solid var(--line);
+    white-space: nowrap;
+    line-height: 2.4rem;
+    letter-spacing: 0.05em;
+  }
+
+  .mc-status-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.55rem 1rem;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 2px;
+  }
+
+  .mc-status-label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+  }
+
+  .mc-status-val {
+    font-size: 0.85rem;
+    font-weight: 400;
+    color: var(--accent);
+    font-family: 'Courier New', monospace;
+  }
+
+  .mc-table-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    padding: 0.4rem 0 0.3rem;
+    border-top: 1px solid var(--line);
+  }
+
+  .mc-table-scroll {
+    overflow-x: auto;
+    border: 1px solid var(--line);
+  }
+
+  .mc-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.78rem;
+    font-family: 'Courier New', monospace;
+  }
+
+  .mc-table th {
+    padding: 0.45rem 0.6rem;
+    text-align: right;
+    background: var(--surface);
+    color: var(--muted);
+    font-size: 0.65rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--line);
+    font-family: var(--sans);
+    font-weight: 400;
+  }
+  .mc-table th:first-child { text-align: left; }
+
+  .mc-table td {
+    padding: 0.4rem 0.6rem;
+    text-align: right;
+    color: var(--soft);
+    border-bottom: 1px solid rgba(39,39,36,0.6);
+    transition: background 0.15s, color 0.15s;
+    cursor: pointer;
+  }
+  .mc-table td:first-child { text-align: left; color: var(--accent); }
+
+  .mc-table tr:hover td { background: var(--surface); }
+  .mc-table tr.mc-row-selected td { background: rgba(201,169,110,0.08); color: var(--text); }
+  .mc-table tr.mc-row-selected td:first-child { color: var(--accent); }
+
+  .mc-right {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    padding: 1rem;
+    position: relative;
+  }
+
+  .mc-right canvas {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+
+  .mc-download-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    padding: 0.85rem 1.1rem;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    color: var(--soft);
+    text-decoration: none;
+    font-size: 0.8rem;
+    letter-spacing: 0.06em;
+    transition: border-color 0.2s, color 0.2s, background 0.2s;
+    border-radius: 2px;
+  }
+  .mc-download-btn:hover { border-color: var(--accent); color: var(--text); background: var(--bg); }
+  .mc-download-btn span:first-child { font-size: 1rem; }
+
+  @media (max-width: 768px) {
+    .mc-wrapper { grid-template-columns: 1fr; }
+    .mc-right { order: -1; }
+    .mc-right canvas { max-height: 480px; }
+  }
+
+  /* Very small screens */
+  @media (max-width: 380px) {
+    h1 { font-size: 3rem; }
+    .hero { padding: 7rem 1rem 3.5rem; }
+    .wrap { padding: 0 1rem; }
+    .proj-row { padding: 1.25rem 1rem; }
   }
 </style>
 </head>
@@ -384,11 +759,31 @@
     <li><a href="#apps"       data-en="Apps"        data-de="Apps">Apps</a></li>
     <li><a href="#contact"    data-en="Contact"     data-de="Kontakt">Contact</a></li>
   </ul>
-  <div class="lang-toggle">
+  <div class="nav-right">
+    <div class="lang-toggle">
+      <button class="lang-btn active" onclick="setLang('en')">EN</button>
+      <button class="lang-btn"        onclick="setLang('de')">DE</button>
+    </div>
+    <button class="hamburger" id="hamburger" aria-label="Menu">
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
+  </div>
+</nav>
+
+<!-- MOBILE MENU -->
+<div class="mobile-menu" id="mobileMenu">
+  <a href="#skills"     onclick="closeMenu()" data-en="Skills"      data-de="Fähigkeiten">Skills</a>
+  <a href="#experience" onclick="closeMenu()" data-en="Experience"  data-de="Erfahrung">Experience</a>
+  <a href="#projects"   onclick="closeMenu()" data-en="Projects"    data-de="Projekte">Projects</a>
+  <a href="#apps"       onclick="closeMenu()" data-en="Apps"        data-de="Apps">Apps</a>
+  <a href="#contact"    onclick="closeMenu()" data-en="Contact"     data-de="Kontakt">Contact</a>
+  <div class="mobile-menu-footer">
     <button class="lang-btn active" onclick="setLang('en')">EN</button>
     <button class="lang-btn"        onclick="setLang('de')">DE</button>
   </div>
-</nav>
+</div>
 
 <!-- HERO -->
 <div class="hero">
@@ -579,11 +974,12 @@
         <div class="app-desc" data-en="A custom-built calendar for personal scheduling and productivity." data-de="Ein maßgeschneiderter Kalender für persönliche Planung.">A custom-built calendar for personal scheduling and productivity.</div>
       </div>
 
-      <div class="app-card">
-        <span class="app-badge" data-en="Coming soon" data-de="Demnächst">Coming soon</span>
+      <div class="app-card" style="cursor:pointer;" onclick="document.getElementById('motion-calc').scrollIntoView({behavior:'smooth'})">
+        <span class="app-badge" style="color:var(--accent);border-color:rgba(201,169,110,0.4);" data-en="Live · Try it" data-de="Live · Ausprobieren">Live · Try it</span>
         <span class="app-icon">📐</span>
         <div class="app-name" data-en="Motion Profile Calculator" data-de="Bewegungsprofil-Rechner">Motion Profile Calculator</div>
-        <div class="app-desc" data-en="Calculate servo and stepper motor motion profiles — built from real automation experience." data-de="Servo- und Schrittmotor-Bewegungsprofile berechnen — aus echter Automationspraxis.">Calculate servo and stepper motor motion profiles — built from real automation experience.</div>
+        <div class="app-desc" data-en="S-curve 7-segment motion solver. Calculate position, velocity, acceleration &amp; jerk profiles in real time — built from real automation experience." data-de="S-Kurven 7-Segment-Löser. Echtzeit-Berechnung von Position, Geschwindigkeit, Beschleunigung und Ruck.">S-curve 7-segment motion solver. Calculate position, velocity, acceleration &amp; jerk profiles in real time — built from real automation experience.</div>
+        <div style="margin-top:1.2rem;font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--accent);">↓ Scroll to calculator</div>
       </div>
 
       <div class="app-card">
@@ -593,6 +989,92 @@
         <div class="app-desc" data-en="More engineering tools are in development." data-de="Weitere Engineering-Tools sind in Entwicklung.">More engineering tools are in development.</div>
       </div>
 
+    </div>
+  </div>
+</section>
+
+<hr>
+
+<!-- MOTION PROFILE CALCULATOR -->
+<section id="motion-calc">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="sec-num">04b</span>
+      <h2 class="sec-title" data-en="Motion Profile Calculator" data-de="Bewegungsprofil-Rechner">Motion Profile Calculator</h2>
+    </div>
+
+    <div class="mc-wrapper reveal">
+      <!-- Left: inputs + table -->
+      <div class="mc-left">
+        <div class="mc-inputs">
+          <div class="mc-param">
+            <label class="mc-label" data-en="Distance" data-de="Strecke">Distance</label>
+            <div class="mc-input-row">
+              <input class="mc-input" type="number" id="mc-dist" value="100" step="any">
+              <span class="mc-unit">mm</span>
+            </div>
+          </div>
+          <div class="mc-param">
+            <label class="mc-label" data-en="Max Velocity" data-de="Max. Geschwindigkeit">Max Velocity</label>
+            <div class="mc-input-row">
+              <input class="mc-input" type="number" id="mc-vel" value="20" step="any">
+              <span class="mc-unit">mm/s</span>
+            </div>
+          </div>
+          <div class="mc-param">
+            <label class="mc-label" data-en="Max Acceleration" data-de="Max. Beschleunigung">Max Acceleration</label>
+            <div class="mc-input-row">
+              <input class="mc-input" type="number" id="mc-acc" value="10" step="any">
+              <span class="mc-unit">mm/s²</span>
+            </div>
+          </div>
+          <div class="mc-param">
+            <label class="mc-label" data-en="Max Jerk" data-de="Max. Ruck">Max Jerk</label>
+            <div class="mc-input-row">
+              <input class="mc-input" type="number" id="mc-jerk" value="50" step="any">
+              <span class="mc-unit">mm/s³</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="mc-status-bar">
+          <span class="mc-status-label" data-en="Profile Type" data-de="Profiltyp">Profile Type</span>
+          <span id="mc-case" class="mc-status-val">—</span>
+        </div>
+        <div class="mc-status-bar">
+          <span class="mc-status-label" data-en="Total Time" data-de="Gesamtzeit">Total Time</span>
+          <span id="mc-time" class="mc-status-val">— s</span>
+        </div>
+
+        <div class="mc-table-head">
+          <span data-en="Critical Points" data-de="Kritische Punkte">Critical Points</span>
+          <span style="font-size:0.7rem;color:var(--muted);font-weight:300;" data-en="(click row to highlight)" data-de="(Zeile anklicken)">(click row to highlight)</span>
+        </div>
+        <div class="mc-table-scroll">
+          <table class="mc-table">
+            <thead>
+              <tr>
+                <th>t (s)</th>
+                <th>Pos</th>
+                <th>Vel</th>
+                <th>Acc</th>
+                <th>Jerk</th>
+              </tr>
+            </thead>
+            <tbody id="mc-tbody"></tbody>
+          </table>
+        </div>
+
+        <a id="mc-download-link" class="mc-download-btn" href="#" download="motion_profile_calculator.py">
+          <span>⬇</span>
+          <span data-en="Download Python App (.py)" data-de="Python-App herunterladen (.py)">Download Python App (.py)</span>
+        </a>
+      </div>
+
+      <!-- Right: Canvas charts -->
+      <div class="mc-right">
+        <canvas id="mc-canvas" width="600" height="640"></canvas>
+      </div>
     </div>
   </div>
 </section>
@@ -643,7 +1125,7 @@
         </p>
         <div class="contact-line">
           <div class="contact-icon">✉</div>
-          <div class="contact-val"><a href="/cdn-cgi/l/email-protection#4b292a27242c272e232e27727a0b2c262a222765282426"><span class="__cf_email__" data-cfemail="fe9c9f929199929b969b92c7cfbe99939f9792d09d9193">[email&#160;protected]</span></a></div>
+          <div class="contact-val"><a href="/cdn-cgi/l/email-protection#93fff6fbf6ffd3fff1faf7f6f2e0bdf7f6"><span class="__cf_email__" data-cfemail="573b323f323b173b353e33323624793332">[email&#160;protected]</span></a></div>
         </div>
         <div class="contact-line">
           <div class="contact-icon">📍</div>
@@ -651,10 +1133,10 @@
         </div>
       </div>
       <div class="form reveal">
-        <input  type="text"  data-placeholder-en="Your name"    data-placeholder-de="Ihr Name"      placeholder="Your name">
-        <input  type="email" data-placeholder-en="Your email"   data-placeholder-de="Ihre E-Mail"   placeholder="Your email">
+        <input  type="text"  data-placeholder-en="Your name"    data-placeholder-de="Ihr Name"      placeholder="Your name" autocomplete="name">
+        <input  type="email" data-placeholder-en="Your email"   data-placeholder-de="Ihre E-Mail"   placeholder="Your email" autocomplete="email">
         <textarea rows="5"   data-placeholder-en="Your message" data-placeholder-de="Ihre Nachricht" placeholder="Your message"></textarea>
-        <a href="/cdn-cgi/l/email-protection#b3d1d2dfdcd4dfd6dbd6df8a82f3d4ded2dadf9dd0dcde" class="btn-primary" data-en="Send message →" data-de="Nachricht senden →">Send message →</a>
+        <a href="/cdn-cgi/l/email-protection#731f161b161f331f111a171612005d1716" class="btn-primary" data-en="Send message →" data-de="Nachricht senden →">Send message →</a>
       </div>
     </div>
   </div>
@@ -666,6 +1148,28 @@
 </footer>
 
 <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+  // HAMBURGER
+  const hamburger = document.getElementById('hamburger');
+  const mobileMenu = document.getElementById('mobileMenu');
+
+  hamburger.addEventListener('click', () => {
+    const isOpen = mobileMenu.classList.toggle('open');
+    hamburger.classList.toggle('open', isOpen);
+    document.body.style.overflow = isOpen ? 'hidden' : '';
+  });
+
+  function closeMenu() {
+    mobileMenu.classList.remove('open');
+    hamburger.classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  // Close on escape
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') closeMenu();
+  });
+
+  // LANGUAGE
   function setLang(lang) {
     document.querySelectorAll('.lang-btn').forEach((b,i) =>
       b.classList.toggle('active', (i===0&&lang==='en')||(i===1&&lang==='de'))
@@ -679,9 +1183,9 @@
     });
   }
 
+  // SCROLL REVEAL
   const obs = new IntersectionObserver(entries => {
-    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('in'); });
-  }, { threshold: 0.01 });
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('in'); }  );
 
   document.querySelectorAll('.reveal').forEach(el => {
     const rect = el.getBoundingClientRect();
@@ -691,6 +1195,613 @@
       obs.observe(el);
     }
   });
+
+  // =============================================
+  // MOTION PROFILE CALCULATOR - Pure JS/Canvas
+  // =============================================
+
+  // Physics engine (translated from Python)
+  function computeMotionProfile(distance, maxVel, maxAcc, maxJerk) {
+    const sTotal = parseFloat(distance);
+    const vMax   = Math.abs(parseFloat(maxVel));
+    const aMax   = Math.abs(parseFloat(maxAcc));
+    const jMax   = Math.abs(parseFloat(maxJerk));
+    const dir    = sTotal >= 0 ? 1 : -1;
+    const sMag   = Math.abs(sTotal);
+
+    if (sMag <= 0 || vMax <= 0 || aMax <= 0 || jMax <= 0) return null;
+
+    // Step 1: Determine Tj, Ta, Tv
+    const Va = (aMax * aMax) / jMax;
+    let Tj, Ta, Tv, caseType;
+
+    let TjStar, TaStar;
+    if (vMax <= Va) {
+      TjStar = Math.sqrt(vMax / jMax);
+      TaStar = 0;
+    } else {
+      TjStar = aMax / jMax;
+      TaStar = (vMax - jMax * TjStar * TjStar) / aMax;
+    }
+
+    const sRequired = vMax * (2 * TjStar + TaStar);
+
+    if (sMag >= sRequired) {
+      caseType = "Long Move (V_max Reached)";
+      Tj = TjStar; Ta = TaStar;
+      Tv = (sMag - sRequired) / vMax;
+    } else {
+      Tv = 0;
+      const sHalf = sMag / 2;
+      const TjNew = Math.cbrt(sHalf / jMax);
+      if (jMax * TjNew <= aMax) {
+        caseType = "Short Move (Jerk Limited)";
+        Tj = TjNew; Ta = 0;
+      } else {
+        caseType = "Short Move (Accel Limited)";
+        Tj = aMax / jMax;
+        const c = 2 * Tj * Tj - (2 * sHalf / aMax);
+        const b = 3 * Tj;
+        const disc = b * b - 4 * c;
+        Ta = (-b + Math.sqrt(Math.max(0, disc))) / 2;
+      }
+    }
+
+    // Step 2: Chain of states
+    function integrate(base, jerk, dt) {
+      const [t0, , a0, v0, p0] = base;
+      const af = a0 + jerk * dt;
+      const vf = v0 + a0 * dt + 0.5 * jerk * dt * dt;
+      const pf = p0 + v0 * dt + 0.5 * a0 * dt * dt + (1/6) * jerk * dt * dt * dt;
+      return [t0 + dt, jerk, af, vf, pf];
+    }
+
+    const s0 = [0, 0, 0, 0, 0];
+    const s1 = integrate(s0,  jMax,  Tj);
+    const s2 = integrate(s1,  0,     Ta);
+    const s3 = integrate(s2, -jMax,  Tj);
+    const s4 = integrate(s3,  0,     Tv);
+    const s5 = integrate(s4, -jMax,  Tj);
+    const s6 = integrate(s5,  0,     Ta);
+    const s7 = integrate(s6,  jMax,  Tj);
+
+    const snapshots = [s0, s1, s2, s3, s4, s5, s6, s7];
+    const jSegs     = [jMax, 0, -jMax, 0, -jMax, 0, jMax];
+    const tEnd      = s7[0];
+
+    function getState(tQ) {
+      if (tQ < 0) return [0, 0, 0, 0];
+      const times = snapshots.map(s => s[0]);
+      if (tQ >= times[times.length - 1]) return [0, 0, 0, snapshots[snapshots.length - 1][4] * dir];
+
+      let k = 0;
+      for (let i = 0; i < times.length - 1; i++) { if (tQ >= times[i]) k = i; }
+
+      const base = snapshots[k];
+      const dt = tQ - base[0];
+      const [, , a0, v0, p0] = base;
+      const j = jSegs[k] || 0;
+      const a = a0 + j * dt;
+      const v = v0 + a0 * dt + 0.5 * j * dt * dt;
+      const p = p0 + v0 * dt + 0.5 * a0 * dt * dt + (1/6) * j * dt * dt * dt;
+      return [j * dir, a * dir, v * dir, p * dir];
+    }
+
+    return { snapshots, getState, tEnd, caseType, dir };
+  }
+
+  // Canvas renderer
+  const MC_COLORS = {
+    pos:  '#4fc3f7',
+    vel:  '#66bb6a',
+    acc:  '#ffa726',
+    jerk: '#ab47bc',
+    grid: '#2a2a2a',
+    text: '#666666',
+    accent: '#c9a96e',
+    bg:   '#1a1a18'
+  };
+
+  let mcProfile = null;
+  let mcHighlight = -1;
+
+  function mcDraw() {
+    const canvas = document.getElementById('mc-canvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const dpr = window.devicePixelRatio || 1;
+
+    // Make canvas crisp
+    const w = canvas.clientWidth;
+    const h = canvas.clientHeight;
+    canvas.width  = w * dpr;
+    canvas.height = h * dpr;
+    ctx.scale(dpr, dpr);
+
+    ctx.clearRect(0, 0, w, h);
+    ctx.fillStyle = MC_COLORS.bg;
+    ctx.fillRect(0, 0, w, h);
+
+    if (!mcProfile || !mcProfile.snapshots || mcProfile.snapshots.length === 0) return;
+    if (mcProfile.tEnd <= 0) return;
+
+    const { snapshots, getState, tEnd } = mcProfile;
+    const PLOTS = [
+      { key: 3, label: 'Position', color: MC_COLORS.pos },
+      { key: 2, label: 'Velocity', color: MC_COLORS.vel },
+      { key: 1, label: 'Acceleration', color: MC_COLORS.acc },
+      { key: 0, label: 'Jerk', color: MC_COLORS.jerk }
+    ];
+
+    const rows = 4;
+    const padL = 52, padR = 12, padT = 14, padB = 28;
+    const gap  = 14;
+    const totalH = h - padT - padB;
+    const plotH  = (totalH - gap * (rows - 1)) / rows;
+    const plotW  = w - padL - padR;
+
+    // Sample data
+    const N = 400;
+    const dt = tEnd / N;
+    const allStates = [];
+    for (let i = 0; i <= N; i++) allStates.push(getState(i * dt));
+
+    PLOTS.forEach((pl, ri) => {
+      const y0 = padT + ri * (plotH + gap);
+      const vals = allStates.map(s => s[pl.key]);
+      const vMin = Math.min(...vals);
+      const vMax = Math.max(...vals);
+      const range = vMax - vMin || 1;
+      const pad = range * 0.12;
+
+      const toX = t => padL + (t / tEnd) * plotW;
+      const toY = v => y0 + plotH - (v - vMin + pad) / (range + 2 * pad) * plotH;
+
+      // Grid lines
+      ctx.strokeStyle = MC_COLORS.grid;
+      ctx.lineWidth = 1;
+      for (let gi = 0; gi <= 4; gi++) {
+        const gy = y0 + (gi / 4) * plotH;
+        ctx.beginPath();
+        ctx.moveTo(padL, gy);
+        ctx.lineTo(padL + plotW, gy);
+        ctx.stroke();
+      }
+
+      // Zero line
+      if (vMin < 0 && vMax > 0) {
+        ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+        ctx.lineWidth = 1;
+        const zy = toY(0);
+        ctx.beginPath();
+        ctx.moveTo(padL, zy);
+        ctx.lineTo(padL + plotW, zy);
+        ctx.stroke();
+      }
+
+      // Fill
+      ctx.beginPath();
+      ctx.moveTo(toX(0), toY(vals[0]));
+      for (let i = 1; i <= N; i++) ctx.lineTo(toX(i * dt), toY(vals[i]));
+      ctx.lineTo(toX(tEnd), toY(vMin - pad));
+      ctx.lineTo(toX(0), toY(vMin - pad));
+      ctx.closePath();
+      const grad = ctx.createLinearGradient(0, y0, 0, y0 + plotH);
+      const hex = pl.color;
+      grad.addColorStop(0, hex + '33');
+      grad.addColorStop(1, hex + '08');
+      ctx.fillStyle = grad;
+      ctx.fill();
+
+      // Line
+      ctx.strokeStyle = pl.color;
+      ctx.lineWidth = 1.8;
+      ctx.lineJoin = 'round';
+      ctx.beginPath();
+      ctx.moveTo(toX(0), toY(vals[0]));
+      for (let i = 1; i <= N; i++) ctx.lineTo(toX(i * dt), toY(vals[i]));
+      ctx.stroke();
+
+      // Snap dots
+      snapshots.forEach((sn, si) => {
+        const tv = sn[0];
+        const sv = getState(tv)[pl.key];
+        const sx = toX(tv);
+        const sy = toY(sv);
+        const isHL = si === mcHighlight;
+
+        ctx.beginPath();
+        ctx.arc(sx, sy, isHL ? 6 : 3, 0, Math.PI * 2);
+        ctx.fillStyle = isHL ? '#ff4444' : 'rgba(255,255,255,0.8)';
+        ctx.fill();
+
+        if (isHL) {
+          ctx.strokeStyle = '#ff4444';
+          ctx.lineWidth = 1.5;
+          ctx.beginPath();
+          ctx.arc(sx, sy, 10, 0, Math.PI * 2);
+          ctx.stroke();
+        }
+      });
+
+      // Y label
+      ctx.fillStyle = pl.color;
+      ctx.font = `bold 9px "DM Sans", sans-serif`;
+      ctx.textAlign = 'left';
+      ctx.fillText(pl.label.toUpperCase(), padL + 4, y0 + 11);
+
+      // Y axis min/max
+      ctx.fillStyle = MC_COLORS.text;
+      ctx.font = `8px "Courier New"`;
+      ctx.textAlign = 'right';
+      ctx.fillText(vMax.toFixed(1), padL - 4, y0 + 10);
+      ctx.fillText(vMin.toFixed(1), padL - 4, y0 + plotH - 2);
+
+      // Vertical snap lines (light)
+      ctx.strokeStyle = 'rgba(255,255,255,0.04)';
+      ctx.lineWidth = 1;
+      snapshots.forEach(sn => {
+        const sx = toX(sn[0]);
+        ctx.beginPath();
+        ctx.moveTo(sx, padT);
+        ctx.lineTo(sx, h - padB);
+        ctx.stroke();
+      });
+    });
+
+    // X axis time labels
+    ctx.fillStyle = MC_COLORS.text;
+    ctx.font = `8px "Courier New"`;
+    ctx.textAlign = 'center';
+    for (let i = 0; i <= 5; i++) {
+      const tx = padL + (i / 5) * plotW;
+      const tv = (i / 5) * tEnd;
+      ctx.fillText(tv.toFixed(2) + 's', tx, h - padB + 12);
+    }
+  }
+
+  function mcCalc() {
+    const dist  = parseFloat(document.getElementById('mc-dist').value)  || 0;
+    const vel   = parseFloat(document.getElementById('mc-vel').value)   || 0;
+    const acc   = parseFloat(document.getElementById('mc-acc').value)   || 0;
+    const jerk  = parseFloat(document.getElementById('mc-jerk').value)  || 0;
+
+    mcProfile = computeMotionProfile(dist, vel, acc, jerk);
+    mcHighlight = -1;
+
+    if (!mcProfile) {
+      document.getElementById('mc-case').textContent = 'Invalid inputs';
+      document.getElementById('mc-time').textContent = '—';
+      return;
+    }
+
+    document.getElementById('mc-case').textContent = mcProfile.caseType;
+    document.getElementById('mc-time').textContent  = mcProfile.tEnd.toFixed(4) + ' s';
+
+    // Fill table
+    const tbody = document.getElementById('mc-tbody');
+    tbody.innerHTML = '';
+    mcProfile.snapshots.forEach((sn, idx) => {
+      const t = sn[0];
+      const [j, a, v, p] = mcProfile.getState(t);
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${t.toFixed(3)}</td>
+        <td>${p.toFixed(2)}</td>
+        <td>${v.toFixed(2)}</td>
+        <td>${a.toFixed(2)}</td>
+        <td>${j.toFixed(1)}</td>
+      `;
+      tr.addEventListener('click', () => {
+        document.querySelectorAll('#mc-tbody tr').forEach(r => r.classList.remove('mc-row-selected'));
+        tr.classList.add('mc-row-selected');
+        mcHighlight = idx;
+        mcDraw();
+      });
+      tbody.appendChild(tr);
+    });
+
+    mcDraw();
+  }
+
+  // Live recalc on input
+  ['mc-dist','mc-vel','mc-acc','mc-jerk'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('input', mcCalc);
+  });
+
+  // Redraw on resize
+  window.addEventListener('resize', mcDraw);
+
+  // Initial calc
+  mcCalc();
+
+  // Setup Python download
+  (function setupDownload() {
+    const pyCode = `import tkinter as tk
+from tkinter import ttk
+import math
+import matplotlib.pyplot as plt
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from matplotlib.figure import Figure
+
+
+class MotionProfile:
+    def __init__(self, distance, max_vel, max_acc, max_jerk):
+        self.target_s = float(distance)
+        self.v_max = float(abs(max_vel))
+        self.a_max = float(abs(max_acc))
+        self.j_max = float(abs(max_jerk))
+        self.direction = 1.0 if self.target_s >= 0 else -1.0
+        self.s_mag = abs(self.target_s)
+        self.case_type = "Init"
+        self.snapshots = []
+
+        if self.s_mag > 0 and self.v_max > 0 and self.a_max > 0 and self.j_max > 0:
+            self._compute_intervals()
+            self._compute_chain_of_states()
+
+    def _compute_intervals(self):
+        Va = (self.a_max ** 2) / self.j_max
+        if self.v_max <= Va:
+            Tj_star = math.sqrt(self.v_max / self.j_max)
+            Ta_star = 0.0
+        else:
+            Tj_star = self.a_max / self.j_max
+            Ta_star = (self.v_max - (self.j_max * Tj_star ** 2)) / self.a_max
+
+        S_required = self.v_max * (2 * Tj_star + Ta_star)
+
+        if self.s_mag >= S_required:
+            self.case_type = "Long Move (V_max Reached)"
+            self.Tj = Tj_star; self.Ta = Ta_star
+            self.Tv = (self.s_mag - S_required) / self.v_max
+        else:
+            self.Tv = 0.0
+            S_half = self.s_mag / 2
+            Tj_new = (S_half / self.j_max) ** (1 / 3)
+            if (self.j_max * Tj_new) <= self.a_max:
+                self.case_type = "Short Move (Jerk Limited)"
+                self.Tj = Tj_new; self.Ta = 0.0
+            else:
+                self.case_type = "Short Move (Accel Limited)"
+                self.Tj = self.a_max / self.j_max
+                c = 2 * self.Tj ** 2 - (2 * S_half / self.a_max)
+                b = 3 * self.Tj
+                d = b ** 2 - 4 * c
+                self.Ta = (-b + math.sqrt(max(0, d))) / 2
+
+    def _integrate_segment(self, start_state, jerk, duration):
+        t0, _, a0, v0, p0 = start_state
+        dt = duration
+        af = a0 + jerk * dt
+        vf = v0 + a0 * dt + 0.5 * jerk * dt ** 2
+        pf = p0 + v0 * dt + 0.5 * a0 * dt ** 2 + (1 / 6) * jerk * dt ** 3
+        return (t0 + dt, jerk, af, vf, pf)
+
+    def _compute_chain_of_states(self):
+        s0 = (0.0, 0.0, 0.0, 0.0, 0.0)
+        self.snapshots = [s0]
+        s1 = self._integrate_segment(s0, self.j_max, self.Tj)
+        self.snapshots.append(s1)
+        s2 = self._integrate_segment(s1, 0.0, self.Ta)
+        self.snapshots.append(s2)
+        s3 = self._integrate_segment(s2, -self.j_max, self.Tj)
+        self.snapshots.append(s3)
+        s4 = self._integrate_segment(s3, 0.0, self.Tv)
+        self.snapshots.append(s4)
+        s5 = self._integrate_segment(s4, -self.j_max, self.Tj)
+        self.snapshots.append(s5)
+        s6 = self._integrate_segment(s5, 0.0, self.Ta)
+        self.snapshots.append(s6)
+        s7 = self._integrate_segment(s6, self.j_max, self.Tj)
+        self.snapshots.append(s7)
+
+    def get_state_at(self, t_query):
+        if t_query < 0: return 0, 0, 0, 0
+        times = [s[0] for s in self.snapshots]
+        if t_query >= times[-1]: return 0, 0, 0, self.snapshots[-1][4] * self.direction
+
+        k = 0
+        for i in range(len(times) - 1):
+            if t_query >= times[i]: k = i
+
+        j_seg_map = {0: self.j_max, 1: 0.0, 2: -self.j_max, 3: 0.0, 4: -self.j_max, 5: 0.0, 6: self.j_max}
+        j_seg = j_seg_map.get(k, 0.0)
+
+        base = self.snapshots[k]
+        dt = t_query - base[0]
+        _, _, a0, v0, p0 = base
+        j = j_seg
+        a = a0 + j * dt
+        v = v0 + a0 * dt + 0.5 * j * dt ** 2
+        p = p0 + v0 * dt + 0.5 * a0 * dt ** 2 + (1 / 6) * j * dt ** 3
+        return j * self.direction, a * self.direction, v * self.direction, p * self.direction
+
+
+COLORS = {
+    "bg": "#212121", "panel": "#2e2e2e", "text": "#e0e0e0",
+    "accent": "#00adb5", "accent_hover": "#00ced1",
+    "pos": "#4fc3f7", "vel": "#66bb6a", "acc": "#ffa726", "jerk": "#ab47bc",
+    "highlight": "#ff3333"
+}
+
+
+class ModernApp:
+    def __init__(self, root):
+        self.root = root
+        self.root.title("Interactive Motion Profile")
+        self.root.geometry("1280x850")
+        self.root.configure(bg=COLORS["bg"])
+        self.scatter_artists = []
+        self.num_points = 0
+        self._init_styles()
+        self._build_ui()
+        self.calc()
+
+    def _init_styles(self):
+        s = ttk.Style()
+        s.theme_use('clam')
+        s.configure("TFrame", background=COLORS["bg"])
+        s.configure("Panel.TFrame", background=COLORS["panel"])
+        s.configure("TLabel", background=COLORS["panel"], foreground=COLORS["text"], font=("Segoe UI", 10))
+        s.configure("Title.TLabel", background=COLORS["bg"], foreground=COLORS["accent"], font=("Segoe UI", 22, "bold"))
+        s.configure("Header.TLabel", background=COLORS["panel"], foreground=COLORS["accent"], font=("Segoe UI", 11, "bold"))
+        s.configure("TEntry", fieldbackground="#424242", foreground="white", borderwidth=0)
+        s.configure("Accent.TButton", background=COLORS["accent"], foreground="white", borderwidth=0, font=("Segoe UI", 10, "bold"))
+        s.map("Accent.TButton", background=[('active', COLORS["accent_hover"])])
+        s.configure("Treeview", background=COLORS["bg"], fieldbackground=COLORS["bg"], foreground=COLORS["text"], borderwidth=0, font=("Consolas", 9))
+        s.configure("Treeview.Heading", background="#424242", foreground=COLORS["accent"], borderwidth=0)
+        s.map("Treeview", background=[('selected', COLORS["panel"])])
+
+    def _build_ui(self):
+        top = ttk.Frame(self.root)
+        top.pack(fill=tk.X, padx=20, pady=15)
+        ttk.Label(top, text="PRECISION MOTION SOLVER", style="Title.TLabel").pack(side=tk.LEFT)
+
+        main = ttk.Frame(self.root)
+        main.pack(fill=tk.BOTH, expand=True, padx=20, pady=(0, 20))
+
+        left = ttk.Frame(main, width=320, style="Panel.TFrame")
+        left.pack(side=tk.LEFT, fill=tk.Y, padx=(0, 15))
+        left_inner = ttk.Frame(left, style="Panel.TFrame")
+        left_inner.pack(fill=tk.BOTH, expand=True, padx=15, pady=15)
+
+        ttk.Label(left_inner, text="PARAMETERS", style="Header.TLabel").pack(anchor="w", pady=(0, 10))
+        self.inputs = {}
+        defaults = [("Distance", 100), ("Max Vel", 20), ("Max Acc", 10), ("Max Jerk", 50)]
+        for txt, val in defaults:
+            row = ttk.Frame(left_inner, style="Panel.TFrame")
+            row.pack(fill=tk.X, pady=5)
+            ttk.Label(row, text=txt).pack(side=tk.LEFT)
+            e = ttk.Entry(row, width=10, justify='right')
+            e.insert(0, str(val))
+            e.pack(side=tk.RIGHT)
+            self.inputs[txt] = e
+
+        ttk.Button(left_inner, text="CALCULATE", style="Accent.TButton", command=self.calc).pack(fill=tk.X, pady=20)
+        self.status = ttk.Label(left_inner, text="Ready", font=("Segoe UI", 10, "italic"))
+        self.status.pack(fill=tk.X)
+
+        ttk.Label(left_inner, text="CRITICAL POINTS (Click to Highlight)", style="Header.TLabel").pack(anchor="w", pady=(20, 10))
+        cols = ("t", "Pos", "Vel", "Acc", "Jrk")
+        self.tree = ttk.Treeview(left_inner, columns=cols, show='headings', height=12)
+        self.tree.column("t", width=45); self.tree.heading("t", text="t")
+        for c in cols[1:]:
+            self.tree.column(c, width=55); self.tree.heading(c, text=c)
+        self.tree.pack(fill=tk.BOTH, expand=True)
+        self.tree.bind("<<TreeviewSelect>>", self.on_row_click)
+
+        right = ttk.Frame(main, style="Panel.TFrame")
+        right.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True)
+
+        plt.style.use('dark_background')
+        self.fig = Figure(figsize=(5, 5), dpi=100, facecolor=COLORS["panel"])
+        self.axs = self.fig.subplots(4, 1, sharex=True)
+        self.fig.subplots_adjust(left=0.08, right=0.95, top=0.95, bottom=0.08, hspace=0.15)
+        for ax in self.axs:
+            ax.set_facecolor(COLORS["bg"])
+            ax.grid(True, color="#444444", linestyle="--", alpha=0.5)
+            for sp in ax.spines.values(): sp.set_visible(False)
+            ax.spines['left'].set_visible(True); ax.spines['left'].set_color('#666666')
+
+        self.canvas = FigureCanvasTkAgg(self.fig, master=right)
+        self.canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True, padx=1, pady=1)
+
+    def on_row_click(self, event):
+        selected_items = self.tree.selection()
+        if not selected_items: return
+        item = selected_items[0]
+        index = self.tree.index(item)
+        self.highlight_graph_point(index)
+
+    def highlight_graph_point(self, index):
+        if not self.scatter_artists: return
+        normal_color = 'white'; highlight_color = COLORS["highlight"]
+        normal_size = 25; highlight_size = 120
+        for sc in self.scatter_artists:
+            colors = [normal_color] * self.num_points
+            sizes = [normal_size] * self.num_points
+            if 0 <= index < self.num_points:
+                colors[index] = highlight_color
+                sizes[index] = highlight_size
+            sc.set_facecolors(colors)
+            sc.set_sizes(sizes)
+        self.canvas.draw()
+
+    def calc(self):
+        try:
+            vals = [float(self.inputs[k].get()) for k in self.inputs]
+            mp = MotionProfile(*vals)
+            self.status.config(text=mp.case_type, foreground=COLORS["accent"])
+            for i in self.tree.get_children(): self.tree.delete(i)
+            for snap in mp.snapshots:
+                t, _, _, _, _ = snap
+                j, a, v, p = mp.get_state_at(t)
+                self.tree.insert("", "end", values=(f"{t:.3f}", f"{p:.2f}", f"{v:.2f}", f"{a:.2f}", f"{j:.1f}"))
+            self.draw_graph(mp)
+        except Exception as e:
+            print(f"Error: {e}")
+
+    def draw_graph(self, mp):
+        # FIX: Validate points to prevent an IndexError crash on zero inputs.
+        if not mp.snapshots: return
+
+        t_end = mp.snapshots[-1][0]
+        if t_end <= 0: return
+
+        times = [i * t_end / 600 for i in range(601)]
+        data = {'p': [], 'v': [], 'a': [], 'j': []}
+        for t in times:
+            j, a, v, p = mp.get_state_at(t)
+            data['p'].append(p)
+            data['v'].append(v)
+            data['a'].append(a)
+            data['j'].append(j)
+
+        index_map = {'j': 0, 'a': 1, 'v': 2, 'p': 3}
+        configs = [
+            (0, 'p', "Position", COLORS["pos"]),
+            (1, 'v', "Velocity", COLORS["vel"]),
+            (2, 'a', "Acceleration", COLORS["acc"]),
+            (3, 'j', "Jerk", COLORS["jerk"])
+        ]
+        self.scatter_artists = []
+        self.num_points = len(mp.snapshots)
+        for i, key, title, col in configs:
+            ax = self.axs[i]
+
+            # FIX: Safely clear old geometry (wrapped in list() for stability).
+            for artist in list(ax.lines) + list(ax.collections) + list(ax.texts):
+                artist.remove()
+
+            ax.plot(times, data[key], color=col, lw=2)
+            ax.fill_between(times, data[key], color=col, alpha=0.15)
+            snap_times = [s[0] for s in mp.snapshots]
+            snap_vals = [mp.get_state_at(t)[index_map[key]] for t in snap_times]
+            sc = ax.scatter(snap_times, snap_vals, color='white', s=25, zorder=10)
+            self.scatter_artists.append(sc)
+            ax.set_ylabel(title, color=col, fontsize=9, fontweight='bold')
+
+            # FIX: Dynamically rescales bounding box so plots always update bounds properly!
+            ax.relim()
+            ax.autoscale_view()
+
+        self.axs[3].set_xlabel("Time (s)", color="#888888")
+        self.canvas.draw()
+
+
+if __name__ == "__main__":
+    root = tk.Tk()
+    app = ModernApp(root)
+    root.mainloop()
+`;
+    const blob = new Blob([pyCode], { type: 'text/plain' });
+    const url  = URL.createObjectURL(blob);
+    const link = document.getElementById('mc-download-link');
+    if (link) link.href = url;
+  })();
+
 </script>
 </body>
 </html>
