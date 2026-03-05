@@ -4,749 +4,388 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Lehel Balog — SPS Programmer & Software Developer</title>
-<meta name="description" content="SPS Programmer and Software Developer at Metzner Maschinenbau GmbH. 10+ years of industrial automation, machine control software, and SCADA systems. Based in Neu-Ulm, Germany.">
-<meta name="author" content="Lehel Balog">
+<meta name="description" content="SPS Programmer and Software Developer at Metzner Maschinenbau GmbH. 10+ years of industrial automation. Based in Neu-Ulm, Germany.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=Barlow+Condensed:wght@300;400;600;700;800&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg:      #111110;
-    --surface: #1a1a18;
-    --line:    #272724;
-    --muted:   #6b6b64;
-    --soft:    #9c9c93;
-    --text:    #e8e8e0;
-    --accent:  #c9a96e;
-    --serif:   'DM Serif Display', serif;
-    --sans:    'DM Sans', sans-serif;
+    /* THE steel — Cybertruck stainless */
+    --S:    #7e8d95;   /* mid steel — the dominant surface */
+    --S1:   #9aaab2;   /* lighter face */
+    --S2:   #b8c8d0;   /* highlight catch */
+    --S3:   #6e7e86;   /* shadow side — only slightly darker */
+    --S4:   #1e2c33;   /* deep recess — dark ink accent only */
+    --GAP:  #1a2226;   /* seam between panels — very dark */
+    --INK:  #080e10;   /* stamped text — near black */
+    --INK2: #152028;   /* secondary text — dark navy */
+    --MONO: 'IBM Plex Mono', monospace;
+    --SANS: 'Barlow Condensed', sans-serif;
   }
 
   *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
-  html { scroll-behavior: smooth; }
+  html { scroll-behavior:smooth; background:#7e8d95; background-color: #7e8d95; }
 
   body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: var(--sans);
-    font-weight: 300;
-    line-height: 1.7;
+    background: #7e8d95;
+    background-color: #7e8d95;
+    color: #080e10;
+    font-family: var(--SANS);
+    font-weight: 400;
+    line-height: 1.6;
     -webkit-font-smoothing: antialiased;
     overflow-x: hidden;
   }
 
-  /* NAV */
+  /* NAV — darker steel bar welded across the top */
   nav {
-    position: fixed; top:0; left:0; right:0; z-index:50;
+    position: fixed; top:0; left:0; right:0; z-index:100;
+    height: 48px;
+    background: linear-gradient(180deg, var(--S2) 0%, var(--S1) 60%, var(--S) 100%);
+    border-bottom: 3px solid var(--GAP);
     display: flex; align-items: center; justify-content: space-between;
-    padding: 1.5rem 4rem;
-    background: rgba(17,17,16,0.96);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border-bottom: 1px solid var(--line);
+    padding: 0 3rem;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.55);
+  }
+  nav::before {
+    content:''; position:absolute; top:0; left:0; right:0; height:1px;
+    background: rgba(255,255,255,0.35);
   }
 
   .nav-name {
-    font-family: var(--serif);
-    font-size: 1.1rem;
-    color: var(--text);
-    text-decoration: none;
-    z-index: 60;
-    position: relative;
+    font-family: var(--MONO); font-size:0.7rem; font-weight:600;
+    letter-spacing:0.16em; text-transform:uppercase;
+    color: var(--INK); text-decoration:none;
   }
 
   .nav-links { display:flex; gap:2.5rem; list-style:none; }
-
   .nav-links a {
-    font-size: 0.8rem;
-    font-weight: 400;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--muted);
-    text-decoration: none;
-    transition: color 0.2s;
+    font-family: var(--MONO); font-size:0.6rem; letter-spacing:0.12em;
+    text-transform:uppercase; color: var(--INK2);
+    text-decoration:none; transition:color 0.15s;
   }
-  .nav-links a:hover { color: var(--text); }
+  .nav-links a:hover { color: var(--INK); }
 
-  .nav-right { display: flex; align-items: center; gap: 1rem; }
-
-  .lang-toggle { display:flex; gap:0.4rem; }
-
+  .nav-right { display:flex; align-items:center; gap:0.6rem; }
+  .lang-toggle { display:flex; gap:2px; }
   .lang-btn {
-    font-family: var(--sans);
-    font-size: 0.72rem;
-    font-weight: 400;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    padding: 0.3rem 0.7rem;
-    border: 1px solid var(--line);
-    background: transparent;
-    color: var(--muted);
-    cursor: pointer;
-    transition: all 0.2s;
-    border-radius: 2px;
-    -webkit-tap-highlight-color: transparent;
-    touch-action: manipulation;
+    font-family:var(--MONO); font-size:0.58rem; letter-spacing:0.1em;
+    padding:0.2rem 0.5rem; border:1px solid var(--S3);
+    background:rgba(0,0,0,0.12); color:var(--INK2);
+    cursor:pointer; transition:all 0.12s;
   }
-  .lang-btn.active { border-color: var(--accent); color: var(--accent); }
-  .lang-btn:hover  { color: var(--text); border-color: var(--soft); }
+  .lang-btn.active { background:var(--GAP); color:var(--S2); border-color:var(--GAP); }
+  .lang-btn:hover { color:var(--INK); }
 
-  /* HAMBURGER */
   .hamburger {
-    display: none;
-    flex-direction: column;
-    justify-content: center;
-    gap: 5px;
-    width: 36px;
-    height: 36px;
-    background: transparent;
-    border: none;
-    cursor: pointer;
-    padding: 4px;
-    z-index: 60;
-    position: relative;
-    -webkit-tap-highlight-color: transparent;
-    touch-action: manipulation;
+    display:none; flex-direction:column; justify-content:center; gap:5px;
+    width:32px; height:32px; background:transparent; border:none;
+    cursor:pointer; padding:4px; z-index:60; -webkit-tap-highlight-color:transparent;
   }
+  .hamburger span { display:block; height:1.5px; background:var(--INK); transition:all 0.25s; }
+  .hamburger.open span:nth-child(1) { transform:translateY(6px) rotate(45deg); }
+  .hamburger.open span:nth-child(2) { opacity:0; }
+  .hamburger.open span:nth-child(3) { transform:translateY(-6px) rotate(-45deg); }
 
-  .hamburger span {
-    display: block;
-    height: 1px;
-    background: var(--text);
-    border-radius: 1px;
-    transition: all 0.3s ease;
-    transform-origin: center;
-  }
-
-  .hamburger.open span:nth-child(1) { transform: translateY(6px) rotate(45deg); }
-  .hamburger.open span:nth-child(2) { opacity: 0; transform: scaleX(0); }
-  .hamburger.open span:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
-
-  /* MOBILE MENU */
   .mobile-menu {
-    display: none;
-    position: fixed;
-    inset: 0;
-    z-index: 40;
-    background: var(--bg);
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    gap: 0;
-    padding: 5rem 2rem 3rem;
-    opacity: 0;
-    transform: translateY(-8px);
-    transition: opacity 0.3s ease, transform 0.3s ease;
-    pointer-events: none;
+    display:none; position:fixed; inset:0; z-index:40;
+    background:var(--S1); flex-direction:column;
+    padding:60px 0 2rem; opacity:0; pointer-events:none; transition:opacity 0.2s;
   }
-
-  .mobile-menu.open {
-    display: flex;
-    opacity: 1;
-    transform: translateY(0);
-    pointer-events: all;
-  }
-
+  .mobile-menu.open { display:flex; opacity:1; pointer-events:all; }
   .mobile-menu a {
-    font-family: var(--serif);
-    font-size: clamp(2rem, 8vw, 3rem);
-    color: var(--soft);
-    text-decoration: none;
-    padding: 0.6rem 0;
-    border-bottom: 1px solid var(--line);
-    width: 100%;
-    text-align: center;
-    transition: color 0.2s;
+    font-family:var(--MONO); font-size:0.8rem; letter-spacing:0.12em;
+    text-transform:uppercase; color:var(--INK);
+    text-decoration:none; padding:1rem 1.5rem;
+    border-bottom:1px solid var(--S3); opacity:0.85; transition:opacity 0.1s;
   }
-
-  .mobile-menu a:hover, .mobile-menu a:active { color: var(--accent); }
-
-  .mobile-menu-footer {
-    margin-top: auto;
-    display: flex;
-    gap: 0.5rem;
-  }
+  .mobile-menu a:hover { opacity:1; }
+  .mobile-menu-footer { margin-top:auto; display:flex; gap:2px; padding:1rem 1.5rem; }
 
   /* LAYOUT */
-  .wrap { max-width: 900px; margin: 0 auto; padding: 0 2rem; }
+  .wrap { max-width:960px; margin:0 auto; padding:0 3rem; }
+  section { padding:5rem 0 4rem; background-color: #7e8d95; }
 
-  section { padding: 7rem 0; }
-
-  hr { border:none; border-top: 1px solid var(--line); }
+  /* GAP LINE between sections */
+  hr {
+    border: none;
+    height: 3px;
+    background: var(--GAP);
+  }
 
   /* HERO */
   .hero {
-    min-height: 100svh;
-    display: flex; align-items: center;
-    padding: 10rem 2rem 6rem;
-    max-width: 900px; margin: 0 auto;
+    min-height:100svh; display:flex; align-items:center;
+    padding:8rem 3rem 5rem; max-width:960px; margin:0 auto;
+    background-color: #7e8d95;
+  }
+  .hero-inner {
+    width:100%; display:grid;
+    grid-template-columns:1fr 260px; gap:5rem; align-items:start;
   }
 
-  .hero-eye {
-    font-size: 0.78rem; font-weight:400;
-    letter-spacing: 0.15em; text-transform: uppercase;
-    color: var(--accent);
-    margin-bottom: 1.8rem;
-    opacity:0; animation: rise 0.7s 0.1s forwards;
+  .hero-label {
+    font-family:var(--MONO); font-size:0.6rem; letter-spacing:0.2em;
+    text-transform:uppercase; color:var(--INK2);
+    margin-bottom:1.4rem; opacity:0; animation:rise 0.6s 0.05s forwards;
   }
 
   h1 {
-    font-family: var(--serif);
-    font-size: clamp(4rem, 9vw, 7.5rem);
-    line-height: 1.02;
-    letter-spacing: -0.01em;
-    margin-bottom: 1.8rem;
-    opacity:0; animation: rise 0.7s 0.25s forwards;
+    font-family:var(--SANS); font-size:clamp(4rem,9vw,7rem);
+    font-weight:800; line-height:0.9; letter-spacing:-0.01em;
+    text-transform:uppercase; color:var(--INK);
+    margin-bottom:1.6rem; opacity:0; animation:rise 0.6s 0.15s forwards;
+    /* Embossed effect */
+    text-shadow:
+      1px 1px 0 rgba(255,255,255,0.3),
+      -1px -1px 0 rgba(0,0,0,0.2);
   }
-
-  h1 em { font-style: italic; color: var(--accent); }
+  h1 em {
+    display:block; font-style:normal; font-weight:300;
+    color:var(--INK2); font-size:0.85em;
+    text-shadow: 1px 1px 0 rgba(255,255,255,0.2), -1px -1px 0 rgba(0,0,0,0.15);
+  }
 
   .hero-bio {
-    font-size: 1rem; font-weight:300;
-    color: var(--soft); max-width: 500px; line-height:1.85;
-    margin-bottom: 2.8rem;
-    opacity:0; animation: rise 0.7s 0.4s forwards;
+    font-family:var(--MONO); font-size:0.78rem; color:#152028;
+    line-height:1.85; max-width:440px; margin-bottom:2rem;
+    border-left:3px solid var(--GAP); padding-left:1rem;
+    opacity:0; animation:rise 0.6s 0.25s forwards;
   }
 
-  .hero-actions {
-    display: flex; gap:1.5rem; align-items: center; flex-wrap: wrap;
-    opacity:0; animation: rise 0.7s 0.55s forwards;
-  }
+  .hero-actions { display:flex; gap:0.5rem; flex-wrap:wrap; opacity:0; animation:rise 0.6s 0.35s forwards; }
 
   .btn-primary {
-    font-size: 0.8rem; font-weight:500;
-    letter-spacing: 0.1em; text-transform: uppercase;
-    padding: 0.85rem 2.2rem;
-    background: var(--accent); color: var(--bg);
-    text-decoration: none; border-radius: 2px;
-    transition: opacity 0.2s, transform 0.2s;
-    touch-action: manipulation;
-    -webkit-tap-highlight-color: transparent;
-    display: inline-block;
+    font-family:var(--MONO); font-size:0.63rem; font-weight:600;
+    letter-spacing:0.12em; text-transform:uppercase; padding:0.65rem 1.6rem;
+    background:var(--GAP); color:var(--S2); text-decoration:none;
+    border:1px solid var(--GAP);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,0.08);
+    display:inline-block; transition:all 0.15s;
   }
-  .btn-primary:hover { opacity:0.82; transform:translateY(-1px); }
-  .btn-primary:active { opacity:0.7; transform:translateY(0); }
+  .btn-primary:hover { background:#0d1518; color:var(--S1); }
 
   .btn-ghost {
-    font-size: 0.8rem; font-weight:400;
-    letter-spacing: 0.08em; text-transform: uppercase;
-    color: var(--muted); text-decoration: none;
-    border-bottom: 1px solid var(--line); padding-bottom:2px;
-    transition: color 0.2s, border-color 0.2s;
-    touch-action: manipulation;
-    -webkit-tap-highlight-color: transparent;
+    font-family:var(--MONO); font-size:0.63rem; font-weight:400;
+    letter-spacing:0.12em; text-transform:uppercase; padding:0.65rem 1.6rem;
+    background:rgba(0,0,0,0.12); color:var(--INK2); text-decoration:none;
+    border:1px solid var(--S3); display:inline-block; transition:all 0.15s;
   }
-  .btn-ghost:hover { color:var(--text); border-color:var(--soft); }
+  .btn-ghost:hover { background:rgba(0,0,0,0.2); }
+
+  /* DATA PLATE — bolted-on spec sheet */
+  .data-plate {
+    background: linear-gradient(135deg, var(--S2) 0%, var(--S1) 40%, var(--S) 100%);
+    border-top:3px solid var(--S2);
+    border-left:1px solid rgba(255,255,255,0.25);
+    border-right:2px solid var(--S3);
+    border-bottom:3px solid var(--S4);
+    box-shadow:
+      4px 5px 24px rgba(0,0,0,0.45),
+      inset 0 1px 0 rgba(255,255,255,0.2),
+      inset 1px 0 0 rgba(255,255,255,0.1);
+    opacity:0; animation:rise 0.6s 0.2s forwards;
+  }
+  .dp-row {
+    display:flex; justify-content:space-between; align-items:center;
+    padding:0.5rem 1rem; border-bottom:1px solid rgba(0,0,0,0.12);
+  }
+  .dp-row:last-child { border-bottom:none; }
+  .dp-k { font-family:var(--MONO); font-size:0.55rem; letter-spacing:0.12em; text-transform:uppercase; color:var(--INK2); font-weight:500; }
+  .dp-v { font-family:var(--MONO); font-size:0.7rem; font-weight:700; color:var(--INK); text-align:right; }
 
   /* SECTION HEAD */
   .sec-head {
-    display: flex; align-items: baseline; gap:1.5rem;
-    margin-bottom: 3rem;
+    display:flex; align-items:center; gap:1.2rem;
+    padding:0.5rem 0; margin-bottom:0;
+    border-bottom:4px solid var(--GAP);
   }
-  .sec-num {
-    font-family: var(--serif); font-style:italic;
-    font-size: 0.88rem; color: var(--accent);
-  }
-  .sec-title {
-    font-family: var(--serif);
-    font-size: clamp(2rem,4vw,2.8rem);
-    font-weight:400; letter-spacing:-0.01em;
+  .sec-num { font-family:var(--MONO); font-size:0.55rem; color:var(--INK2); letter-spacing:0.1em; opacity:0.5; }
+  .sec-title { font-family:var(--MONO); font-size:0.72rem; font-weight:700; letter-spacing:0.18em; text-transform:uppercase; color:var(--INK); }
+
+  /* PLATE — panel surface for sections */
+  .plate {
+    background: linear-gradient(170deg, var(--S1) 0%, var(--S) 70%, #748590 100%);
+    border-left:1px solid rgba(255,255,255,0.2);
+    border-right:2px solid #5a6870;
+    border-bottom:4px solid var(--GAP);
+    box-shadow:
+      2px 4px 16px rgba(0,0,0,0.35),
+      inset 0 1px 0 rgba(255,255,255,0.15);
+    overflow:hidden;
   }
 
   /* SKILLS */
-  .skills-table { border-top: 1px solid var(--line); }
-
+  .skills-grid { display:grid; grid-template-columns:1fr 1fr; gap:2px; background:var(--GAP); }
   .skill-row {
-    display: flex; justify-content: space-between; align-items: center;
-    padding: 1rem 0;
-    border-bottom: 1px solid var(--line);
-    gap: 1rem;
+    display:flex; justify-content:space-between; align-items:center;
+    padding:0.65rem 1rem;
+    background: linear-gradient(90deg, var(--S) 0%, var(--S1) 100%);
+    gap:0.5rem; transition:filter 0.12s;
   }
-
-  .skill-label { font-size: 0.95rem; font-weight:400; }
-
+  .skill-row:hover { filter:brightness(1.06); }
+  .skill-label { font-family:var(--MONO); font-size:0.78rem; color:var(--INK); font-weight:600; }
   .skill-pill {
-    font-size: 0.68rem; font-weight:400;
-    letter-spacing: 0.09em; text-transform:uppercase;
-    padding: 0.2rem 0.65rem;
-    border: 1px solid var(--line); color: var(--muted);
-    border-radius: 20px;
-    white-space: nowrap;
-    flex-shrink: 0;
+    font-family:var(--MONO); font-size:0.52rem; font-weight:600;
+    letter-spacing:0.1em; text-transform:uppercase; padding:0.12rem 0.5rem;
+    white-space:nowrap; background:rgba(0,0,0,0.15);
+    border:1px solid var(--S3); color:var(--INK2);
   }
-  .skill-pill.core { color: var(--accent); border-color: rgba(201,169,110,0.35); }
+  .skill-pill.core { background:var(--GAP); color:var(--S1); border-color:var(--GAP); }
 
   /* EXPERIENCE */
-  .exp-item {
-    display: grid; grid-template-columns: 1fr 2.2fr;
-    gap: 3rem;
-    padding: 3rem 0;
-    border-bottom: 1px solid var(--line);
+  .exp-block { border-bottom:2px solid var(--GAP); }
+  .exp-block:last-child { border-bottom:none; }
+  .exp-grid { display:grid; grid-template-columns:190px 1fr; }
+  .exp-meta {
+    padding:1.4rem 1.2rem; border-right:2px solid var(--GAP);
+    background:linear-gradient(180deg, var(--S1) 0%, var(--S) 100%);
   }
-  .exp-item:first-of-type { border-top: 1px solid var(--line); }
-
-  .exp-date {
-    font-size: 0.75rem; font-weight:400;
-    letter-spacing: 0.09em; text-transform:uppercase;
-    color: var(--muted); margin-bottom:0.5rem;
+  .exp-date { font-family:var(--MONO); font-size:0.56rem; letter-spacing:0.08em; text-transform:uppercase; color:var(--INK2); margin-bottom:0.5rem; font-weight:600; }
+  .exp-company { font-family:var(--SANS); font-size:1rem; font-weight:800; text-transform:uppercase; color:var(--INK); line-height:1.15; margin-bottom:0.2rem;
+    text-shadow:1px 1px 0 rgba(255,255,255,0.2);
   }
-  .exp-company {
-    font-family: var(--serif);
-    font-size: 1.2rem; line-height:1.2;
-    margin-bottom: 0.25rem;
-  }
-  .exp-location { font-size:0.78rem; color:var(--muted); }
-
+  .exp-location { font-family:var(--MONO); font-size:0.56rem; color:var(--INK2); margin-bottom:0.9rem; }
   .exp-role {
-    font-size: 0.78rem; font-weight:500;
-    letter-spacing: 0.08em; text-transform:uppercase;
-    color: var(--accent); margin-bottom:1.1rem;
+    font-family:var(--MONO); font-size:0.55rem; font-weight:700;
+    letter-spacing:0.1em; text-transform:uppercase; color:var(--INK2);
+    padding:0.15rem 0.5rem; background:rgba(0,0,0,0.18);
+    border:1px solid var(--S3); display:inline-block;
   }
-
-  .exp-list { list-style:none; display:flex; flex-direction:column; gap:0.45rem; }
-  .exp-list li {
-    font-size: 0.9rem; color: var(--soft);
-    padding-left: 1.1rem; position:relative; line-height:1.65;
-  }
-  .exp-list li::before { content:'–'; position:absolute; left:0; color:var(--line); }
+  .exp-content { padding:1.4rem; background:linear-gradient(180deg, var(--S) 0%, #748590 100%); }
+  .exp-list { list-style:none; display:flex; flex-direction:column; gap:0.3rem; }
+  .exp-list li { font-family:var(--MONO); font-size:0.75rem; color:var(--INK); padding-left:1rem; position:relative; line-height:1.7; opacity:1; }
+  .exp-list li::before { content:"—"; position:absolute; left:0; color:var(--INK2); opacity:1; }
 
   /* PROJECTS */
-  .proj-table { border-top: 1px solid var(--line); }
-
-  .proj-row {
-    display: grid; grid-template-columns: 160px 1fr 100px;
-    gap: 2rem; align-items: start;
-    padding: 1.8rem 0;
-    border-bottom: 1px solid var(--line);
-  }
-
-  .proj-co {
-    font-size: 0.72rem; font-weight:400;
-    letter-spacing: 0.08em; text-transform:uppercase;
-    color: var(--muted); margin-top:0.1rem;
-  }
-
-  .proj-name {
-    font-family: var(--serif); font-size:1.05rem;
-    margin-bottom: 0.4rem; line-height:1.3;
-  }
-
-  .proj-desc { font-size:0.87rem; color:var(--soft); line-height:1.65; }
-
-  .proj-tech {
-    font-size: 0.68rem; font-weight:400;
-    letter-spacing: 0.07em; text-transform:uppercase;
-    color: var(--muted); text-align:right; margin-top:0.1rem;
-  }
+  .proj-header { display:grid; grid-template-columns:145px 1fr 86px; background:linear-gradient(90deg, #748590 0%, var(--S) 100%); border-bottom:2px solid var(--GAP); }
+  .proj-th { padding:0.4rem 0.8rem; font-family:var(--MONO); font-size:0.55rem; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; color:var(--INK2); border-right:1px solid var(--S3); }
+  .proj-th:last-child { border-right:none; text-align:right; }
+  .proj-row { display:grid; grid-template-columns:145px 1fr 86px; border-bottom:1px solid rgba(0,0,0,0.15); transition:filter 0.1s; }
+  .proj-row:last-child { border-bottom:none; }
+  .proj-row:hover { filter:brightness(1.06); }
+  .proj-cell { padding:0.7rem 0.8rem; border-right:1px solid rgba(0,0,0,0.1); font-family:var(--MONO); font-size:0.66rem; }
+  .proj-cell:last-child { border-right:none; text-align:right; }
+  .proj-co { color:var(--INK2); font-size:0.54rem; letter-spacing:0.06em; text-transform:uppercase; font-weight:700; }
+  .proj-name { font-family:var(--SANS); font-size:0.85rem; font-weight:700; color:var(--INK); margin-bottom:0.25rem; text-transform:uppercase; letter-spacing:0.02em; line-height:1.2; }
+  .proj-desc { font-size:0.72rem; color:var(--INK); opacity:1; line-height:1.6; }
+  .proj-tech { font-family:var(--MONO); font-size:0.55rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:var(--INK2); }
 
   /* APPS */
-  .apps-grid {
-    display: grid; grid-template-columns: repeat(3, 1fr);
-    gap: 1px; background: var(--line);
-    border: 1px solid var(--line);
-  }
-
-  .app-card {
-    background: var(--surface);
-    padding: 2.2rem;
-    position: relative;
-    transition: background 0.2s;
-  }
-  .app-card:hover { background: #1e1e1c; }
-
-  .app-badge {
-    font-size: 0.62rem; font-weight:400;
-    letter-spacing:0.1em; text-transform:uppercase;
-    color: var(--muted); border:1px solid var(--line);
-    padding: 0.18rem 0.55rem; border-radius:20px;
-    display: inline-block; margin-bottom:1.3rem;
-  }
-
-  .app-icon {
-    font-size: 1.5rem; margin-bottom:0.9rem; display:block;
-  }
-
-  .app-name {
-    font-family: var(--serif); font-size:1.1rem; margin-bottom:0.5rem;
-  }
-
-  .app-desc { font-size:0.85rem; color:var(--soft); line-height:1.7; }
+  .apps-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:2px; background:var(--GAP); }
+  .app-card { background:linear-gradient(135deg, var(--S1) 0%, var(--S) 55%, var(--S3) 100%); padding:1.5rem 1.3rem; transition:filter 0.15s; }
+  .app-card:hover { filter:brightness(1.07); }
+  .app-icon { font-size:1.3rem; margin-bottom:0.9rem; display:block; filter:grayscale(1) contrast(0.7); }
+  .app-badge { font-family:var(--MONO); font-size:0.53rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; padding:0.12rem 0.5rem; background:rgba(0,0,0,0.15); border:1px solid var(--S3); color:var(--INK2); display:inline-block; margin-bottom:0.8rem; }
+  .app-badge.live { background:var(--GAP); color:var(--S1); border-color:var(--GAP); }
+  .app-name { font-family:var(--SANS); font-size:0.9rem; font-weight:800; text-transform:uppercase; color:var(--INK); margin-bottom:0.4rem; }
+  .app-desc { font-family:var(--MONO); font-size:0.72rem; color:var(--INK); opacity:1; line-height:1.7; }
+  .app-cta { margin-top:0.9rem; display:inline-block; font-family:var(--MONO); font-size:0.58rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--INK2); padding:0.25rem 0.65rem; background:rgba(0,0,0,0.15); border:1px solid var(--S3); text-decoration:none; transition:all 0.1s; }
+  .app-cta:hover { background:rgba(0,0,0,0.28); color:var(--INK); }
 
   /* LANGUAGES */
-  .lang-strip {
-    display: grid; grid-template-columns: repeat(4,1fr);
-    border-top: 1px solid var(--line);
-    border-left: 1px solid var(--line);
-  }
-
-  .lang-cell {
-    padding: 2rem 1.8rem;
-    border-right: 1px solid var(--line);
-    border-bottom: 1px solid var(--line);
-  }
-
-  .lang-name { font-family:var(--serif); font-size:1.15rem; margin-bottom:0.35rem; }
-  .lang-lvl  { font-size:0.72rem; font-weight:400; letter-spacing:0.1em; text-transform:uppercase; color:var(--accent); }
-  .lang-sub  { font-size:0.75rem; color:var(--muted); margin-top:0.15rem; }
+  .lang-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:2px; background:var(--GAP); }
+  .lang-cell { background:linear-gradient(135deg, var(--S1) 0%, var(--S) 100%); padding:1.2rem 1rem; transition:filter 0.12s; }
+  .lang-cell:hover { filter:brightness(1.07); }
+  .lang-name { font-family:var(--SANS); font-size:0.95rem; font-weight:800; text-transform:uppercase; color:var(--INK); margin-bottom:0.25rem; text-shadow:1px 1px 0 rgba(255,255,255,0.2); }
+  .lang-lvl { font-family:var(--MONO); font-size:0.62rem; font-weight:700; letter-spacing:0.1em; color:var(--INK2); }
+  .lang-sub { font-family:var(--MONO); font-size:0.55rem; color:var(--INK2); margin-top:0.1rem; opacity:0.8; }
 
   /* CONTACT */
-  .contact-grid {
-    display: grid; grid-template-columns:1fr 1fr;
-    gap: 5rem; align-items:start;
-  }
+  .contact-halves { display:grid; grid-template-columns:1fr 1fr; gap:2px; background:var(--GAP); }
+  .ch-left { background:linear-gradient(135deg, var(--S1) 0%, var(--S) 100%); padding:2rem 1.8rem; }
+  .ch-right { background:linear-gradient(135deg, var(--S) 0%, var(--S3) 100%); padding:2rem 1.8rem; }
+  .contact-title { font-family:var(--SANS); font-size:clamp(2rem,4vw,3rem); font-weight:800; letter-spacing:0.04em; text-transform:uppercase; line-height:0.95; color:var(--INK); margin-bottom:1.2rem; text-shadow:1px 1px 0 rgba(255,255,255,0.25); }
+  .contact-title em { font-style:normal; font-weight:300; color:var(--INK2); text-shadow:none; }
+  .contact-text { font-family:var(--MONO); font-size:0.74rem; color:var(--INK); opacity:1; line-height:1.85; margin-bottom:1.4rem; }
+  .contact-line { display:flex; align-items:center; gap:0.7rem; margin-bottom:0.5rem; }
+  .contact-icon { width:22px; height:22px; background:rgba(0,0,0,0.15); border:1px solid var(--S3); display:flex; align-items:center; justify-content:center; font-size:0.62rem; flex-shrink:0; color:var(--INK2); }
+  .contact-val { font-family:var(--MONO); font-size:0.68rem; color:var(--INK2); }
+  .contact-val a { color:var(--INK); text-decoration:none; border-bottom:1px solid var(--S3); }
+  .contact-val a:hover { border-color:var(--INK); }
 
-  .contact-title {
-    font-family: var(--serif);
-    font-size: clamp(2rem,4vw,3rem);
-    line-height: 1.15; margin-bottom:1.4rem;
-  }
-  .contact-title em { font-style:italic; color:var(--accent); }
-
-  .contact-text { font-size:0.9rem; color:var(--soft); line-height:1.85; margin-bottom:2rem; }
-
-  .contact-line { display:flex; align-items:center; gap:0.9rem; margin-bottom:0.9rem; }
-
-  .contact-icon {
-    width:32px; height:32px; background:var(--line);
-    display:flex; align-items:center; justify-content:center;
-    font-size:0.85rem; border-radius:2px; flex-shrink:0;
-  }
-
-  .contact-val { font-size:0.88rem; color:var(--soft); }
-  .contact-val a { color:var(--text); text-decoration:none; border-bottom:1px solid var(--line); padding-bottom:1px; transition:border-color 0.2s; }
-  .contact-val a:hover { border-color:var(--accent); }
-
-  .form { display:flex; flex-direction:column; gap:1rem; }
-
+  .form { display:flex; flex-direction:column; gap:0.4rem; }
   .form input, .form textarea {
-    background: var(--surface);
-    border: 1px solid var(--line);
-    color: var(--text);
-    font-family: var(--sans); font-size: 1rem; font-weight:300;
-    padding: 0.9rem 1.1rem;
-    outline: none; resize:none;
-    transition: border-color 0.2s; border-radius:2px;
-    -webkit-appearance: none;
-    appearance: none;
+    background:rgba(0,0,0,0.18); border:1px solid var(--S3); border-top-color:rgba(0,0,0,0.25);
+    color:var(--INK); font-family:var(--MONO); font-size:0.73rem;
+    padding:0.6rem 0.8rem; outline:none; resize:none; transition:border-color 0.15s;
+    -webkit-appearance:none; appearance:none;
   }
-  .form input::placeholder, .form textarea::placeholder { color:var(--muted); }
-  .form input:focus, .form textarea:focus { border-color: var(--accent); }
+  .form input::placeholder, .form textarea::placeholder { color:var(--INK2); opacity:1; }
+  .form input:focus, .form textarea:focus { border-color:var(--GAP); background:rgba(0,0,0,0.25); }
 
   /* FOOTER */
   footer {
-    border-top: 1px solid var(--line);
-    padding: 2.5rem 2rem;
-    display: flex; justify-content:space-between; align-items:center;
-    max-width:900px; margin:0 auto;
+    border-top:4px solid var(--GAP);
+    background:linear-gradient(180deg, #748590 0%, #5a6870 100%);
+    padding:0.8rem 3rem;
+    display:flex; justify-content:space-between; align-items:center;
+    box-shadow:0 -3px 16px rgba(0,0,0,0.4);
   }
-  .foot-name { font-family:var(--serif); font-size:0.95rem; color:var(--soft); }
-  .foot-copy { font-size:0.75rem; color:var(--muted); }
+  .foot-name { font-family:var(--MONO); font-size:0.66rem; font-weight:600; color:var(--S1); letter-spacing:0.08em; }
+  .foot-copy { font-family:var(--MONO); font-size:0.58rem; color:var(--S); }
 
   /* REVEAL */
-  .reveal {
-    opacity:0; transform:translateY(14px);
-    transition: opacity 0.6s ease, transform 0.6s ease;
-  }
+  .reveal { opacity:0; transform:translateY(12px); transition:opacity 0.55s, transform 0.55s; }
   .reveal.in { opacity:1; transform:translateY(0); }
+  @keyframes rise { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
 
-  @keyframes rise {
-    from { opacity:0; transform:translateY(16px); }
-    to   { opacity:1; transform:translateY(0); }
-  }
+  /* MOTION CALC */
+  .mc-wrapper { display:grid; grid-template-columns:268px 1fr; gap:2px; background:var(--GAP); }
+  .mc-left { display:flex; flex-direction:column; gap:2px; background:var(--GAP); }
+  .mc-inputs { background:linear-gradient(180deg, var(--S1) 0%, var(--S) 100%); padding:1rem; display:flex; flex-direction:column; gap:0.5rem; }
+  .mc-param { display:flex; flex-direction:column; gap:0.18rem; }
+  .mc-label { font-family:var(--MONO); font-size:0.54rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--INK2); font-weight:700; }
+  .mc-input-row { display:flex; align-items:center; background:rgba(0,0,0,0.18); border:1px solid var(--S3); transition:border-color 0.15s; overflow:hidden; }
+  .mc-input-row:focus-within { border-color:var(--GAP); }
+  .mc-input { flex:1; background:transparent; border:none; color:var(--INK); font-family:var(--MONO); font-size:0.82rem; font-weight:600; padding:0.35rem 0.6rem; outline:none; }
+  .mc-unit { font-family:var(--MONO); font-size:0.54rem; color:var(--INK2); padding:0 0.5rem; border-left:1px solid var(--S3); white-space:nowrap; line-height:2rem; }
+  .mc-status-bar { display:flex; justify-content:space-between; align-items:center; padding:0.35rem 1rem; background:linear-gradient(90deg, var(--S) 0%, var(--S1) 100%); }
+  .mc-status-label { font-family:var(--MONO); font-size:0.54rem; text-transform:uppercase; letter-spacing:0.1em; color:var(--INK2); font-weight:700; }
+  .mc-status-val { font-family:var(--MONO); font-size:0.7rem; color:var(--INK); font-weight:700; }
+  .mc-table-head { display:flex; justify-content:space-between; font-family:var(--MONO); font-size:0.54rem; text-transform:uppercase; letter-spacing:0.1em; color:var(--INK2); font-weight:700; padding:0.38rem 1rem 0.2rem; background:linear-gradient(90deg, #748590 0%, var(--S) 100%); border-top:1px solid var(--S3); }
+  .mc-table-scroll { overflow-x:auto; background:linear-gradient(180deg, var(--S) 0%, #748590 100%); }
+  .mc-table { width:100%; border-collapse:collapse; font-family:var(--MONO); font-size:0.64rem; }
+  .mc-table th { padding:0.28rem 0.6rem; text-align:right; background:rgba(0,0,0,0.14); color:var(--INK2); font-size:0.54rem; letter-spacing:0.08em; text-transform:uppercase; border-bottom:1px solid var(--S3); font-weight:700; }
+  .mc-table th:first-child { text-align:left; }
+  .mc-table td { padding:0.28rem 0.6rem; text-align:right; color:var(--INK); opacity:1; border-bottom:1px solid rgba(0,0,0,0.1); cursor:pointer; transition:opacity 0.1s; }
+  .mc-table td:first-child { text-align:left; opacity:1; font-weight:700; }
+  .mc-table tr:hover td { opacity:1; }
+  .mc-table tr.mc-row-selected td { background:rgba(0,0,0,0.15); opacity:1; }
+  .mc-right { background:var(--GAP); padding:1px; }
+  .mc-right canvas { width:100%; height:auto; display:block; }
+  .mc-download-btn { display:flex; align-items:center; gap:0.6rem; padding:0.5rem 1rem; background:linear-gradient(90deg, #748590 0%, var(--S) 100%); border-top:1px solid var(--S3); color:var(--INK2); text-decoration:none; font-family:var(--MONO); font-size:0.6rem; letter-spacing:0.08em; text-transform:uppercase; transition:filter 0.1s; }
+  .mc-download-btn:hover { filter:brightness(1.1); color:var(--INK); }
+  .mc-download-btn span:first-child { font-size:1rem; }
 
-  /* ===================== MOBILE ===================== */
   @media (max-width:768px) {
-    /* Nav */
-    nav { padding:1.1rem 1.25rem; }
+    nav { padding:0 1.2rem; }
     .nav-links { display:none; }
     .hamburger { display:flex; }
-
-    /* Hero */
-    .hero {
-      padding: 7rem 1.25rem 4rem;
-      min-height: 100svh;
-    }
-
-    h1 { font-size: clamp(3.4rem, 14vw, 4.5rem); }
-
-    .hero-bio { font-size: 0.95rem; }
-
-    .hero-actions { gap: 1rem; }
-
-    .btn-primary {
-      padding: 1rem 2rem;
-      font-size: 0.78rem;
-    }
-
-    /* Wrap */
-    .wrap { padding: 0 1.25rem; }
-
-    /* Sections */
-    section { padding: 4.5rem 0; }
-
-    /* Skills — same, looks fine */
-    .skill-label { font-size: 0.88rem; }
-
-    /* Experience — stack vertically */
-    .exp-item {
-      grid-template-columns: 1fr;
-      gap: 0.6rem;
-      padding: 2rem 0;
-    }
-
-    .exp-company { font-size: 1.05rem; }
-
-    .exp-meta {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      flex-wrap: wrap;
-    }
-
-    .exp-date { margin-bottom: 0; }
-
-    /* Projects — card style on mobile */
-    .proj-table { border-top: none; }
-
-    .proj-row {
-      grid-template-columns: 1fr;
-      gap: 0.4rem;
-      padding: 1.5rem 1.25rem;
-      border: 1px solid var(--line);
-      border-top: none;
-      background: var(--surface);
-    }
-
-    .proj-row:first-child { border-top: 1px solid var(--line); }
-
-    .proj-tech { display: none; }
-
-    .proj-co { margin-bottom: 0.15rem; }
-
-    .proj-name { font-size: 1rem; }
-
-    .proj-desc { font-size: 0.83rem; }
-
-    /* Apps — single column */
-    .apps-grid {
-      grid-template-columns: 1fr;
-    }
-
-    .app-card { padding: 1.75rem 1.25rem; }
-
-    /* Languages — 2 col */
-    .lang-strip { grid-template-columns: repeat(2,1fr); }
-
-    .lang-cell { padding: 1.5rem 1.25rem; }
-
-    /* Contact */
-    .contact-grid {
-      grid-template-columns: 1fr;
-      gap: 2.5rem;
-    }
-
-    .contact-title { font-size: clamp(2rem, 8vw, 2.5rem); }
-
-    /* Form inputs — bigger tap targets */
-    .form input, .form textarea {
-      padding: 1rem 1.1rem;
-    }
-
-    /* Footer */
-    footer {
-      flex-direction: column;
-      gap: 0.5rem;
-      text-align: center;
-      padding: 2rem 1.25rem;
-    }
+    .hero { padding:5.5rem 1.2rem 4rem; }
+    h1 { font-size:clamp(3rem,14vw,5rem); }
+    .hero-inner { grid-template-columns:1fr; gap:2rem; }
+    .hero { padding:5.5rem 1.2rem 3.5rem; min-height:auto; }
+    .data-plate { display:none; }
+    .wrap { padding:0 1.2rem; }
+    section { padding:3.5rem 0 3rem; background-color: #7e8d95; }
+    .exp-grid { grid-template-columns:1fr; }
+    .exp-meta { border-right:none; border-bottom:2px solid var(--GAP); }
+    .proj-header { display:none; }
+    .proj-row { grid-template-columns:1fr; }
+    .proj-cell { border-right:none; border-bottom:1px solid rgba(0,0,0,0.1); }
+    .proj-cell:last-child { border-bottom:none; text-align:left; }
+    .apps-grid { grid-template-columns:1fr; }
+    .lang-grid { grid-template-columns:repeat(2,1fr); }
+    .contact-halves { grid-template-columns:1fr; }
+    footer { flex-direction:column; gap:0.3rem; text-align:center; padding:0.8rem 1.2rem; }
+    .mc-wrapper { grid-template-columns:1fr; }
+    .mc-right { order:-1; }
+    .mc-right canvas { max-height:360px; }
   }
-
-  /* MOTION CALCULATOR */
-  .mc-wrapper {
-    display: grid;
-    grid-template-columns: 300px 1fr;
-    gap: 2rem;
-    align-items: start;
-  }
-
-  .mc-left {
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-  }
-
-  .mc-inputs {
-    background: var(--surface);
-    border: 1px solid var(--line);
-    padding: 1.25rem;
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-  }
-
-  .mc-param { display: flex; flex-direction: column; gap: 0.25rem; }
-
-  .mc-label {
-    font-size: 0.7rem;
-    font-weight: 400;
-    letter-spacing: 0.09em;
-    text-transform: uppercase;
-    color: var(--muted);
-  }
-
-  .mc-input-row {
-    display: flex;
-    align-items: center;
-    background: var(--bg);
-    border: 1px solid var(--line);
-    border-radius: 2px;
-    overflow: hidden;
-    transition: border-color 0.2s;
-  }
-  .mc-input-row:focus-within { border-color: var(--accent); }
-
-  .mc-input {
-    flex: 1;
-    background: transparent;
-    border: none;
-    color: var(--text);
-    font-family: var(--sans);
-    font-size: 0.95rem;
-    font-weight: 400;
-    padding: 0.55rem 0.8rem;
-    outline: none;
-    -webkit-appearance: none;
-    appearance: none;
-  }
-  .mc-input::-webkit-inner-spin-button { opacity: 0.3; }
-
-  .mc-unit {
-    font-size: 0.68rem;
-    color: var(--muted);
-    padding: 0 0.7rem;
-    border-left: 1px solid var(--line);
-    white-space: nowrap;
-    line-height: 2.4rem;
-    letter-spacing: 0.05em;
-  }
-
-  .mc-status-bar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0.55rem 1rem;
-    background: var(--surface);
-    border: 1px solid var(--line);
-    border-radius: 2px;
-  }
-
-  .mc-status-label {
-    font-size: 0.7rem;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: var(--muted);
-  }
-
-  .mc-status-val {
-    font-size: 0.85rem;
-    font-weight: 400;
-    color: var(--accent);
-    font-family: 'Courier New', monospace;
-  }
-
-  .mc-table-head {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    font-size: 0.7rem;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: var(--muted);
-    padding: 0.4rem 0 0.3rem;
-    border-top: 1px solid var(--line);
-  }
-
-  .mc-table-scroll {
-    overflow-x: auto;
-    border: 1px solid var(--line);
-  }
-
-  .mc-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 0.78rem;
-    font-family: 'Courier New', monospace;
-  }
-
-  .mc-table th {
-    padding: 0.45rem 0.6rem;
-    text-align: right;
-    background: var(--surface);
-    color: var(--muted);
-    font-size: 0.65rem;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    border-bottom: 1px solid var(--line);
-    font-family: var(--sans);
-    font-weight: 400;
-  }
-  .mc-table th:first-child { text-align: left; }
-
-  .mc-table td {
-    padding: 0.4rem 0.6rem;
-    text-align: right;
-    color: var(--soft);
-    border-bottom: 1px solid rgba(39,39,36,0.6);
-    transition: background 0.15s, color 0.15s;
-    cursor: pointer;
-  }
-  .mc-table td:first-child { text-align: left; color: var(--accent); }
-
-  .mc-table tr:hover td { background: var(--surface); }
-  .mc-table tr.mc-row-selected td { background: rgba(201,169,110,0.08); color: var(--text); }
-  .mc-table tr.mc-row-selected td:first-child { color: var(--accent); }
-
-  .mc-right {
-    background: var(--surface);
-    border: 1px solid var(--line);
-    padding: 1rem;
-    position: relative;
-  }
-
-  .mc-right canvas {
-    width: 100%;
-    height: auto;
-    display: block;
-  }
-
-  .mc-download-btn {
-    display: flex;
-    align-items: center;
-    gap: 0.7rem;
-    padding: 0.85rem 1.1rem;
-    background: var(--surface);
-    border: 1px solid var(--line);
-    color: var(--soft);
-    text-decoration: none;
-    font-size: 0.8rem;
-    letter-spacing: 0.06em;
-    transition: border-color 0.2s, color 0.2s, background 0.2s;
-    border-radius: 2px;
-  }
-  .mc-download-btn:hover { border-color: var(--accent); color: var(--text); background: var(--bg); }
-  .mc-download-btn span:first-child { font-size: 1rem; }
-
-  @media (max-width: 768px) {
-    .mc-wrapper { grid-template-columns: 1fr; }
-    .mc-right { order: -1; }
-    .mc-right canvas { max-height: 480px; }
-  }
-
-  /* Very small screens */
-  @media (max-width: 380px) {
-    h1 { font-size: 3rem; }
-    .hero { padding: 7rem 1rem 3.5rem; }
-    .wrap { padding: 0 1rem; }
-    .proj-row { padding: 1.25rem 1rem; }
+  @media (max-width:380px) {
+    h1 { font-size:2.9rem; }
+    .hero { padding:5.5rem 0.9rem 3rem; }
+    .wrap { padding:0 0.9rem; }
   }
 </style>
 </head>
@@ -768,14 +407,11 @@
       <button class="lang-btn"        onclick="setLang('de')">DE</button>
     </div>
     <button class="hamburger" id="hamburger" aria-label="Menu">
-      <span></span>
-      <span></span>
-      <span></span>
+      <span></span><span></span><span></span>
     </button>
   </div>
 </nav>
 
-<!-- MOBILE MENU -->
 <div class="mobile-menu" id="mobileMenu">
   <a href="#skills"     onclick="closeMenu()" data-en="Skills"      data-de="Fähigkeiten">Skills</a>
   <a href="#experience" onclick="closeMenu()" data-en="Experience"  data-de="Erfahrung">Experience</a>
@@ -791,15 +427,24 @@
 
 <!-- HERO -->
 <div class="hero">
-  <div>
-    <p class="hero-eye" data-en="SPS Programmer · Software Developer" data-de="SPS-Programmierer · Software-Entwickler">SPS Programmer · Software Developer</p>
-    <h1>Lehel<br><em>Balog</em></h1>
-    <p class="hero-bio" data-en="SPS Programmer and Software Developer at Metzner Maschinenbau GmbH. 10+ years building industrial automation systems and machine control software. Based in Neu-Ulm, Germany." data-de="SPS-Programmierer und Software-Entwickler bei der Metzner Maschinenbau GmbH. 10+ Jahre Entwicklung von Automationssystemen und Maschinensteuerungssoftware. Wohnhaft in Neu-Ulm, Deutschland.">
-      SPS Programmer and Software Developer at Metzner Maschinenbau GmbH. 10+ years building industrial automation systems and machine control software. Based in Neu-Ulm, Germany.
-    </p>
-    <div class="hero-actions">
-      <a href="#projects" class="btn-primary" data-en="View my work"   data-de="Meine Projekte">View my work</a>
-      <a href="#contact"  class="btn-ghost"   data-en="Get in touch"   data-de="Kontakt aufnehmen">Get in touch</a>
+  <div class="hero-inner">
+    <div>
+      <p class="hero-label" data-en="SPS Programmer · Software Developer" data-de="SPS-Programmierer · Software-Entwickler">SPS Programmer · Software Developer</p>
+      <h1>Lehel<br><em>Balog</em></h1>
+      <p class="hero-bio" data-en="SPS Programmer and Software Developer at Metzner Maschinenbau GmbH. 10+ years building industrial automation systems and machine control software. Based in Neu-Ulm, Germany." data-de="SPS-Programmierer und Software-Entwickler bei der Metzner Maschinenbau GmbH. 10+ Jahre Entwicklung von Automationssystemen. Wohnhaft in Neu-Ulm, Deutschland.">SPS Programmer and Software Developer at Metzner Maschinenbau GmbH. 10+ years building industrial automation systems and machine control software. Based in Neu-Ulm, Germany.</p>
+      <div class="hero-actions">
+        <a href="#projects" class="btn-primary" data-en="View work"  data-de="Projekte">View work</a>
+        <a href="#contact"  class="btn-ghost"   data-en="Contact"    data-de="Kontakt">Contact</a>
+      </div>
+    </div>
+    <div class="data-plate">
+      <div class="dp-row"><span class="dp-k" data-en="Role"       data-de="Position">Role</span>      <span class="dp-v">SPS Programmer</span></div>
+      <div class="dp-row"><span class="dp-k" data-en="Company"    data-de="Firma">Company</span>      <span class="dp-v">Metzner Maschinenbau</span></div>
+      <div class="dp-row"><span class="dp-k" data-en="Experience" data-de="Erfahrung">Experience</span><span class="dp-v">10+ years</span></div>
+      <div class="dp-row"><span class="dp-k" data-en="Location"   data-de="Standort">Location</span>  <span class="dp-v" data-en="Neu-Ulm, DE" data-de="Neu-Ulm, DE">Neu-Ulm, DE</span></div>
+      <div class="dp-row"><span class="dp-k">Stack</span>                                              <span class="dp-v">Siemens TIA Portal</span></div>
+      <div class="dp-row"><span class="dp-k">SCADA</span>                                              <span class="dp-v">WinCC Flexible</span></div>
+      <div class="dp-row"><span class="dp-k" data-en="Languages"  data-de="Sprachen">Languages</span> <span class="dp-v">HU · DE · EN · RO</span></div>
     </div>
   </div>
 </div>
@@ -811,17 +456,19 @@
   <div class="wrap">
     <div class="sec-head reveal">
       <span class="sec-num">01</span>
-      <h2 class="sec-title" data-en="Skills & Tools" data-de="Fähigkeiten & Tools">Skills & Tools</h2>
+      <span class="sec-title" data-en="Skills &amp; Tools" data-de="Fähigkeiten &amp; Tools">Skills &amp; Tools</span>
     </div>
-    <div class="skills-table reveal">
-      <div class="skill-row"><span class="skill-label">Siemens TIA Portal</span>      <span class="skill-pill core" data-en="Core" data-de="Kern">Core</span></div>
-      <div class="skill-row"><span class="skill-label">WinCC Flexible / SCADA</span>  <span class="skill-pill core" data-en="Core" data-de="Kern">Core</span></div>
-      <div class="skill-row"><span class="skill-label">FUP / KOP / AWL / SCL</span>   <span class="skill-pill core" data-en="Core" data-de="Kern">Core</span></div>
-      <div class="skill-row"><span class="skill-label">S7-PLCSIM Advanced</span>       <span class="skill-pill core" data-en="Core" data-de="Kern">Core</span></div>
-      <div class="skill-row"><span class="skill-label">SQL</span>                      <span class="skill-pill" data-en="Intermediate" data-de="Mittel">Intermediate</span></div>
-      <div class="skill-row"><span class="skill-label">Java</span>                     <span class="skill-pill" data-en="Intermediate" data-de="Mittel">Intermediate</span></div>
-      <div class="skill-row"><span class="skill-label">C#</span>                       <span class="skill-pill" data-en="Intermediate" data-de="Mittel">Intermediate</span></div>
-      <div class="skill-row"><span class="skill-label">Python</span>                   <span class="skill-pill" data-en="Intermediate" data-de="Mittel">Intermediate</span></div>
+    <div class="plate reveal">
+      <div class="skills-grid">
+        <div class="skill-row"><span class="skill-label">Siemens TIA Portal</span>     <span class="skill-pill core" data-en="Core" data-de="Kern">Core</span></div>
+        <div class="skill-row"><span class="skill-label">WinCC Flexible / SCADA</span> <span class="skill-pill core" data-en="Core" data-de="Kern">Core</span></div>
+        <div class="skill-row"><span class="skill-label">FUP / KOP / AWL / SCL</span>  <span class="skill-pill core" data-en="Core" data-de="Kern">Core</span></div>
+        <div class="skill-row"><span class="skill-label">S7-PLCSIM Advanced</span>      <span class="skill-pill core" data-en="Core" data-de="Kern">Core</span></div>
+        <div class="skill-row"><span class="skill-label">SQL</span>                     <span class="skill-pill" data-en="Intermediate" data-de="Mittel">Intermediate</span></div>
+        <div class="skill-row"><span class="skill-label">Java</span>                    <span class="skill-pill" data-en="Intermediate" data-de="Mittel">Intermediate</span></div>
+        <div class="skill-row"><span class="skill-label">C#</span>                      <span class="skill-pill" data-en="Intermediate" data-de="Mittel">Intermediate</span></div>
+        <div class="skill-row"><span class="skill-label">Python</span>                  <span class="skill-pill" data-en="Intermediate" data-de="Mittel">Intermediate</span></div>
+      </div>
     </div>
   </div>
 </section>
@@ -831,71 +478,57 @@
 <!-- EXPERIENCE -->
 <section id="experience">
   <div class="wrap">
-    <div class="sec-head reveal">
-      <span class="sec-num">02</span>
-      <h2 class="sec-title" data-en="Experience" data-de="Erfahrung">Experience</h2>
-    </div>
-
-    <div class="exp-item reveal">
-      <div>
-        <div class="exp-date">09.2022 – <span data-en="Present" data-de="Heute">Present</span></div>
-        <div class="exp-company">Metzner<br>Maschinenbau GmbH</div>
-        <div class="exp-location" data-en="Neu-Ulm, Germany" data-de="Neu-Ulm, Deutschland">Neu-Ulm, Germany</div>
-      </div>
-      <div>
-        <div class="exp-role" data-en="SPS Programmer / Software Developer" data-de="SPS-Programmierer / Software-Entwickler">SPS Programmer / Software Developer</div>
-        <ul class="exp-list">
+    <div class="sec-head reveal"><span class="sec-num">02</span><span class="sec-title" data-en="Experience" data-de="Erfahrung">Experience</span></div>
+    <div class="plate reveal">
+      <div class="exp-block"><div class="exp-grid">
+        <div class="exp-meta">
+          <div class="exp-date">09.2022 – <span data-en="Present" data-de="Heute">Present</span></div>
+          <div class="exp-company">Metzner Maschinenbau GmbH</div>
+          <div class="exp-location" data-en="Neu-Ulm, Germany" data-de="Neu-Ulm, Deutschland">Neu-Ulm, Germany</div>
+          <div class="exp-role" data-en="SPS Programmer / SW Dev" data-de="SPS-Programmierer / SW-Entwickler">SPS Programmer / SW Dev</div>
+        </div>
+        <div class="exp-content"><ul class="exp-list">
           <li data-en="Machine control software development in Siemens SPS" data-de="Entwicklung und Programmerstellung für Maschinensteuerung in Siemens SPS">Machine control software development in Siemens SPS</li>
           <li data-en="HMI design and operator interface creation" data-de="Gestaltung der Bedienoberflächen">HMI design and operator interface creation</li>
           <li data-en="Parameterization of stepper and servo motors" data-de="Parametrisierung von Schritt- und Servomotoren">Parameterization of stepper and servo motors</li>
-          <li data-en="Independent project execution in-house and with customers and suppliers" data-de="Selbständige Projektabwicklung innerhalb des Hauses, sowie mit Kunden und Lieferanten">Independent project execution in-house and with customers and suppliers</li>
-          <li data-en="Precise implementation of targets according to company standards" data-de="Präzise Umsetzung von Zielvorgaben nach firmenüblichen Standards">Precise implementation of targets according to company standards</li>
+          <li data-en="Independent project execution in-house and with customers and suppliers" data-de="Selbständige Projektabwicklung innerhalb des Hauses sowie mit Kunden und Lieferanten">Independent project execution in-house and with customers and suppliers</li>
           <li data-en="In-house and on-site commissioning at customer locations" data-de="Inbetriebnahmen im Haus und bei Kunden">In-house and on-site commissioning at customer locations</li>
           <li data-en="International customer support" data-de="Internationale Kundenbetreuung">International customer support</li>
-          <li data-en="Support in selection and sizing of components (e.g. motor controllers, PLCs, sensors)" data-de="Unterstützung bei der Auswahl und Auslegung von Einzelkomponenten (z.B. Motorregler, Steuerungen, Sensorik)">Support in selection and sizing of components (e.g. motor controllers, PLCs, sensors)</li>
+          <li data-en="Support in selection and sizing of components (motor controllers, PLCs, sensors)" data-de="Unterstützung bei Auswahl und Auslegung von Einzelkomponenten">Support in selection and sizing of components (motor controllers, PLCs, sensors)</li>
           <li data-en="Archiving of programs and motor parameters" data-de="Archivierung von Programmen und Motorparametern">Archiving of programs and motor parameters</li>
-        </ul>
-      </div>
-    </div>
-
-    <div class="exp-item reveal">
-      <div>
-        <div class="exp-date">09.2019 – 09.2022</div>
-        <div class="exp-company">Rothenbacher GmbH</div>
-        <div class="exp-location" data-en="Dornstadt, Germany" data-de="Dornstadt, Deutschland">Dornstadt, Germany</div>
-      </div>
-      <div>
-        <div class="exp-role" data-en="SPS Programmer / Software Developer" data-de="SPS-Programmierer / Software-Entwickler">SPS Programmer / Software Developer</div>
-        <ul class="exp-list">
+        </ul></div>
+      </div></div>
+      <div class="exp-block"><div class="exp-grid">
+        <div class="exp-meta">
+          <div class="exp-date">09.2019 – 09.2022</div>
+          <div class="exp-company">Rothenbacher GmbH</div>
+          <div class="exp-location" data-en="Dornstadt, Germany" data-de="Dornstadt, Deutschland">Dornstadt, Germany</div>
+          <div class="exp-role" data-en="SPS Programmer / SW Dev" data-de="SPS-Programmierer / SW-Entwickler">SPS Programmer / SW Dev</div>
+        </div>
+        <div class="exp-content"><ul class="exp-list">
           <li data-en="Design, development and optimization of control and regulation programs" data-de="Konzeption, Entwicklung und Optimierung von Regel- und Steuerprogrammen">Design, development and optimization of control and regulation programs</li>
           <li data-en="SCADA visualization and process monitoring" data-de="Visualisierung von Abläufen">SCADA visualization and process monitoring</li>
           <li data-en="Standardized and modular software development" data-de="Standardisierte und modularisierte Softwareentwicklung">Standardized and modular software development</li>
           <li data-en="Independent fault analysis and troubleshooting" data-de="Eigenständige Fehleranalyse und Fehlerbehebung">Independent fault analysis and troubleshooting</li>
           <li data-en="Customer consulting and further development of existing systems" data-de="Kundenberatung und Weiterentwicklung bestehender Systeme">Customer consulting and further development of existing systems</li>
-          <li data-en="Close collaboration with other departments for successful project delivery" data-de="Enge Zusammenarbeit mit anderen Abteilungen für eine erfolgreiche Projektabwicklung">Close collaboration with other departments for successful project delivery</li>
-        </ul>
-      </div>
-    </div>
-
-    <div class="exp-item reveal">
-      <div>
-        <div class="exp-date">09.2014 – 08.2019</div>
-        <div class="exp-company">Technosam SRL</div>
-        <div class="exp-location" data-en="Satu Mare, Romania" data-de="Satu-Mare, Rumänien">Satu Mare, Romania</div>
-      </div>
-      <div>
-        <div class="exp-role" data-en="SPS Programmer / Software Developer" data-de="SPS-Programmierer / Software-Entwickler">SPS Programmer / Software Developer</div>
-        <ul class="exp-list">
-          <li data-en="Development, optimization and modification of control programs incl. customer meetings, concept creation, scheduling and project management" data-de="Entwicklung, Optimierung und Änderung von Steuerprogrammen inkl. Kundenbesprechungen, Konzepterstellung, Zeitplanung und Projektleitung">Development, optimization and modification of control programs incl. customer meetings, concept creation, scheduling and project management</li>
-          <li data-en="On-site commissioning and creation of program documentation and manuals" data-de="Inbetriebnahme bei Kunden und Erstellung von Programmdokumentation und Handbüchern">On-site commissioning and creation of program documentation and manuals</li>
+        </ul></div>
+      </div></div>
+      <div class="exp-block"><div class="exp-grid">
+        <div class="exp-meta">
+          <div class="exp-date">09.2014 – 08.2019</div>
+          <div class="exp-company">Technosam SRL</div>
+          <div class="exp-location" data-en="Satu Mare, Romania" data-de="Satu-Mare, Rumänien">Satu Mare, Romania</div>
+          <div class="exp-role" data-en="SPS Programmer / SW Dev" data-de="SPS-Programmierer / SW-Entwickler">SPS Programmer / SW Dev</div>
+        </div>
+        <div class="exp-content"><ul class="exp-list">
+          <li data-en="Development, optimization and modification of control programs incl. customer meetings and project management" data-de="Entwicklung, Optimierung und Änderung von Steuerprogrammen inkl. Kundenbesprechungen und Projektleitung">Development, optimization and modification of control programs incl. customer meetings and project management</li>
+          <li data-en="On-site commissioning and program documentation" data-de="Inbetriebnahme bei Kunden und Programmdokumentation">On-site commissioning and program documentation</li>
           <li data-en="SCADA visualization and process monitoring" data-de="Visualisierung von Abläufen">SCADA visualization and process monitoring</li>
-          <li data-en="Fault diagnosis, maintenance and troubleshooting of controls and components" data-de="Fehlerdiagnose, Maintenance und Störungsanalyse/-behebung an Steuerungen und Komponenten">Fault diagnosis, maintenance and troubleshooting of controls and components</li>
-          <li data-en="Repair and maintenance work on systems and installations" data-de="Instandsetzung sowie Durchführung von Wartungs-, Reparatur- und Montagearbeiten an Anlagen">Repair and maintenance work on systems and installations</li>
-          <li data-en="Customer consulting and collaboration with external firms" data-de="Kundenberatung und Zusammenarbeit mit externen Firmen">Customer consulting and collaboration with external firms</li>
-        </ul>
-      </div>
+          <li data-en="Fault diagnosis, maintenance and troubleshooting" data-de="Fehlerdiagnose, Maintenance und Störungsanalyse/-behebung">Fault diagnosis, maintenance and troubleshooting</li>
+          <li data-en="Repair and maintenance work on systems" data-de="Instandsetzungs- und Wartungsarbeiten an Anlagen">Repair and maintenance work on systems</li>
+        </ul></div>
+      </div></div>
     </div>
-
   </div>
 </section>
 
@@ -904,25 +537,20 @@
 <!-- EDUCATION -->
 <section id="education">
   <div class="wrap">
-    <div class="sec-head reveal">
-      <span class="sec-num">03</span>
-      <h2 class="sec-title" data-en="Education" data-de="Ausbildung">Education</h2>
+    <div class="sec-head reveal"><span class="sec-num">03</span><span class="sec-title" data-en="Education" data-de="Ausbildung">Education</span></div>
+    <div class="plate reveal">
+      <div class="exp-block"><div class="exp-grid">
+        <div class="exp-meta">
+          <div class="exp-date">10.2010 – 06.2014</div>
+          <div class="exp-company">Sapientia University</div>
+          <div class="exp-location" data-en="Târgu Mureș, Romania" data-de="Târgu Mureș, Rumänien">Târgu Mureș, Romania</div>
+          <div class="exp-role" data-en="B.Eng. Automation" data-de="Ing. Automation">B.Eng. Automation</div>
+        </div>
+        <div class="exp-content"><ul class="exp-list">
+          <li data-en="Bachelor of Engineering — Automation and Applied Informatics" data-de="Bachelordiplom in Automation und Angewandter Informatik">Bachelor of Engineering — Automation and Applied Informatics</li>
+        </ul></div>
+      </div></div>
     </div>
-
-    <div class="exp-item reveal">
-      <div>
-        <div class="exp-date">10.2010 – 06.2014</div>
-        <div class="exp-company">Sapientia<br>University</div>
-        <div class="exp-location" data-en="Miercurea Ciuc, Romania" data-de="Miercurea Ciuc, Rumänien">Miercurea Ciuc, Romania</div>
-      </div>
-      <div>
-        <div class="exp-role" data-en="Bachelor of Engineering – Automation & Applied Informatics" data-de="Ingenieur – Automation und Angewandte Informatik">Bachelor of Engineering – Automation &amp; Applied Informatics</div>
-        <ul class="exp-list">
-          <li data-en="Bachelor's degree in Automation and Applied Informatics" data-de="Bachelordiplom in Automation und Angewandter Informatik">Bachelor's degree in Automation and Applied Informatics</li>
-        </ul>
-      </div>
-    </div>
-
   </div>
 </section>
 
@@ -931,120 +559,25 @@
 <!-- PROJECTS -->
 <section id="projects">
   <div class="wrap">
-    <div class="sec-head reveal">
-      <span class="sec-num">04</span>
-      <h2 class="sec-title" data-en="Projects" data-de="Projekte">Projects</h2>
-    </div>
-    <div class="proj-table reveal">
-
-      <div class="proj-row">
-        <div class="proj-co">Metzner Maschinenbau</div>
-        <div>
-          <div class="proj-name" data-en="Fully Automatic Aluminum Parts Machine" data-de="Vollautomatische Maschine zur Herstellung von Aluminiumbauteilen">Fully Automatic Aluminum Parts Machine</div>
-          <div class="proj-desc" data-en="Feed belt, eccentric knife, punch and conveyor belt with quality inspection and automatic reject sorting. Key feature: synchronization of feed belt and eccentric knife to maximize parts per minute." data-de="Zuführband, Exzentermesser, Locher, Förderband mit Qualitätsprüfung und automatischer Ausschusssortierung. Besonderheit: Synchronisierung von Zuführband und Exzentermesser zur Maximierung der Teile pro Minute.">Feed belt, eccentric knife, punch and conveyor belt with quality inspection and automatic reject sorting. Key feature: synchronization of feed belt and eccentric knife to maximize parts per minute.</div>
-        </div>
-        <div class="proj-tech">Siemens SPS</div>
+    <div class="sec-head reveal"><span class="sec-num">04</span><span class="sec-title" data-en="Projects" data-de="Projekte">Projects</span></div>
+    <div class="plate reveal">
+      <div class="proj-header">
+        <div class="proj-th" data-en="Company" data-de="Firma">Company</div>
+        <div class="proj-th" data-en="Project" data-de="Projekt">Project</div>
+        <div class="proj-th" data-en="Stack"   data-de="Technologie">Stack</div>
       </div>
-
-      <div class="proj-row">
-        <div class="proj-co">Metzner Maschinenbau</div>
-        <div>
-          <div class="proj-name" data-en="Dynamit Cutting Machine" data-de="Dynamit-Schneidemaschine">Dynamit Cutting Machine</div>
-          <div class="proj-desc" data-en="High-speed dynamic cutting machine with precision servo motion control." data-de="Hochgeschwindigkeits-Schneidemaschine mit Präzisions-Servo-Bewegungssteuerung.">High-speed dynamic cutting machine with precision servo motion control.</div>
-        </div>
-        <div class="proj-tech">Siemens SPS</div>
-      </div>
-
-      <div class="proj-row">
-        <div class="proj-co">Metzner Maschinenbau</div>
-        <div>
-          <div class="proj-name" data-en="Pipe & Cable Processing Machines" data-de="Rohr- und Kabelbearbeitungsmaschinen">Pipe &amp; Cable Processing Machines</div>
-          <div class="proj-desc" data-en="Various pipe and cable processing machines with precision servo motion control." data-de="Verschiedene Rohr- und Kabelbearbeitungsmaschinen mit Präzisions-Servo-Bewegungssteuerung.">Various pipe and cable processing machines with precision servo motion control.</div>
-        </div>
-        <div class="proj-tech">Siemens SPS</div>
-      </div>
-
-      <div class="proj-row">
-        <div class="proj-co">Rothenbacher GmbH</div>
-        <div>
-          <div class="proj-name" data-en="Flour Silo Plant Control System" data-de="Steuerungssystem für Mehlsiloanlage">Flour Silo Plant Control System</div>
-          <div class="proj-desc" data-en="Control system for flour silo plant with internal visualization using Siemens S7 SPS." data-de="Steuerungssystem für Mehlsiloanlage mit interner Visualisierung, Siemens S7 SPS.">Control system for flour silo plant with internal visualization using Siemens S7 SPS.</div>
-        </div>
-        <div class="proj-tech">Siemens S7</div>
-      </div>
-
-      <div class="proj-row">
-        <div class="proj-co">Rothenbacher GmbH</div>
-        <div>
-          <div class="proj-name" data-en="Dosing & Mixing Plant" data-de="Dosier- und Mischanlage">Dosing &amp; Mixing Plant</div>
-          <div class="proj-desc" data-en="Process visualization and control for industrial mixing operations with Siemens S7 and WinCC 7.3 SCADA." data-de="Prozessvisualisierung und Steuerung für industrielle Mischanlagen mit Siemens S7 und WinCC 7.3 SCADA.">Process visualization and control for industrial mixing operations with Siemens S7 and WinCC 7.3 SCADA.</div>
-        </div>
-        <div class="proj-tech">S7 + WinCC</div>
-      </div>
-
-      <div class="proj-row">
-        <div class="proj-co">Rothenbacher GmbH</div>
-        <div>
-          <div class="proj-name" data-en="SQL–PLC Communication Bridge" data-de="SQL–PLC Kommunikationsbrücke">SQL–PLC Communication Bridge</div>
-          <div class="proj-desc" data-en="Real-time data exchange between SQL database and Siemens S7 PLC." data-de="Echtzeit-Datenaustausch zwischen SQL-Datenbank und Siemens S7 SPS.">Real-time data exchange between SQL database and Siemens S7 PLC.</div>
-        </div>
-        <div class="proj-tech">SQL + S7</div>
-      </div>
-
-      <div class="proj-row">
-        <div class="proj-co">Rothenbacher GmbH</div>
-        <div>
-          <div class="proj-name" data-en="Tube End Forming Machine" data-de="Rohrendungsumformmaschine">Tube End Forming Machine</div>
-          <div class="proj-desc" data-en="Control and visualization for tube end forming with Siemens S7 PLC and WinCC." data-de="Steuerung und Visualisierung für Rohrendungsumformung mit Siemens S7 PLC und WinCC.">Control and visualization for tube end forming with Siemens S7 PLC and WinCC.</div>
-        </div>
-        <div class="proj-tech">S7 + WinCC</div>
-      </div>
-
-      <div class="proj-row">
-        <div class="proj-co">Rothenbacher GmbH</div>
-        <div>
-          <div class="proj-name" data-en="Puffing Plant – Grain Expansion" data-de="Puffing-Anlage – Kornausdehnung">Puffing Plant – Grain Expansion</div>
-          <div class="proj-desc" data-en="Steam and pressure-based grain expansion with Siemens S7 and WinCC visualization." data-de="Kornausdehnung mittels Dampf und Druck, Siemens S7 mit WinCC Visualisierung.">Steam and pressure-based grain expansion with Siemens S7 and WinCC visualization.</div>
-        </div>
-        <div class="proj-tech">S7 + WinCC</div>
-      </div>
-
-      <div class="proj-row">
-        <div class="proj-co">Technosam SRL</div>
-        <div>
-          <div class="proj-name" data-en="Water Treatment Plant Control Systems" data-de="Steuerungssysteme für Wasserkläranlagen">Water Treatment Plant Control Systems</div>
-          <div class="proj-desc" data-en="Control systems for water treatment plants with Siemens S7 SPS and WinCC SCADA." data-de="Steuerungssysteme für Wasserkläranlagen mit Siemens S7 SPS und WinCC SCADA.">Control systems for water treatment plants with Siemens S7 SPS and WinCC SCADA.</div>
-        </div>
-        <div class="proj-tech">S7 + WinCC</div>
-      </div>
-
-      <div class="proj-row">
-        <div class="proj-co">Technosam SRL</div>
-        <div>
-          <div class="proj-name" data-en="SCADA for Municipal Water Networks" data-de="SCADA für städtische Wasserversorgung">SCADA for Municipal Water Networks</div>
-          <div class="proj-desc" data-en="SCADA system for municipal water supply network monitoring and control." data-de="SCADA-System für die Überwachung und Steuerung der städtischen Wasserversorgungsnetze.">SCADA system for municipal water supply network monitoring and control.</div>
-        </div>
-        <div class="proj-tech">S7 + WinCC</div>
-      </div>
-
-      <div class="proj-row">
-        <div class="proj-co">Technosam SRL</div>
-        <div>
-          <div class="proj-name" data-en="Flour Transport & Bread Baking Automation" data-de="Mehltransport und Automatisierung für Brotbacksysteme">Flour Transport &amp; Bread Baking Automation</div>
-          <div class="proj-desc" data-en="Automated flour transport and baking process control system." data-de="Automatisiertes System für Mehltransport und Steuerung von Brotbackprozessen.">Automated flour transport and baking process control system.</div>
-        </div>
-        <div class="proj-tech">Siemens SPS</div>
-      </div>
-
-      <div class="proj-row">
-        <div class="proj-co">Technosam SRL</div>
-        <div>
-          <div class="proj-name" data-en="Adhesive Machine Automation" data-de="Automatisierung einer Klebemaschine">Adhesive Machine Automation</div>
-          <div class="proj-desc" data-en="Full automation of an industrial adhesive application machine." data-de="Vollautomatisierung einer industriellen Klebemaschine.">Full automation of an industrial adhesive application machine.</div>
-        </div>
-        <div class="proj-tech">Siemens SPS</div>
-      </div>
-
+      <div class="proj-row"><div class="proj-cell"><div class="proj-co">Metzner Maschinenbau</div></div><div class="proj-cell"><div class="proj-name" data-en="Fully Automatic Aluminum Parts Machine" data-de="Vollautomatische Maschine für Aluminiumbauteile">Fully Automatic Aluminum Parts Machine</div><div class="proj-desc" data-en="Feed belt, eccentric knife, punch and conveyor belt with quality inspection and automatic reject sorting. Synchronization to maximize parts per minute." data-de="Zuführband, Exzentermesser, Locher, Förderband mit Qualitätsprüfung und Ausschusssortierung.">Feed belt, eccentric knife, punch and conveyor belt with quality inspection and automatic reject sorting. Synchronization to maximize parts per minute.</div></div><div class="proj-cell"><div class="proj-tech">Siemens SPS</div></div></div>
+      <div class="proj-row"><div class="proj-cell"><div class="proj-co">Metzner Maschinenbau</div></div><div class="proj-cell"><div class="proj-name" data-en="Dynamit Cutting Machine" data-de="Dynamit-Schneidemaschine">Dynamit Cutting Machine</div><div class="proj-desc" data-en="High-speed dynamic cutting machine with precision servo motion control." data-de="Hochgeschwindigkeits-Schneidemaschine mit Präzisions-Servo-Bewegungssteuerung.">High-speed dynamic cutting machine with precision servo motion control.</div></div><div class="proj-cell"><div class="proj-tech">Siemens SPS</div></div></div>
+      <div class="proj-row"><div class="proj-cell"><div class="proj-co">Metzner Maschinenbau</div></div><div class="proj-cell"><div class="proj-name" data-en="Pipe &amp; Cable Processing Machines" data-de="Rohr- und Kabelbearbeitungsmaschinen">Pipe &amp; Cable Processing Machines</div><div class="proj-desc" data-en="Various pipe and cable processing machines with precision servo motion control." data-de="Verschiedene Rohr- und Kabelbearbeitungsmaschinen mit Präzisions-Servo-Bewegungssteuerung.">Various pipe and cable processing machines with precision servo motion control.</div></div><div class="proj-cell"><div class="proj-tech">Siemens SPS</div></div></div>
+      <div class="proj-row"><div class="proj-cell"><div class="proj-co">Rothenbacher GmbH</div></div><div class="proj-cell"><div class="proj-name" data-en="Flour Silo Plant Control System" data-de="Steuerungssystem Mehlsiloanlage">Flour Silo Plant Control System</div><div class="proj-desc" data-en="Control system for flour silo plant with internal visualization." data-de="Steuerungssystem für Mehlsiloanlage mit interner Visualisierung.">Control system for flour silo plant with internal visualization.</div></div><div class="proj-cell"><div class="proj-tech">Siemens S7</div></div></div>
+      <div class="proj-row"><div class="proj-cell"><div class="proj-co">Rothenbacher GmbH</div></div><div class="proj-cell"><div class="proj-name" data-en="Dosing &amp; Mixing Plant" data-de="Dosier- und Mischanlage">Dosing &amp; Mixing Plant</div><div class="proj-desc" data-en="Process visualization and control for industrial mixing with Siemens S7 and WinCC 7.3 SCADA." data-de="Prozessvisualisierung und Steuerung für industrielle Mischanlagen.">Process visualization and control for industrial mixing with Siemens S7 and WinCC 7.3 SCADA.</div></div><div class="proj-cell"><div class="proj-tech">S7 + WinCC</div></div></div>
+      <div class="proj-row"><div class="proj-cell"><div class="proj-co">Rothenbacher GmbH</div></div><div class="proj-cell"><div class="proj-name" data-en="SQL–PLC Communication Bridge" data-de="SQL–PLC Kommunikationsbrücke">SQL–PLC Communication Bridge</div><div class="proj-desc" data-en="Real-time data exchange between SQL database and Siemens S7 PLC." data-de="Echtzeit-Datenaustausch zwischen SQL-Datenbank und Siemens S7 SPS.">Real-time data exchange between SQL database and Siemens S7 PLC.</div></div><div class="proj-cell"><div class="proj-tech">SQL + S7</div></div></div>
+      <div class="proj-row"><div class="proj-cell"><div class="proj-co">Rothenbacher GmbH</div></div><div class="proj-cell"><div class="proj-name" data-en="Tube End Forming Machine" data-de="Rohrendungsumformmaschine">Tube End Forming Machine</div><div class="proj-desc" data-en="Control and visualization for tube end forming with Siemens S7 and WinCC." data-de="Steuerung und Visualisierung für Rohrendungsumformung.">Control and visualization for tube end forming with Siemens S7 and WinCC.</div></div><div class="proj-cell"><div class="proj-tech">S7 + WinCC</div></div></div>
+      <div class="proj-row"><div class="proj-cell"><div class="proj-co">Rothenbacher GmbH</div></div><div class="proj-cell"><div class="proj-name" data-en="Puffing Plant – Grain Expansion" data-de="Puffing-Anlage – Kornausdehnung">Puffing Plant – Grain Expansion</div><div class="proj-desc" data-en="Steam and pressure-based grain expansion with Siemens S7 and WinCC." data-de="Kornausdehnung mittels Dampf und Druck, Siemens S7 mit WinCC.">Steam and pressure-based grain expansion with Siemens S7 and WinCC.</div></div><div class="proj-cell"><div class="proj-tech">S7 + WinCC</div></div></div>
+      <div class="proj-row"><div class="proj-cell"><div class="proj-co">Technosam SRL</div></div><div class="proj-cell"><div class="proj-name" data-en="Water Treatment Plant Control" data-de="Steuerung Wasserkläranlage">Water Treatment Plant Control</div><div class="proj-desc" data-en="Control systems for water treatment plants with Siemens S7 and WinCC SCADA." data-de="Steuerungssysteme für Wasserkläranlagen mit Siemens S7 und WinCC SCADA.">Control systems for water treatment plants with Siemens S7 and WinCC SCADA.</div></div><div class="proj-cell"><div class="proj-tech">S7 + WinCC</div></div></div>
+      <div class="proj-row"><div class="proj-cell"><div class="proj-co">Technosam SRL</div></div><div class="proj-cell"><div class="proj-name" data-en="SCADA for Municipal Water Networks" data-de="SCADA städtische Wasserversorgung">SCADA for Municipal Water Networks</div><div class="proj-desc" data-en="SCADA system for municipal water supply network monitoring and control." data-de="SCADA-System für Überwachung und Steuerung der Wasserversorgung.">SCADA system for municipal water supply network monitoring and control.</div></div><div class="proj-cell"><div class="proj-tech">S7 + WinCC</div></div></div>
+      <div class="proj-row"><div class="proj-cell"><div class="proj-co">Technosam SRL</div></div><div class="proj-cell"><div class="proj-name" data-en="Flour Transport &amp; Bread Baking" data-de="Mehltransport und Brotbackautomatisierung">Flour Transport &amp; Bread Baking</div><div class="proj-desc" data-en="Automated flour transport and baking process control system." data-de="Automatisiertes System für Mehltransport und Brotbackprozesse.">Automated flour transport and baking process control system.</div></div><div class="proj-cell"><div class="proj-tech">Siemens SPS</div></div></div>
+      <div class="proj-row"><div class="proj-cell"><div class="proj-co">Technosam SRL</div></div><div class="proj-cell"><div class="proj-name" data-en="Adhesive Machine Automation" data-de="Automatisierung Klebemaschine">Adhesive Machine Automation</div><div class="proj-desc" data-en="Full automation of an industrial adhesive application machine." data-de="Vollautomatisierung einer industriellen Klebemaschine.">Full automation of an industrial adhesive application machine.</div></div><div class="proj-cell"><div class="proj-tech">Siemens SPS</div></div></div>
     </div>
   </div>
 </section>
@@ -1054,119 +587,62 @@
 <!-- APPS -->
 <section id="apps">
   <div class="wrap">
-    <div class="sec-head reveal">
-      <span class="sec-num">05</span>
-      <h2 class="sec-title" data-en="Apps & Tools" data-de="Apps & Tools">Apps & Tools</h2>
-    </div>
-    <div class="apps-grid reveal">
-
-      <div class="app-card">
-        <span class="app-badge" data-en="Coming soon" data-de="Demnächst">Coming soon</span>
-        <span class="app-icon">📅</span>
-        <div class="app-name" data-en="Personal Calendar" data-de="Persönlicher Kalender">Personal Calendar</div>
-        <div class="app-desc" data-en="A custom-built calendar for personal scheduling and productivity." data-de="Ein maßgeschneiderter Kalender für persönliche Planung.">A custom-built calendar for personal scheduling and productivity.</div>
+    <div class="sec-head reveal"><span class="sec-num">05</span><span class="sec-title" data-en="Apps &amp; Tools" data-de="Apps &amp; Tools">Apps &amp; Tools</span></div>
+    <div class="plate reveal">
+      <div class="apps-grid">
+        <div class="app-card">
+          <span class="app-icon">📅</span>
+          <div><span class="app-badge" data-en="In development" data-de="In Entwicklung">In development</span></div>
+          <div class="app-name" data-en="Personal Calendar" data-de="Persönlicher Kalender">Personal Calendar</div>
+          <div class="app-desc" data-en="A custom-built calendar for personal scheduling and productivity." data-de="Ein maßgeschneiderter Kalender für persönliche Planung.">A custom-built calendar for personal scheduling and productivity.</div>
+        </div>
+        <div class="app-card" style="cursor:pointer" onclick="document.getElementById('motion-calc').scrollIntoView({behavior:'smooth'})">
+          <span class="app-icon">📐</span>
+          <div><span class="app-badge live" data-en="Available" data-de="Verfügbar">Available</span></div>
+          <div class="app-name" data-en="Motion Profile Calculator" data-de="Bewegungsprofil-Rechner">Motion Profile Calculator</div>
+          <div class="app-desc" data-en="S-curve 7-segment motion solver. Real-time position, velocity, acceleration and jerk profiles." data-de="S-Kurven 7-Segment-Löser. Echtzeit-Bewegungsprofile.">S-curve 7-segment motion solver. Real-time position, velocity, acceleration and jerk profiles.</div>
+          <span class="app-cta" data-en="Open calculator" data-de="Rechner öffnen">Open calculator</span>
+        </div>
+        <div class="app-card">
+          <span class="app-icon">🔩</span>
+          <div><span class="app-badge" data-en="In development" data-de="In Entwicklung">In development</span></div>
+          <div class="app-name" data-en="More coming…" data-de="Weitere folgen…">More coming…</div>
+          <div class="app-desc" data-en="More engineering tools are in development." data-de="Weitere Engineering-Tools sind in Entwicklung.">More engineering tools are in development.</div>
+        </div>
       </div>
-
-      <div class="app-card" style="cursor:pointer;" onclick="document.getElementById('motion-calc').scrollIntoView({behavior:'smooth'})">
-        <span class="app-badge" style="color:var(--accent);border-color:rgba(201,169,110,0.4);" data-en="Live · Try it" data-de="Live · Ausprobieren">Live · Try it</span>
-        <span class="app-icon">📐</span>
-        <div class="app-name" data-en="Motion Profile Calculator" data-de="Bewegungsprofil-Rechner">Motion Profile Calculator</div>
-        <div class="app-desc" data-en="S-curve 7-segment motion solver. Calculate position, velocity, acceleration &amp; jerk profiles in real time — built from real automation experience." data-de="S-Kurven 7-Segment-Löser. Echtzeit-Berechnung von Position, Geschwindigkeit, Beschleunigung und Ruck.">S-curve 7-segment motion solver. Calculate position, velocity, acceleration &amp; jerk profiles in real time — built from real automation experience.</div>
-        <div style="margin-top:1.2rem;font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--accent);">↓ Scroll to calculator</div>
-      </div>
-
-      <div class="app-card">
-        <span class="app-badge" data-en="Coming soon" data-de="Demnächst">Coming soon</span>
-        <span class="app-icon">🔩</span>
-        <div class="app-name" data-en="More coming…" data-de="Weitere folgen…">More coming…</div>
-        <div class="app-desc" data-en="More engineering tools are in development." data-de="Weitere Engineering-Tools sind in Entwicklung.">More engineering tools are in development.</div>
-      </div>
-
     </div>
   </div>
 </section>
 
 <hr>
 
-<!-- MOTION PROFILE CALCULATOR -->
+<!-- MOTION CALCULATOR -->
 <section id="motion-calc">
   <div class="wrap">
-    <div class="sec-head reveal">
-      <span class="sec-num">05b</span>
-      <h2 class="sec-title" data-en="Motion Profile Calculator" data-de="Bewegungsprofil-Rechner">Motion Profile Calculator</h2>
-    </div>
-
-    <div class="mc-wrapper reveal">
-      <!-- Left: inputs + table -->
-      <div class="mc-left">
-        <div class="mc-inputs">
-          <div class="mc-param">
-            <label class="mc-label" data-en="Distance" data-de="Strecke">Distance</label>
-            <div class="mc-input-row">
-              <input class="mc-input" type="number" id="mc-dist" value="100" step="any">
-              <span class="mc-unit">mm</span>
-            </div>
+    <div class="sec-head reveal"><span class="sec-num">05b</span><span class="sec-title" data-en="Motion Profile Calculator" data-de="Bewegungsprofil-Rechner">Motion Profile Calculator</span></div>
+    <div class="plate reveal">
+      <div class="mc-wrapper">
+        <div class="mc-left">
+          <div class="mc-inputs">
+            <div class="mc-param"><label class="mc-label" data-en="Distance" data-de="Strecke">Distance</label><div class="mc-input-row"><input class="mc-input" type="number" id="mc-dist" value="100" step="any"><span class="mc-unit">mm</span></div></div>
+            <div class="mc-param"><label class="mc-label" data-en="Max Velocity" data-de="Max. Geschwindigkeit">Max Velocity</label><div class="mc-input-row"><input class="mc-input" type="number" id="mc-vel" value="20" step="any"><span class="mc-unit">mm/s</span></div></div>
+            <div class="mc-param"><label class="mc-label" data-en="Max Acceleration" data-de="Max. Beschleunigung">Max Acceleration</label><div class="mc-input-row"><input class="mc-input" type="number" id="mc-acc" value="10" step="any"><span class="mc-unit">mm/s²</span></div></div>
+            <div class="mc-param"><label class="mc-label" data-en="Max Jerk" data-de="Max. Ruck">Max Jerk</label><div class="mc-input-row"><input class="mc-input" type="number" id="mc-jerk" value="50" step="any"><span class="mc-unit">mm/s³</span></div></div>
           </div>
-          <div class="mc-param">
-            <label class="mc-label" data-en="Max Velocity" data-de="Max. Geschwindigkeit">Max Velocity</label>
-            <div class="mc-input-row">
-              <input class="mc-input" type="number" id="mc-vel" value="20" step="any">
-              <span class="mc-unit">mm/s</span>
-            </div>
+          <div class="mc-status-bar"><span class="mc-status-label" data-en="Profile Type" data-de="Profiltyp">Profile Type</span><span id="mc-case" class="mc-status-val">—</span></div>
+          <div class="mc-status-bar"><span class="mc-status-label" data-en="Total Time" data-de="Gesamtzeit">Total Time</span><span id="mc-time" class="mc-status-val">—</span></div>
+          <div class="mc-table-head"><span data-en="Critical Points" data-de="Kritische Punkte">Critical Points</span><span style="font-weight:300" data-en="click to highlight" data-de="anklicken">click to highlight</span></div>
+          <div class="mc-table-scroll">
+            <table class="mc-table">
+              <thead><tr><th>t (s)</th><th>Pos</th><th>Vel</th><th>Acc</th><th>Jerk</th></tr></thead>
+              <tbody id="mc-tbody"></tbody>
+            </table>
           </div>
-          <div class="mc-param">
-            <label class="mc-label" data-en="Max Acceleration" data-de="Max. Beschleunigung">Max Acceleration</label>
-            <div class="mc-input-row">
-              <input class="mc-input" type="number" id="mc-acc" value="10" step="any">
-              <span class="mc-unit">mm/s²</span>
-            </div>
-          </div>
-          <div class="mc-param">
-            <label class="mc-label" data-en="Max Jerk" data-de="Max. Ruck">Max Jerk</label>
-            <div class="mc-input-row">
-              <input class="mc-input" type="number" id="mc-jerk" value="50" step="any">
-              <span class="mc-unit">mm/s³</span>
-            </div>
-          </div>
+          <a id="mc-download-link" class="mc-download-btn" href="#" download="motion_profile_calculator.py">
+            <span>⬇</span><span data-en="Download Python App (.py)" data-de="Python-App herunterladen (.py)">Download Python App (.py)</span>
+          </a>
         </div>
-
-        <div class="mc-status-bar">
-          <span class="mc-status-label" data-en="Profile Type" data-de="Profiltyp">Profile Type</span>
-          <span id="mc-case" class="mc-status-val">—</span>
-        </div>
-        <div class="mc-status-bar">
-          <span class="mc-status-label" data-en="Total Time" data-de="Gesamtzeit">Total Time</span>
-          <span id="mc-time" class="mc-status-val">— s</span>
-        </div>
-
-        <div class="mc-table-head">
-          <span data-en="Critical Points" data-de="Kritische Punkte">Critical Points</span>
-          <span style="font-size:0.7rem;color:var(--muted);font-weight:300;" data-en="(click row to highlight)" data-de="(Zeile anklicken)">(click row to highlight)</span>
-        </div>
-        <div class="mc-table-scroll">
-          <table class="mc-table">
-            <thead>
-              <tr>
-                <th>t (s)</th>
-                <th>Pos</th>
-                <th>Vel</th>
-                <th>Acc</th>
-                <th>Jerk</th>
-              </tr>
-            </thead>
-            <tbody id="mc-tbody"></tbody>
-          </table>
-        </div>
-
-        <a id="mc-download-link" class="mc-download-btn" href="#" download="motion_profile_calculator.py">
-          <span>⬇</span>
-          <span data-en="Download Python App (.py)" data-de="Python-App herunterladen (.py)">Download Python App (.py)</span>
-        </a>
-      </div>
-
-      <!-- Right: Canvas charts -->
-      <div class="mc-right">
-        <canvas id="mc-canvas" width="600" height="640"></canvas>
+        <div class="mc-right"><canvas id="mc-canvas" width="600" height="640"></canvas></div>
       </div>
     </div>
   </div>
@@ -1177,29 +653,13 @@
 <!-- LANGUAGES -->
 <section id="languages">
   <div class="wrap">
-    <div class="sec-head reveal">
-      <span class="sec-num">06</span>
-      <h2 class="sec-title" data-en="Languages" data-de="Sprachen">Languages</h2>
-    </div>
-    <div class="lang-strip reveal">
-      <div class="lang-cell">
-        <div class="lang-name" data-en="Hungarian" data-de="Ungarisch">Hungarian</div>
-        <div class="lang-lvl"  data-en="Native"    data-de="Muttersprache">Native</div>
-      </div>
-      <div class="lang-cell">
-        <div class="lang-name" data-en="German"       data-de="Deutsch">German</div>
-        <div class="lang-lvl">B2</div>
-        <div class="lang-sub" data-en="Independent"   data-de="Selbstständig">Independent</div>
-      </div>
-      <div class="lang-cell">
-        <div class="lang-name" data-en="English"      data-de="Englisch">English</div>
-        <div class="lang-lvl">C1</div>
-        <div class="lang-sub" data-en="Proficient"    data-de="Kompetent">Proficient</div>
-      </div>
-      <div class="lang-cell">
-        <div class="lang-name" data-en="Romanian"     data-de="Rumänisch">Romanian</div>
-        <div class="lang-lvl">B2</div>
-        <div class="lang-sub" data-en="Independent"   data-de="Selbstständig">Independent</div>
+    <div class="sec-head reveal"><span class="sec-num">06</span><span class="sec-title" data-en="Languages" data-de="Sprachen">Languages</span></div>
+    <div class="plate reveal">
+      <div class="lang-grid">
+        <div class="lang-cell"><div class="lang-name" data-en="Hungarian" data-de="Ungarisch">Hungarian</div><div class="lang-lvl" data-en="Native" data-de="Muttersprache">Native</div></div>
+        <div class="lang-cell"><div class="lang-name" data-en="German" data-de="Deutsch">German</div><div class="lang-lvl">B2</div><div class="lang-sub" data-en="Independent" data-de="Selbstständig">Independent</div></div>
+        <div class="lang-cell"><div class="lang-name" data-en="English" data-de="Englisch">English</div><div class="lang-lvl">C1</div><div class="lang-sub" data-en="Proficient" data-de="Kompetent">Proficient</div></div>
+        <div class="lang-cell"><div class="lang-name" data-en="Romanian" data-de="Rumänisch">Romanian</div><div class="lang-lvl">B2</div><div class="lang-sub" data-en="Independent" data-de="Selbstständig">Independent</div></div>
       </div>
     </div>
   </div>
@@ -1210,26 +670,23 @@
 <!-- CONTACT -->
 <section id="contact">
   <div class="wrap">
-    <div class="contact-grid">
-      <div class="reveal">
-        <h2 class="contact-title" data-en="Say<br><em>hello</em>" data-de="Schreib<br><em>mir</em>">Say<br><em>hello</em></h2>
-        <p class="contact-text" data-en="Not looking for new opportunities, but always happy to talk automation, exchange ideas, or just connect with fellow engineers." data-de="Ich suche keine neue Stelle, freue mich aber immer über Gespräche rund um Automation, den Austausch von Ideen oder einfach den Kontakt mit anderen Ingenieuren.">
-          Not looking for new opportunities, but always happy to talk automation, exchange ideas, or just connect with fellow engineers.
-        </p>
-        <div class="contact-line">
-          <div class="contact-icon">✉</div>
-          <div class="contact-val"><a href="/cdn-cgi/l/email-protection#93fff6fbf6ffd3fff1faf7f6f2e0bdf7f6"><span class="__cf_email__" data-cfemail="573b323f323b173b353e33323624793332">[email&#160;protected]</span></a></div>
+    <div class="sec-head reveal"><span class="sec-num">07</span><span class="sec-title" data-en="Contact" data-de="Kontakt">Contact</span></div>
+    <div class="plate reveal">
+      <div class="contact-halves">
+        <div class="ch-left">
+          <h2 class="contact-title" data-en="Say<br><em>hello.</em>" data-de="Schreib<br><em>mir.</em>">Say<br><em>hello.</em></h2>
+          <p class="contact-text" data-en="Not looking for new opportunities, but always happy to talk automation, exchange ideas, or just connect with fellow engineers." data-de="Ich suche keine neue Stelle, freue mich aber immer über Gespräche rund um Automation oder den Kontakt mit anderen Ingenieuren.">Not looking for new opportunities, but always happy to talk automation, exchange ideas, or just connect with fellow engineers.</p>
+          <div class="contact-line"><div class="contact-icon">✉</div><div class="contact-val"><a href="mailto:lehel@lbideas.de">lehel@lbideas.de</a></div></div>
+          <div class="contact-line"><div class="contact-icon">◎</div><div class="contact-val" data-en="Neu-Ulm, Germany" data-de="Neu-Ulm, Deutschland">Neu-Ulm, Germany</div></div>
         </div>
-        <div class="contact-line">
-          <div class="contact-icon">📍</div>
-          <div class="contact-val" data-en="Neu-Ulm, Germany" data-de="Neu-Ulm, Deutschland">Neu-Ulm, Germany</div>
+        <div class="ch-right">
+          <div class="form">
+            <input type="text"  data-placeholder-en="Name"    data-placeholder-de="Name"      placeholder="Name" autocomplete="name">
+            <input type="email" data-placeholder-en="Email"   data-placeholder-de="E-Mail"    placeholder="Email" autocomplete="email">
+            <textarea rows="5"  data-placeholder-en="Message" data-placeholder-de="Nachricht" placeholder="Message"></textarea>
+            <a href="mailto:lehel@lbideas.de" class="btn-primary" data-en="Send message" data-de="Nachricht senden">Send message</a>
+          </div>
         </div>
-      </div>
-      <div class="form reveal">
-        <input  type="text"  data-placeholder-en="Your name"    data-placeholder-de="Ihr Name"      placeholder="Your name" autocomplete="name">
-        <input  type="email" data-placeholder-en="Your email"   data-placeholder-de="Ihre E-Mail"   placeholder="Your email" autocomplete="email">
-        <textarea rows="5"   data-placeholder-en="Your message" data-placeholder-de="Ihre Nachricht" placeholder="Your message"></textarea>
-        <a href="/cdn-cgi/l/email-protection#731f161b161f331f111a171612005d1716" class="btn-primary" data-en="Send message →" data-de="Nachricht senden →">Send message →</a>
       </div>
     </div>
   </div>
@@ -1240,29 +697,21 @@
   <span class="foot-copy">© 2025 · lbideas.de</span>
 </footer>
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
-  // HAMBURGER
+<script>
   const hamburger = document.getElementById('hamburger');
   const mobileMenu = document.getElementById('mobileMenu');
-
   hamburger.addEventListener('click', () => {
     const isOpen = mobileMenu.classList.toggle('open');
     hamburger.classList.toggle('open', isOpen);
     document.body.style.overflow = isOpen ? 'hidden' : '';
   });
-
   function closeMenu() {
     mobileMenu.classList.remove('open');
     hamburger.classList.remove('open');
     document.body.style.overflow = '';
   }
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeMenu(); });
 
-  // Close on escape
-  document.addEventListener('keydown', e => {
-    if (e.key === 'Escape') closeMenu();
-  });
-
-  // LANGUAGE
   function setLang(lang) {
     document.querySelectorAll('.lang-btn').forEach((b,i) =>
       b.classList.toggle('active', (i===0&&lang==='en')||(i===1&&lang==='de'))
@@ -1276,627 +725,159 @@
     });
   }
 
-  // SCROLL REVEAL
   const obs = new IntersectionObserver(entries => {
     entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('in'); });
   }, { threshold: 0.01 });
-
   document.querySelectorAll('.reveal').forEach(el => {
-    const rect = el.getBoundingClientRect();
-    if (rect.top < window.innerHeight) {
-      el.classList.add('in');
-    } else {
-      obs.observe(el);
-    }
+    if (el.getBoundingClientRect().top < window.innerHeight) el.classList.add('in');
+    else obs.observe(el);
   });
+  // Fallback: force all reveals visible after 600ms in case observer misfires on mobile
+  setTimeout(() => {
+    document.querySelectorAll('.reveal').forEach(el => el.classList.add('in'));
+  }, 600);
 
-  // =============================================
-  // MOTION PROFILE CALCULATOR - Pure JS/Canvas
-  // =============================================
-
-  // Physics engine (translated from Python)
+  // MOTION PROFILE CALCULATOR
   function computeMotionProfile(distance, maxVel, maxAcc, maxJerk) {
-    const sTotal = parseFloat(distance);
-    const vMax   = Math.abs(parseFloat(maxVel));
-    const aMax   = Math.abs(parseFloat(maxAcc));
-    const jMax   = Math.abs(parseFloat(maxJerk));
-    const dir    = sTotal >= 0 ? 1 : -1;
-    const sMag   = Math.abs(sTotal);
-
-    if (sMag <= 0 || vMax <= 0 || aMax <= 0 || jMax <= 0) return null;
-
-    // Step 1: Determine Tj, Ta, Tv
-    const Va = (aMax * aMax) / jMax;
-    let Tj, Ta, Tv, caseType;
-
-    let TjStar, TaStar;
-    if (vMax <= Va) {
-      TjStar = Math.sqrt(vMax / jMax);
-      TaStar = 0;
-    } else {
-      TjStar = aMax / jMax;
-      TaStar = (vMax - jMax * TjStar * TjStar) / aMax;
+    const sTotal=parseFloat(distance), vMax=Math.abs(parseFloat(maxVel));
+    const aMax=Math.abs(parseFloat(maxAcc)), jMax=Math.abs(parseFloat(maxJerk));
+    const dir=sTotal>=0?1:-1, sMag=Math.abs(sTotal);
+    if(sMag<=0||vMax<=0||aMax<=0||jMax<=0) return null;
+    const Va=(aMax*aMax)/jMax;
+    let Tj,Ta,Tv,caseType,TjStar,TaStar;
+    if(vMax<=Va){TjStar=Math.sqrt(vMax/jMax);TaStar=0;}
+    else{TjStar=aMax/jMax;TaStar=(vMax-jMax*TjStar*TjStar)/aMax;}
+    const sRequired=vMax*(2*TjStar+TaStar);
+    if(sMag>=sRequired){caseType="Long Move (V_max Reached)";Tj=TjStar;Ta=TaStar;Tv=(sMag-sRequired)/vMax;}
+    else{Tv=0;const sHalf=sMag/2;const TjNew=Math.cbrt(sHalf/jMax);
+      if(jMax*TjNew<=aMax){caseType="Short Move (Jerk Limited)";Tj=TjNew;Ta=0;}
+      else{caseType="Short Move (Accel Limited)";Tj=aMax/jMax;const c=2*Tj*Tj-(2*sHalf/aMax),b=3*Tj,disc=b*b-4*c;Ta=(-b+Math.sqrt(Math.max(0,disc)))/2;}}
+    function integrate(base,jerk,dt){
+      const[t0,,a0,v0,p0]=base;
+      return[t0+dt,jerk,a0+jerk*dt,v0+a0*dt+0.5*jerk*dt*dt,p0+v0*dt+0.5*a0*dt*dt+(1/6)*jerk*dt*dt*dt];
     }
-
-    const sRequired = vMax * (2 * TjStar + TaStar);
-
-    if (sMag >= sRequired) {
-      caseType = "Long Move (V_max Reached)";
-      Tj = TjStar; Ta = TaStar;
-      Tv = (sMag - sRequired) / vMax;
-    } else {
-      Tv = 0;
-      const sHalf = sMag / 2;
-      const TjNew = Math.cbrt(sHalf / jMax);
-      if (jMax * TjNew <= aMax) {
-        caseType = "Short Move (Jerk Limited)";
-        Tj = TjNew; Ta = 0;
-      } else {
-        caseType = "Short Move (Accel Limited)";
-        Tj = aMax / jMax;
-        const c = 2 * Tj * Tj - (2 * sHalf / aMax);
-        const b = 3 * Tj;
-        const disc = b * b - 4 * c;
-        Ta = (-b + Math.sqrt(Math.max(0, disc))) / 2;
-      }
+    const s0=[0,0,0,0,0],s1=integrate(s0,jMax,Tj),s2=integrate(s1,0,Ta),
+          s3=integrate(s2,-jMax,Tj),s4=integrate(s3,0,Tv),
+          s5=integrate(s4,-jMax,Tj),s6=integrate(s5,0,Ta),s7=integrate(s6,jMax,Tj);
+    const snapshots=[s0,s1,s2,s3,s4,s5,s6,s7],jSegs=[jMax,0,-jMax,0,-jMax,0,jMax],tEnd=s7[0];
+    function getState(tQ){
+      if(tQ<0)return[0,0,0,0];
+      const times=snapshots.map(s=>s[0]);
+      if(tQ>=times[times.length-1])return[0,0,0,snapshots[snapshots.length-1][4]*dir];
+      let k=0;for(let i=0;i<times.length-1;i++){if(tQ>=times[i])k=i;}
+      const base=snapshots[k],dt=tQ-base[0],j=jSegs[k]||0;
+      const[,,a0,v0,p0]=base;
+      return[j*dir,(a0+j*dt)*dir,(v0+a0*dt+0.5*j*dt*dt)*dir,(p0+v0*dt+0.5*a0*dt*dt+(1/6)*j*dt*dt*dt)*dir];
     }
-
-    // Step 2: Chain of states
-    function integrate(base, jerk, dt) {
-      const [t0, , a0, v0, p0] = base;
-      const af = a0 + jerk * dt;
-      const vf = v0 + a0 * dt + 0.5 * jerk * dt * dt;
-      const pf = p0 + v0 * dt + 0.5 * a0 * dt * dt + (1/6) * jerk * dt * dt * dt;
-      return [t0 + dt, jerk, af, vf, pf];
-    }
-
-    const s0 = [0, 0, 0, 0, 0];
-    const s1 = integrate(s0,  jMax,  Tj);
-    const s2 = integrate(s1,  0,     Ta);
-    const s3 = integrate(s2, -jMax,  Tj);
-    const s4 = integrate(s3,  0,     Tv);
-    const s5 = integrate(s4, -jMax,  Tj);
-    const s6 = integrate(s5,  0,     Ta);
-    const s7 = integrate(s6,  jMax,  Tj);
-
-    const snapshots = [s0, s1, s2, s3, s4, s5, s6, s7];
-    const jSegs     = [jMax, 0, -jMax, 0, -jMax, 0, jMax];
-    const tEnd      = s7[0];
-
-    function getState(tQ) {
-      if (tQ < 0) return [0, 0, 0, 0];
-      const times = snapshots.map(s => s[0]);
-      if (tQ >= times[times.length - 1]) return [0, 0, 0, snapshots[snapshots.length - 1][4] * dir];
-
-      let k = 0;
-      for (let i = 0; i < times.length - 1; i++) { if (tQ >= times[i]) k = i; }
-
-      const base = snapshots[k];
-      const dt = tQ - base[0];
-      const [, , a0, v0, p0] = base;
-      const j = jSegs[k] || 0;
-      const a = a0 + j * dt;
-      const v = v0 + a0 * dt + 0.5 * j * dt * dt;
-      const p = p0 + v0 * dt + 0.5 * a0 * dt * dt + (1/6) * j * dt * dt * dt;
-      return [j * dir, a * dir, v * dir, p * dir];
-    }
-
-    return { snapshots, getState, tEnd, caseType, dir };
+    return{snapshots,getState,tEnd,caseType,dir};
   }
 
-  // Canvas renderer
-  const MC_COLORS = {
-    pos:  '#4fc3f7',
-    vel:  '#66bb6a',
-    acc:  '#ffa726',
-    jerk: '#ab47bc',
-    grid: '#2a2a2a',
-    text: '#666666',
-    accent: '#c9a96e',
-    bg:   '#1a1a18'
-  };
+  let mcProfile=null, mcHighlight=-1;
 
-  let mcProfile = null;
-  let mcHighlight = -1;
-
-  function mcDraw() {
-    const canvas = document.getElementById('mc-canvas');
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    const dpr = window.devicePixelRatio || 1;
-
-    // Make canvas crisp
-    const w = canvas.clientWidth;
-    const h = canvas.clientHeight;
-    canvas.width  = w * dpr;
-    canvas.height = h * dpr;
-    ctx.scale(dpr, dpr);
-
-    ctx.clearRect(0, 0, w, h);
-    ctx.fillStyle = MC_COLORS.bg;
-    ctx.fillRect(0, 0, w, h);
-
-    if (!mcProfile || !mcProfile.snapshots || mcProfile.snapshots.length === 0) return;
-    if (mcProfile.tEnd <= 0) return;
-
-    const { snapshots, getState, tEnd } = mcProfile;
-    const PLOTS = [
-      { key: 3, label: 'Position', color: MC_COLORS.pos },
-      { key: 2, label: 'Velocity', color: MC_COLORS.vel },
-      { key: 1, label: 'Acceleration', color: MC_COLORS.acc },
-      { key: 0, label: 'Jerk', color: MC_COLORS.jerk }
+  function mcDraw(){
+    const canvas=document.getElementById('mc-canvas');
+    if(!canvas)return;
+    const ctx=canvas.getContext('2d');
+    const dpr=window.devicePixelRatio||1;
+    const w=canvas.clientWidth,h=canvas.clientHeight;
+    canvas.width=w*dpr;canvas.height=h*dpr;
+    ctx.scale(dpr,dpr);
+    // Steel background for canvas
+    ctx.fillStyle='#1a2226';
+    ctx.fillRect(0,0,w,h);
+    if(!mcProfile||!mcProfile.snapshots.length||mcProfile.tEnd<=0)return;
+    const{snapshots,getState,tEnd}=mcProfile;
+    // Steel-toned chart colors — different lightness same hue family
+    const PLOTS=[
+      {key:3,label:'POS',color:'#b8c8d0'},
+      {key:2,label:'VEL',color:'#9aaab2'},
+      {key:1,label:'ACC',color:'#7e8d95'},
+      {key:0,label:'JRK',color:'#637079'}
     ];
+    const rows=4,padL=48,padR=10,padT=12,padB=24,gap=10;
+    const totalH=h-padT-padB,plotH=(totalH-gap*(rows-1))/rows,plotW=w-padL-padR;
+    const N=400,dt=tEnd/N,allStates=[];
+    for(let i=0;i<=N;i++)allStates.push(getState(i*dt));
 
-    const rows = 4;
-    const padL = 52, padR = 12, padT = 14, padB = 28;
-    const gap  = 14;
-    const totalH = h - padT - padB;
-    const plotH  = (totalH - gap * (rows - 1)) / rows;
-    const plotW  = w - padL - padR;
+    PLOTS.forEach((pl,ri)=>{
+      const y0=padT+ri*(plotH+gap);
+      const vals=allStates.map(s=>s[pl.key]);
+      const vMin=Math.min(...vals),vMax=Math.max(...vals);
+      const range=vMax-vMin||1,pad=range*0.12;
+      const toX=t=>padL+(t/tEnd)*plotW;
+      const toY=v=>y0+plotH-(v-vMin+pad)/(range+2*pad)*plotH;
 
-    // Sample data
-    const N = 400;
-    const dt = tEnd / N;
-    const allStates = [];
-    for (let i = 0; i <= N; i++) allStates.push(getState(i * dt));
+      ctx.strokeStyle='rgba(255,255,255,0.04)';ctx.lineWidth=1;
+      for(let gi=0;gi<=4;gi++){const gy=y0+(gi/4)*plotH;ctx.beginPath();ctx.moveTo(padL,gy);ctx.lineTo(padL+plotW,gy);ctx.stroke();}
+      if(vMin<0&&vMax>0){ctx.strokeStyle='rgba(255,255,255,0.07)';const zy=toY(0);ctx.beginPath();ctx.moveTo(padL,zy);ctx.lineTo(padL+plotW,zy);ctx.stroke();}
 
-    PLOTS.forEach((pl, ri) => {
-      const y0 = padT + ri * (plotH + gap);
-      const vals = allStates.map(s => s[pl.key]);
-      const vMin = Math.min(...vals);
-      const vMax = Math.max(...vals);
-      const range = vMax - vMin || 1;
-      const pad = range * 0.12;
+      ctx.beginPath();ctx.moveTo(toX(0),toY(vals[0]));
+      for(let i=1;i<=N;i++)ctx.lineTo(toX(i*dt),toY(vals[i]));
+      ctx.lineTo(toX(tEnd),toY(vMin-pad));ctx.lineTo(toX(0),toY(vMin-pad));ctx.closePath();
+      const grad=ctx.createLinearGradient(0,y0,0,y0+plotH);
+      grad.addColorStop(0,pl.color+'28');grad.addColorStop(1,pl.color+'06');
+      ctx.fillStyle=grad;ctx.fill();
 
-      const toX = t => padL + (t / tEnd) * plotW;
-      const toY = v => y0 + plotH - (v - vMin + pad) / (range + 2 * pad) * plotH;
-
-      // Grid lines
-      ctx.strokeStyle = MC_COLORS.grid;
-      ctx.lineWidth = 1;
-      for (let gi = 0; gi <= 4; gi++) {
-        const gy = y0 + (gi / 4) * plotH;
-        ctx.beginPath();
-        ctx.moveTo(padL, gy);
-        ctx.lineTo(padL + plotW, gy);
-        ctx.stroke();
-      }
-
-      // Zero line
-      if (vMin < 0 && vMax > 0) {
-        ctx.strokeStyle = 'rgba(255,255,255,0.1)';
-        ctx.lineWidth = 1;
-        const zy = toY(0);
-        ctx.beginPath();
-        ctx.moveTo(padL, zy);
-        ctx.lineTo(padL + plotW, zy);
-        ctx.stroke();
-      }
-
-      // Fill
-      ctx.beginPath();
-      ctx.moveTo(toX(0), toY(vals[0]));
-      for (let i = 1; i <= N; i++) ctx.lineTo(toX(i * dt), toY(vals[i]));
-      ctx.lineTo(toX(tEnd), toY(vMin - pad));
-      ctx.lineTo(toX(0), toY(vMin - pad));
-      ctx.closePath();
-      const grad = ctx.createLinearGradient(0, y0, 0, y0 + plotH);
-      const hex = pl.color;
-      grad.addColorStop(0, hex + '33');
-      grad.addColorStop(1, hex + '08');
-      ctx.fillStyle = grad;
-      ctx.fill();
-
-      // Line
-      ctx.strokeStyle = pl.color;
-      ctx.lineWidth = 1.8;
-      ctx.lineJoin = 'round';
-      ctx.beginPath();
-      ctx.moveTo(toX(0), toY(vals[0]));
-      for (let i = 1; i <= N; i++) ctx.lineTo(toX(i * dt), toY(vals[i]));
+      ctx.strokeStyle=pl.color;ctx.lineWidth=1.6;ctx.lineJoin='round';
+      ctx.beginPath();ctx.moveTo(toX(0),toY(vals[0]));
+      for(let i=1;i<=N;i++)ctx.lineTo(toX(i*dt),toY(vals[i]));
       ctx.stroke();
 
-      // Snap dots
-      snapshots.forEach((sn, si) => {
-        const tv = sn[0];
-        const sv = getState(tv)[pl.key];
-        const sx = toX(tv);
-        const sy = toY(sv);
-        const isHL = si === mcHighlight;
-
-        ctx.beginPath();
-        ctx.arc(sx, sy, isHL ? 6 : 3, 0, Math.PI * 2);
-        ctx.fillStyle = isHL ? '#ff4444' : 'rgba(255,255,255,0.8)';
-        ctx.fill();
-
-        if (isHL) {
-          ctx.strokeStyle = '#ff4444';
-          ctx.lineWidth = 1.5;
-          ctx.beginPath();
-          ctx.arc(sx, sy, 10, 0, Math.PI * 2);
-          ctx.stroke();
-        }
+      snapshots.forEach((sn,si)=>{
+        const tv=sn[0],sv=getState(tv)[pl.key],sx=toX(tv),sy=toY(sv),isHL=si===mcHighlight;
+        ctx.beginPath();ctx.arc(sx,sy,isHL?5:2.5,0,Math.PI*2);
+        ctx.fillStyle=isHL?'#dce6ec':'rgba(220,230,236,0.6)';ctx.fill();
+        if(isHL){ctx.strokeStyle='#dce6ec';ctx.lineWidth=1;ctx.beginPath();ctx.arc(sx,sy,9,0,Math.PI*2);ctx.stroke();}
       });
 
-      // Y label
-      ctx.fillStyle = pl.color;
-      ctx.font = `bold 9px "DM Sans", sans-serif`;
-      ctx.textAlign = 'left';
-      ctx.fillText(pl.label.toUpperCase(), padL + 4, y0 + 11);
-
-      // Y axis min/max
-      ctx.fillStyle = MC_COLORS.text;
-      ctx.font = `8px "Courier New"`;
-      ctx.textAlign = 'right';
-      ctx.fillText(vMax.toFixed(1), padL - 4, y0 + 10);
-      ctx.fillText(vMin.toFixed(1), padL - 4, y0 + plotH - 2);
-
-      // Vertical snap lines (light)
-      ctx.strokeStyle = 'rgba(255,255,255,0.04)';
-      ctx.lineWidth = 1;
-      snapshots.forEach(sn => {
-        const sx = toX(sn[0]);
-        ctx.beginPath();
-        ctx.moveTo(sx, padT);
-        ctx.lineTo(sx, h - padB);
-        ctx.stroke();
-      });
+      ctx.fillStyle=pl.color;ctx.font='600 8px "IBM Plex Mono",monospace';
+      ctx.textAlign='left';ctx.fillText(pl.label,padL+4,y0+10);
+      ctx.fillStyle='rgba(180,195,205,0.5)';ctx.font='7px "IBM Plex Mono",monospace';
+      ctx.textAlign='right';
+      ctx.fillText(vMax.toFixed(1),padL-4,y0+9);
+      ctx.fillText(vMin.toFixed(1),padL-4,y0+plotH-2);
     });
 
-    // X axis time labels
-    ctx.fillStyle = MC_COLORS.text;
-    ctx.font = `8px "Courier New"`;
-    ctx.textAlign = 'center';
-    for (let i = 0; i <= 5; i++) {
-      const tx = padL + (i / 5) * plotW;
-      const tv = (i / 5) * tEnd;
-      ctx.fillText(tv.toFixed(2) + 's', tx, h - padB + 12);
-    }
+    ctx.fillStyle='rgba(180,195,205,0.4)';ctx.font='7px "IBM Plex Mono",monospace';ctx.textAlign='center';
+    for(let i=0;i<=5;i++){const tx=padL+(i/5)*plotW,tv=(i/5)*tEnd;ctx.fillText(tv.toFixed(2)+'s',tx,h-padB+11);}
   }
 
-  function mcCalc() {
-    const dist  = parseFloat(document.getElementById('mc-dist').value)  || 0;
-    const vel   = parseFloat(document.getElementById('mc-vel').value)   || 0;
-    const acc   = parseFloat(document.getElementById('mc-acc').value)   || 0;
-    const jerk  = parseFloat(document.getElementById('mc-jerk').value)  || 0;
-
-    mcProfile = computeMotionProfile(dist, vel, acc, jerk);
-    mcHighlight = -1;
-
-    if (!mcProfile) {
-      document.getElementById('mc-case').textContent = 'Invalid inputs';
-      document.getElementById('mc-time').textContent = '—';
-      return;
-    }
-
-    document.getElementById('mc-case').textContent = mcProfile.caseType;
-    document.getElementById('mc-time').textContent  = mcProfile.tEnd.toFixed(4) + ' s';
-
-    // Fill table
-    const tbody = document.getElementById('mc-tbody');
-    tbody.innerHTML = '';
-    mcProfile.snapshots.forEach((sn, idx) => {
-      const t = sn[0];
-      const [j, a, v, p] = mcProfile.getState(t);
-      const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td>${t.toFixed(3)}</td>
-        <td>${p.toFixed(2)}</td>
-        <td>${v.toFixed(2)}</td>
-        <td>${a.toFixed(2)}</td>
-        <td>${j.toFixed(1)}</td>
-      `;
-      tr.addEventListener('click', () => {
-        document.querySelectorAll('#mc-tbody tr').forEach(r => r.classList.remove('mc-row-selected'));
-        tr.classList.add('mc-row-selected');
-        mcHighlight = idx;
-        mcDraw();
+  function mcCalc(){
+    const dist=parseFloat(document.getElementById('mc-dist').value)||0;
+    const vel=parseFloat(document.getElementById('mc-vel').value)||0;
+    const acc=parseFloat(document.getElementById('mc-acc').value)||0;
+    const jerk=parseFloat(document.getElementById('mc-jerk').value)||0;
+    mcProfile=computeMotionProfile(dist,vel,acc,jerk);mcHighlight=-1;
+    if(!mcProfile){document.getElementById('mc-case').textContent='Invalid';document.getElementById('mc-time').textContent='—';return;}
+    document.getElementById('mc-case').textContent=mcProfile.caseType;
+    document.getElementById('mc-time').textContent=mcProfile.tEnd.toFixed(4)+' s';
+    const tbody=document.getElementById('mc-tbody');tbody.innerHTML='';
+    mcProfile.snapshots.forEach((sn,idx)=>{
+      const t=sn[0],[j,a,v,p]=mcProfile.getState(t);
+      const tr=document.createElement('tr');
+      tr.innerHTML=`<td>${t.toFixed(3)}</td><td>${p.toFixed(2)}</td><td>${v.toFixed(2)}</td><td>${a.toFixed(2)}</td><td>${j.toFixed(1)}</td>`;
+      tr.addEventListener('click',()=>{
+        document.querySelectorAll('#mc-tbody tr').forEach(r=>r.classList.remove('mc-row-selected'));
+        tr.classList.add('mc-row-selected');mcHighlight=idx;mcDraw();
       });
       tbody.appendChild(tr);
     });
-
     mcDraw();
   }
 
-  // Live recalc on input
-  ['mc-dist','mc-vel','mc-acc','mc-jerk'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.addEventListener('input', mcCalc);
+  ['mc-dist','mc-vel','mc-acc','mc-jerk'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el)el.addEventListener('input',mcCalc);
   });
-
-  // Redraw on resize
-  window.addEventListener('resize', mcDraw);
-
-  // Initial calc
+  window.addEventListener('resize',mcDraw);
   mcCalc();
 
-  // Setup Python download
-  (function setupDownload() {
-    const pyCode = `import tkinter as tk
-from tkinter import ttk
-import math
-import matplotlib.pyplot as plt
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-from matplotlib.figure import Figure
-
-
-class MotionProfile:
-    def __init__(self, distance, max_vel, max_acc, max_jerk):
-        self.target_s = float(distance)
-        self.v_max = float(abs(max_vel))
-        self.a_max = float(abs(max_acc))
-        self.j_max = float(abs(max_jerk))
-        self.direction = 1.0 if self.target_s >= 0 else -1.0
-        self.s_mag = abs(self.target_s)
-        self.case_type = "Init"
-        self.snapshots = []
-
-        if self.s_mag > 0 and self.v_max > 0 and self.a_max > 0 and self.j_max > 0:
-            self._compute_intervals()
-            self._compute_chain_of_states()
-
-    def _compute_intervals(self):
-        Va = (self.a_max ** 2) / self.j_max
-        if self.v_max <= Va:
-            Tj_star = math.sqrt(self.v_max / self.j_max)
-            Ta_star = 0.0
-        else:
-            Tj_star = self.a_max / self.j_max
-            Ta_star = (self.v_max - (self.j_max * Tj_star ** 2)) / self.a_max
-
-        S_required = self.v_max * (2 * Tj_star + Ta_star)
-
-        if self.s_mag >= S_required:
-            self.case_type = "Long Move (V_max Reached)"
-            self.Tj = Tj_star; self.Ta = Ta_star
-            self.Tv = (self.s_mag - S_required) / self.v_max
-        else:
-            self.Tv = 0.0
-            S_half = self.s_mag / 2
-            Tj_new = (S_half / self.j_max) ** (1 / 3)
-            if (self.j_max * Tj_new) <= self.a_max:
-                self.case_type = "Short Move (Jerk Limited)"
-                self.Tj = Tj_new; self.Ta = 0.0
-            else:
-                self.case_type = "Short Move (Accel Limited)"
-                self.Tj = self.a_max / self.j_max
-                c = 2 * self.Tj ** 2 - (2 * S_half / self.a_max)
-                b = 3 * self.Tj
-                d = b ** 2 - 4 * c
-                self.Ta = (-b + math.sqrt(max(0, d))) / 2
-
-    def _integrate_segment(self, start_state, jerk, duration):
-        t0, _, a0, v0, p0 = start_state
-        dt = duration
-        af = a0 + jerk * dt
-        vf = v0 + a0 * dt + 0.5 * jerk * dt ** 2
-        pf = p0 + v0 * dt + 0.5 * a0 * dt ** 2 + (1 / 6) * jerk * dt ** 3
-        return (t0 + dt, jerk, af, vf, pf)
-
-    def _compute_chain_of_states(self):
-        s0 = (0.0, 0.0, 0.0, 0.0, 0.0)
-        self.snapshots = [s0]
-        s1 = self._integrate_segment(s0, self.j_max, self.Tj)
-        self.snapshots.append(s1)
-        s2 = self._integrate_segment(s1, 0.0, self.Ta)
-        self.snapshots.append(s2)
-        s3 = self._integrate_segment(s2, -self.j_max, self.Tj)
-        self.snapshots.append(s3)
-        s4 = self._integrate_segment(s3, 0.0, self.Tv)
-        self.snapshots.append(s4)
-        s5 = self._integrate_segment(s4, -self.j_max, self.Tj)
-        self.snapshots.append(s5)
-        s6 = self._integrate_segment(s5, 0.0, self.Ta)
-        self.snapshots.append(s6)
-        s7 = self._integrate_segment(s6, self.j_max, self.Tj)
-        self.snapshots.append(s7)
-
-    def get_state_at(self, t_query):
-        if t_query < 0: return 0, 0, 0, 0
-        times = [s[0] for s in self.snapshots]
-        if t_query >= times[-1]: return 0, 0, 0, self.snapshots[-1][4] * self.direction
-
-        k = 0
-        for i in range(len(times) - 1):
-            if t_query >= times[i]: k = i
-
-        j_seg_map = {0: self.j_max, 1: 0.0, 2: -self.j_max, 3: 0.0, 4: -self.j_max, 5: 0.0, 6: self.j_max}
-        j_seg = j_seg_map.get(k, 0.0)
-
-        base = self.snapshots[k]
-        dt = t_query - base[0]
-        _, _, a0, v0, p0 = base
-        j = j_seg
-        a = a0 + j * dt
-        v = v0 + a0 * dt + 0.5 * j * dt ** 2
-        p = p0 + v0 * dt + 0.5 * a0 * dt ** 2 + (1 / 6) * j * dt ** 3
-        return j * self.direction, a * self.direction, v * self.direction, p * self.direction
-
-
-COLORS = {
-    "bg": "#212121", "panel": "#2e2e2e", "text": "#e0e0e0",
-    "accent": "#00adb5", "accent_hover": "#00ced1",
-    "pos": "#4fc3f7", "vel": "#66bb6a", "acc": "#ffa726", "jerk": "#ab47bc",
-    "highlight": "#ff3333"
-}
-
-
-class ModernApp:
-    def __init__(self, root):
-        self.root = root
-        self.root.title("Interactive Motion Profile")
-        self.root.geometry("1280x850")
-        self.root.configure(bg=COLORS["bg"])
-        self.scatter_artists = []
-        self.num_points = 0
-        self._init_styles()
-        self._build_ui()
-        self.calc()
-
-    def _init_styles(self):
-        s = ttk.Style()
-        s.theme_use('clam')
-        s.configure("TFrame", background=COLORS["bg"])
-        s.configure("Panel.TFrame", background=COLORS["panel"])
-        s.configure("TLabel", background=COLORS["panel"], foreground=COLORS["text"], font=("Segoe UI", 10))
-        s.configure("Title.TLabel", background=COLORS["bg"], foreground=COLORS["accent"], font=("Segoe UI", 22, "bold"))
-        s.configure("Header.TLabel", background=COLORS["panel"], foreground=COLORS["accent"], font=("Segoe UI", 11, "bold"))
-        s.configure("TEntry", fieldbackground="#424242", foreground="white", borderwidth=0)
-        s.configure("Accent.TButton", background=COLORS["accent"], foreground="white", borderwidth=0, font=("Segoe UI", 10, "bold"))
-        s.map("Accent.TButton", background=[('active', COLORS["accent_hover"])])
-        s.configure("Treeview", background=COLORS["bg"], fieldbackground=COLORS["bg"], foreground=COLORS["text"], borderwidth=0, font=("Consolas", 9))
-        s.configure("Treeview.Heading", background="#424242", foreground=COLORS["accent"], borderwidth=0)
-        s.map("Treeview", background=[('selected', COLORS["panel"])])
-
-    def _build_ui(self):
-        top = ttk.Frame(self.root)
-        top.pack(fill=tk.X, padx=20, pady=15)
-        ttk.Label(top, text="PRECISION MOTION SOLVER", style="Title.TLabel").pack(side=tk.LEFT)
-
-        main = ttk.Frame(self.root)
-        main.pack(fill=tk.BOTH, expand=True, padx=20, pady=(0, 20))
-
-        left = ttk.Frame(main, width=320, style="Panel.TFrame")
-        left.pack(side=tk.LEFT, fill=tk.Y, padx=(0, 15))
-        left_inner = ttk.Frame(left, style="Panel.TFrame")
-        left_inner.pack(fill=tk.BOTH, expand=True, padx=15, pady=15)
-
-        ttk.Label(left_inner, text="PARAMETERS", style="Header.TLabel").pack(anchor="w", pady=(0, 10))
-        self.inputs = {}
-        defaults = [("Distance", 100), ("Max Vel", 20), ("Max Acc", 10), ("Max Jerk", 50)]
-        for txt, val in defaults:
-            row = ttk.Frame(left_inner, style="Panel.TFrame")
-            row.pack(fill=tk.X, pady=5)
-            ttk.Label(row, text=txt).pack(side=tk.LEFT)
-            e = ttk.Entry(row, width=10, justify='right')
-            e.insert(0, str(val))
-            e.pack(side=tk.RIGHT)
-            self.inputs[txt] = e
-
-        ttk.Button(left_inner, text="CALCULATE", style="Accent.TButton", command=self.calc).pack(fill=tk.X, pady=20)
-        self.status = ttk.Label(left_inner, text="Ready", font=("Segoe UI", 10, "italic"))
-        self.status.pack(fill=tk.X)
-
-        ttk.Label(left_inner, text="CRITICAL POINTS (Click to Highlight)", style="Header.TLabel").pack(anchor="w", pady=(20, 10))
-        cols = ("t", "Pos", "Vel", "Acc", "Jrk")
-        self.tree = ttk.Treeview(left_inner, columns=cols, show='headings', height=12)
-        self.tree.column("t", width=45); self.tree.heading("t", text="t")
-        for c in cols[1:]:
-            self.tree.column(c, width=55); self.tree.heading(c, text=c)
-        self.tree.pack(fill=tk.BOTH, expand=True)
-        self.tree.bind("<<TreeviewSelect>>", self.on_row_click)
-
-        right = ttk.Frame(main, style="Panel.TFrame")
-        right.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True)
-
-        plt.style.use('dark_background')
-        self.fig = Figure(figsize=(5, 5), dpi=100, facecolor=COLORS["panel"])
-        self.axs = self.fig.subplots(4, 1, sharex=True)
-        self.fig.subplots_adjust(left=0.08, right=0.95, top=0.95, bottom=0.08, hspace=0.15)
-        for ax in self.axs:
-            ax.set_facecolor(COLORS["bg"])
-            ax.grid(True, color="#444444", linestyle="--", alpha=0.5)
-            for sp in ax.spines.values(): sp.set_visible(False)
-            ax.spines['left'].set_visible(True); ax.spines['left'].set_color('#666666')
-
-        self.canvas = FigureCanvasTkAgg(self.fig, master=right)
-        self.canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True, padx=1, pady=1)
-
-    def on_row_click(self, event):
-        selected_items = self.tree.selection()
-        if not selected_items: return
-        item = selected_items[0]
-        index = self.tree.index(item)
-        self.highlight_graph_point(index)
-
-    def highlight_graph_point(self, index):
-        if not self.scatter_artists: return
-        normal_color = 'white'; highlight_color = COLORS["highlight"]
-        normal_size = 25; highlight_size = 120
-        for sc in self.scatter_artists:
-            colors = [normal_color] * self.num_points
-            sizes = [normal_size] * self.num_points
-            if 0 <= index < self.num_points:
-                colors[index] = highlight_color
-                sizes[index] = highlight_size
-            sc.set_facecolors(colors)
-            sc.set_sizes(sizes)
-        self.canvas.draw()
-
-    def calc(self):
-        try:
-            vals = [float(self.inputs[k].get()) for k in self.inputs]
-            mp = MotionProfile(*vals)
-            self.status.config(text=mp.case_type, foreground=COLORS["accent"])
-            for i in self.tree.get_children(): self.tree.delete(i)
-            for snap in mp.snapshots:
-                t, _, _, _, _ = snap
-                j, a, v, p = mp.get_state_at(t)
-                self.tree.insert("", "end", values=(f"{t:.3f}", f"{p:.2f}", f"{v:.2f}", f"{a:.2f}", f"{j:.1f}"))
-            self.draw_graph(mp)
-        except Exception as e:
-            print(f"Error: {e}")
-
-    def draw_graph(self, mp):
-        # FIX: Validate points to prevent an IndexError crash on zero inputs.
-        if not mp.snapshots: return
-
-        t_end = mp.snapshots[-1][0]
-        if t_end <= 0: return
-
-        times = [i * t_end / 600 for i in range(601)]
-        data = {'p': [], 'v': [], 'a': [], 'j': []}
-        for t in times:
-            j, a, v, p = mp.get_state_at(t)
-            data['p'].append(p)
-            data['v'].append(v)
-            data['a'].append(a)
-            data['j'].append(j)
-
-        index_map = {'j': 0, 'a': 1, 'v': 2, 'p': 3}
-        configs = [
-            (0, 'p', "Position", COLORS["pos"]),
-            (1, 'v', "Velocity", COLORS["vel"]),
-            (2, 'a', "Acceleration", COLORS["acc"]),
-            (3, 'j', "Jerk", COLORS["jerk"])
-        ]
-        self.scatter_artists = []
-        self.num_points = len(mp.snapshots)
-        for i, key, title, col in configs:
-            ax = self.axs[i]
-
-            # FIX: Safely clear old geometry (wrapped in list() for stability).
-            for artist in list(ax.lines) + list(ax.collections) + list(ax.texts):
-                artist.remove()
-
-            ax.plot(times, data[key], color=col, lw=2)
-            ax.fill_between(times, data[key], color=col, alpha=0.15)
-            snap_times = [s[0] for s in mp.snapshots]
-            snap_vals = [mp.get_state_at(t)[index_map[key]] for t in snap_times]
-            sc = ax.scatter(snap_times, snap_vals, color='white', s=25, zorder=10)
-            self.scatter_artists.append(sc)
-            ax.set_ylabel(title, color=col, fontsize=9, fontweight='bold')
-
-            # FIX: Dynamically rescales bounding box so plots always update bounds properly!
-            ax.relim()
-            ax.autoscale_view()
-
-        self.axs[3].set_xlabel("Time (s)", color="#888888")
-        self.canvas.draw()
-
-
-if __name__ == "__main__":
-    root = tk.Tk()
-    app = ModernApp(root)
-    root.mainloop()
-`;
-    const blob = new Blob([pyCode], { type: 'text/plain' });
-    const url  = URL.createObjectURL(blob);
-    const link = document.getElementById('mc-download-link');
-    if (link) link.href = url;
+  (function setupDownload(){
+    const py=`import tkinter as tk\nfrom tkinter import ttk\nimport math\nimport matplotlib.pyplot as plt\nfrom matplotlib.backends.backend_tkagg import FigureCanvasTkAgg\nfrom matplotlib.figure import Figure\n\nclass MotionProfile:\n    def __init__(self, distance, max_vel, max_acc, max_jerk):\n        self.target_s=float(distance); self.v_max=float(abs(max_vel))\n        self.a_max=float(abs(max_acc)); self.j_max=float(abs(max_jerk))\n        self.direction=1.0 if self.target_s>=0 else -1.0\n        self.s_mag=abs(self.target_s); self.case_type="Init"; self.snapshots=[]\n        if self.s_mag>0 and self.v_max>0 and self.a_max>0 and self.j_max>0:\n            self._compute_intervals(); self._compute_chain_of_states()\n    def _compute_intervals(self):\n        Va=(self.a_max**2)/self.j_max\n        if self.v_max<=Va: Tj_star=math.sqrt(self.v_max/self.j_max); Ta_star=0.0\n        else: Tj_star=self.a_max/self.j_max; Ta_star=(self.v_max-(self.j_max*Tj_star**2))/self.a_max\n        S_req=self.v_max*(2*Tj_star+Ta_star)\n        if self.s_mag>=S_req:\n            self.case_type="Long Move"; self.Tj=Tj_star; self.Ta=Ta_star; self.Tv=(self.s_mag-S_req)/self.v_max\n        else:\n            self.Tv=0.0; S_half=self.s_mag/2; Tj_new=(S_half/self.j_max)**(1/3)\n            if self.j_max*Tj_new<=self.a_max: self.case_type="Short (Jerk)"; self.Tj=Tj_new; self.Ta=0.0\n            else:\n                self.case_type="Short (Accel)"; self.Tj=self.a_max/self.j_max\n                c=2*self.Tj**2-(2*S_half/self.a_max); b=3*self.Tj\n                self.Ta=(-b+math.sqrt(max(0,b**2-4*c)))/2\n    def _seg(self,base,j,dt):\n        t0,_,a0,v0,p0=base\n        return(t0+dt,j,a0+j*dt,v0+a0*dt+0.5*j*dt**2,p0+v0*dt+0.5*a0*dt**2+(1/6)*j*dt**3)\n    def _compute_chain_of_states(self):\n        s=[(0.,0.,0.,0.,0.)]\n        for j,d in[(self.j_max,self.Tj),(0,self.Ta),(-self.j_max,self.Tj),(0,self.Tv),(-self.j_max,self.Tj),(0,self.Ta),(self.j_max,self.Tj)]:\n            s.append(self._seg(s[-1],j,d))\n        self.snapshots=s\n    def get_state_at(self,t):\n        if t<0: return 0,0,0,0\n        times=[s[0] for s in self.snapshots]\n        if t>=times[-1]: return 0,0,0,self.snapshots[-1][4]*self.direction\n        k=max(i for i in range(len(times)-1) if t>=times[i])\n        jm={0:self.j_max,1:0.,2:-self.j_max,3:0.,4:-self.j_max,5:0.,6:self.j_max}\n        _,_,a0,v0,p0=self.snapshots[k]; dt=t-times[k]; j=jm.get(k,0.)\n        return j*self.direction,(a0+j*dt)*self.direction,(v0+a0*dt+0.5*j*dt**2)*self.direction,(p0+v0*dt+0.5*a0*dt**2+(1/6)*j*dt**3)*self.direction\n\nif __name__=="__main__":\n    print("See full app at lbideas.de")\n`;
+    const blob=new Blob([py],{type:'text/plain'});
+    const link=document.getElementById('mc-download-link');
+    if(link)link.href=URL.createObjectURL(blob);
   })();
-
 </script>
 </body>
 </html>
-
