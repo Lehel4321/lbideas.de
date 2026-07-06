@@ -262,15 +262,24 @@
     font-family:var(--MONO); font-size:0.58rem; letter-spacing:0.12em;
     text-transform:uppercase; color:var(--S2);
   }
+  .sim-app-actions { display:flex; gap:0.4rem; align-items:center; }
   .sim-fullscreen {
     font-family:var(--MONO); font-size:0.58rem; letter-spacing:0.1em;
     text-transform:uppercase; color:var(--S1); text-decoration:none;
-    padding:0.3rem 0.6rem; border:1px solid var(--S3); transition:all 0.12s;
+    padding:0.3rem 0.6rem; border:1px solid var(--S3); background:transparent;
+    cursor:pointer; transition:all 0.12s; white-space:nowrap;
   }
   .sim-fullscreen:hover { color:var(--S2); background:rgba(255,255,255,0.06); }
   .sim-frame-wrap { background:#09090b; line-height:0; }
   .sim-frame { width:100%; height:760px; border:0; display:block; background:#09090b; }
   @media (max-width:640px){ .sim-frame { height:600px; } }
+  /* true fullscreen — the whole app fills the screen, toolbar stays on top */
+  #sim-app:fullscreen { display:flex; flex-direction:column; width:100vw; height:100vh; height:100dvh; background:#09090b; }
+  #sim-app:-webkit-full-screen { display:flex; flex-direction:column; width:100vw; height:100vh; background:#09090b; }
+  #sim-app:fullscreen .sim-frame-wrap { flex:1 1 auto; }
+  #sim-app:-webkit-full-screen .sim-frame-wrap { flex:1 1 auto; }
+  #sim-app:fullscreen .sim-frame { height:100%; }
+  #sim-app:-webkit-full-screen .sim-frame { height:100%; }
 
   /* SKILLS */
   .skills-grid { display:grid; grid-template-columns:1fr 1fr; gap:2px; background:var(--GAP); }
@@ -737,7 +746,10 @@
       <div id="sim-app" class="sim-app">
         <div class="sim-app-bar">
           <span class="sim-app-tag">CableCutter PRO · <span data-en="live build" data-de="Live-Build">live build</span></span>
-          <a href="/cutting-machine/" target="_blank" rel="noopener" class="sim-fullscreen" data-en="Open fullscreen ↗" data-de="Vollbild öffnen ↗">Open fullscreen ↗</a>
+          <span class="sim-app-actions">
+            <button type="button" id="sim-fs-btn" class="sim-fullscreen" data-en="⛶ Fullscreen" data-de="⛶ Vollbild">⛶ Fullscreen</button>
+            <a href="/cutting-machine/" target="_blank" rel="noopener" class="sim-fullscreen" data-en="New tab ↗" data-de="Neuer Tab ↗">New tab ↗</a>
+          </span>
         </div>
         <div class="sim-frame-wrap">
           <iframe id="sim-frame" class="sim-frame" title="Cutting Machine Simulator" loading="lazy"></iframe>
@@ -1003,6 +1015,30 @@
       else{ err.classList.add('show'); document.getElementById('sim-code').value=''; }
     });
     try{ if(sessionStorage.getItem('sim-ok')==='1') unlock(); }catch(e){}
+
+    // Fullscreen toggle for the simulator
+    const fsBtn=document.getElementById('sim-fs-btn');
+    const fsTarget=document.getElementById('sim-app');
+    if(fsBtn&&fsTarget){
+      fsBtn.addEventListener('click',()=>{
+        const fsEl=document.fullscreenElement||document.webkitFullscreenElement;
+        if(fsEl){
+          (document.exitFullscreen||document.webkitExitFullscreen||function(){}).call(document);
+        } else {
+          const req=fsTarget.requestFullscreen||fsTarget.webkitRequestFullscreen;
+          if(req){ req.call(fsTarget); }
+          else { window.open(SIM_APP_URL,'_blank','noopener'); } // iOS fallback
+        }
+      });
+      function syncFsLabel(){
+        const on=!!(document.fullscreenElement||document.webkitFullscreenElement);
+        fsBtn.setAttribute('data-en', on?'⤢ Exit':'⛶ Fullscreen');
+        fsBtn.setAttribute('data-de', on?'⤢ Beenden':'⛶ Vollbild');
+        fsBtn.textContent=fsBtn.getAttribute('data-'+(document.querySelector('.lang-btn.active')&&document.querySelectorAll('.lang-btn')[1].classList.contains('active')?'de':'en'));
+      }
+      document.addEventListener('fullscreenchange',syncFsLabel);
+      document.addEventListener('webkitfullscreenchange',syncFsLabel);
+    }
   })();
 </script>
 </body>
