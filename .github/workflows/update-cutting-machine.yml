@@ -1,0 +1,74 @@
+name: Update Cutting Machine Simulator
+
+# Rebuilds the CableCutter simulator from the CuttingMaschine repo and commits
+# the fresh static build into /cutting-machine/ on this site.
+#
+# Trigger it either way:
+#   • Manually  — Actions tab → "Update Cutting Machine Simulator" → Run workflow
+#   • Automatic — from a push in the CuttingMaschine repo (see SETUP note below)
+#
+# One-time SETUP (needed because CuttingMaschine is a private repo):
+#   1. Create a Personal Access Token that can read CuttingMaschine
+#      (GitHub → Settings → Developer settings → Fine-grained tokens →
+#       repo access: CuttingMaschine, permission: Contents = Read).
+#   2. In THIS repo: Settings → Secrets and variables → Actions →
+#      New repository secret → name it CM_TOKEN, paste the token.
+#   3. (Optional, for fully automatic updates) add a tiny workflow to
+#      CuttingMaschine that fires a repository_dispatch to this repo on push.
+#      Ask Claude for that snippet, or see docs/CUTTING-MACHINE.md.
+
+on:
+  workflow_dispatch:
+  repository_dispatch:
+    types: [cutting-machine-updated]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: update-cutting-machine
+  cancel-in-progress: true
+
+jobs:
+  build-and-commit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout this site
+        uses: actions/checkout@v4
+
+      - name: Checkout CuttingMaschine (private)
+        uses: actions/checkout@v4
+        with:
+          repository: Lehel4321/CuttingMaschine
+          token: ${{ secrets.CM_TOKEN }}
+          path: _cutting-machine-src
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install & build (base = /cutting-machine/)
+        working-directory: _cutting-machine-src
+        run: |
+          npm install --no-audit --no-fund
+          npx vite build --base=/cutting-machine/
+
+      - name: Copy build into the site
+        run: |
+          rm -rf cutting-machine
+          mkdir -p cutting-machine
+          cp -r _cutting-machine-src/dist/* cutting-machine/
+          rm -rf _cutting-machine-src
+
+      - name: Commit if changed
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add cutting-machine
+          if git diff --staged --quiet; then
+            echo "No changes — simulator already up to date."
+          else
+            git commit -m "Update cutting machine simulator build"
+            git push
+          fi

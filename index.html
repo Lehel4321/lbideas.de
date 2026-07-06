@@ -214,6 +214,64 @@
     overflow:hidden;
   }
 
+  /* CUTTING MACHINE SIMULATOR — code-gated */
+  .sim-lock {
+    padding:3.5rem 2rem; text-align:center;
+    display:flex; flex-direction:column; align-items:center; gap:0.9rem;
+    background: linear-gradient(170deg, var(--S1) 0%, var(--S) 70%, #748590 100%);
+  }
+  .sim-lock-icon { font-size:2.4rem; line-height:1; filter:drop-shadow(0 2px 3px rgba(0,0,0,0.4)); }
+  .sim-lock-title {
+    font-family:var(--MONO); font-size:0.95rem; font-weight:600;
+    letter-spacing:0.1em; text-transform:uppercase; color:var(--INK);
+  }
+  .sim-lock-desc {
+    max-width:440px; font-size:1rem; color:var(--INK2); line-height:1.55;
+  }
+  .sim-form { display:flex; gap:0.5rem; flex-wrap:wrap; justify-content:center; margin-top:0.4rem; }
+  .sim-input {
+    font-family:var(--MONO); font-size:0.8rem; letter-spacing:0.08em;
+    padding:0.65rem 1rem; min-width:200px;
+    background:rgba(255,255,255,0.9); color:var(--INK);
+    border:1px solid var(--S3); border-radius:0; outline:none;
+    box-shadow:inset 0 1px 3px rgba(0,0,0,0.2);
+  }
+  .sim-input:focus { border-color:var(--GAP); background:#fff; }
+  .sim-btn {
+    font-family:var(--MONO); font-size:0.63rem; font-weight:600;
+    letter-spacing:0.12em; text-transform:uppercase; padding:0.65rem 1.6rem;
+    background:var(--GAP); color:var(--S2); border:1px solid var(--GAP);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,0.08);
+    cursor:pointer; transition:all 0.15s;
+  }
+  .sim-btn:hover { background:#0d1518; color:var(--S1); }
+  .sim-error {
+    display:none; font-family:var(--MONO); font-size:0.65rem; letter-spacing:0.08em;
+    text-transform:uppercase; color:#7a1f1f; margin-top:0.2rem;
+  }
+  .sim-error.show { display:block; }
+
+  .sim-app { display:none; }
+  .sim-app.open { display:block; }
+  .sim-app-bar {
+    display:flex; align-items:center; justify-content:space-between;
+    padding:0.5rem 0.9rem; background:var(--GAP);
+    border-bottom:1px solid #000;
+  }
+  .sim-app-tag {
+    font-family:var(--MONO); font-size:0.58rem; letter-spacing:0.12em;
+    text-transform:uppercase; color:var(--S2);
+  }
+  .sim-fullscreen {
+    font-family:var(--MONO); font-size:0.58rem; letter-spacing:0.1em;
+    text-transform:uppercase; color:var(--S1); text-decoration:none;
+    padding:0.3rem 0.6rem; border:1px solid var(--S3); transition:all 0.12s;
+  }
+  .sim-fullscreen:hover { color:var(--S2); background:rgba(255,255,255,0.06); }
+  .sim-frame-wrap { background:#09090b; line-height:0; }
+  .sim-frame { width:100%; height:760px; border:0; display:block; background:#09090b; }
+  @media (max-width:640px){ .sim-frame { height:600px; } }
+
   /* SKILLS */
   .skills-grid { display:grid; grid-template-columns:1fr 1fr; gap:2px; background:var(--GAP); }
   .skill-row {
@@ -399,6 +457,7 @@
     <li><a href="#education"  data-en="Education"   data-de="Ausbildung">Education</a></li>
     <li><a href="#projects"   data-en="Projects"    data-de="Projekte">Projects</a></li>
     <li><a href="#apps"       data-en="Apps"        data-de="Apps">Apps</a></li>
+    <li><a href="#simulator"  data-en="Simulator"   data-de="Simulator">Simulator</a></li>
     <li><a href="#contact"    data-en="Contact"     data-de="Kontakt">Contact</a></li>
   </ul>
   <div class="nav-right">
@@ -418,6 +477,7 @@
   <a href="#education"  onclick="closeMenu()" data-en="Education"   data-de="Ausbildung">Education</a>
   <a href="#projects"   onclick="closeMenu()" data-en="Projects"    data-de="Projekte">Projects</a>
   <a href="#apps"       onclick="closeMenu()" data-en="Apps"        data-de="Apps">Apps</a>
+  <a href="#simulator"  onclick="closeMenu()" data-en="Simulator"   data-de="Simulator">Simulator</a>
   <a href="#contact"    onclick="closeMenu()" data-en="Contact"     data-de="Kontakt">Contact</a>
   <div class="mobile-menu-footer">
     <button class="lang-btn active" onclick="setLang('en')">EN</button>
@@ -605,6 +665,13 @@
           <div class="app-desc" data-en="S-curve 7-segment motion solver. Real-time position, velocity, acceleration and jerk profiles." data-de="S-Kurven 7-Segment-Löser. Echtzeit-Bewegungsprofile.">S-curve 7-segment motion solver. Real-time position, velocity, acceleration and jerk profiles.</div>
           <span class="app-cta" data-en="Open calculator" data-de="Rechner öffnen">Open calculator</span>
         </div>
+        <div class="app-card" style="cursor:pointer" onclick="document.getElementById('simulator').scrollIntoView({behavior:'smooth'})">
+          <span class="app-icon">✂️</span>
+          <div><span class="app-badge live" data-en="Available · Code" data-de="Verfügbar · Code">Available · Code</span></div>
+          <div class="app-name" data-en="Cutting Machine Simulator" data-de="Schneidemaschinen-Simulator">Cutting Machine Simulator</div>
+          <div class="app-desc" data-en="Interactive CableCutter PRO simulation with a PLC-style FC/OB1 engine. Code-protected." data-de="Interaktive CableCutter-PRO-Simulation mit SPS-artiger FC/OB1-Logik. Code-geschützt.">Interactive CableCutter PRO simulation with a PLC-style FC/OB1 engine. Code-protected.</div>
+          <span class="app-cta" data-en="Enter code →" data-de="Code eingeben →">Enter code →</span>
+        </div>
         <div class="app-card">
           <span class="app-icon">🔩</span>
           <div><span class="app-badge" data-en="In development" data-de="In Entwicklung">In development</span></div>
@@ -645,6 +712,36 @@
           </a>
         </div>
         <div class="mc-right"><canvas id="mc-canvas" width="600" height="640"></canvas></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr>
+
+<!-- CUTTING MACHINE SIMULATOR (code-gated) -->
+<section id="simulator">
+  <div class="wrap">
+    <div class="sec-head reveal"><span class="sec-num">05c</span><span class="sec-title" data-en="Cutting Machine Simulator" data-de="Schneidemaschinen-Simulator">Cutting Machine Simulator</span></div>
+    <div class="plate reveal">
+      <div id="sim-lock" class="sim-lock">
+        <div class="sim-lock-icon">🔒</div>
+        <div class="sim-lock-title" data-en="Protected Project" data-de="Geschütztes Projekt">Protected Project</div>
+        <div class="sim-lock-desc" data-en="An interactive industrial cutting-machine simulation (CableCutter PRO). This project is private — enter the access code to open it right here on the page." data-de="Eine interaktive Simulation einer industriellen Schneidemaschine (CableCutter PRO). Dieses Projekt ist privat — geben Sie den Zugangscode ein, um es direkt hier auf der Seite zu öffnen.">An interactive industrial cutting-machine simulation (CableCutter PRO). This project is private — enter the access code to open it right here on the page.</div>
+        <form id="sim-form" class="sim-form" autocomplete="off">
+          <input type="password" id="sim-code" class="sim-input" placeholder="Access code" data-placeholder-en="Access code" data-placeholder-de="Zugangscode" autocomplete="off" spellcheck="false">
+          <button type="submit" class="sim-btn" data-en="Unlock" data-de="Entsperren">Unlock</button>
+        </form>
+        <div id="sim-error" class="sim-error" data-en="Wrong code — try again." data-de="Falscher Code — bitte erneut versuchen.">Wrong code — try again.</div>
+      </div>
+      <div id="sim-app" class="sim-app">
+        <div class="sim-app-bar">
+          <span class="sim-app-tag">CableCutter PRO · <span data-en="live build" data-de="Live-Build">live build</span></span>
+          <a href="/cutting-machine/" target="_blank" rel="noopener" class="sim-fullscreen" data-en="Open fullscreen ↗" data-de="Vollbild öffnen ↗">Open fullscreen ↗</a>
+        </div>
+        <div class="sim-frame-wrap">
+          <iframe id="sim-frame" class="sim-frame" title="Cutting Machine Simulator" loading="lazy"></iframe>
+        </div>
       </div>
     </div>
   </div>
@@ -879,6 +976,33 @@
     const blob=new Blob([py],{type:'text/plain'});
     const link=document.getElementById('mc-download-link');
     if(link)link.href=URL.createObjectURL(blob);
+  })();
+
+  // ── CUTTING MACHINE SIMULATOR — access code ──────────────────────────
+  // To change the code, edit the line below. (Note: a code on a static site
+  // keeps casual visitors out but is not strong security — see notes.)
+  const SIM_ACCESS_CODE = "CUT-4321";
+  const SIM_APP_URL = "/cutting-machine/";
+  (function setupSimGate(){
+    const form=document.getElementById('sim-form');
+    if(!form)return;
+    const lock=document.getElementById('sim-lock');
+    const app=document.getElementById('sim-app');
+    const frame=document.getElementById('sim-frame');
+    const err=document.getElementById('sim-error');
+    function unlock(){
+      lock.style.display='none';
+      app.classList.add('open');
+      if(frame&&!frame.getAttribute('src')) frame.setAttribute('src',SIM_APP_URL);
+      try{ sessionStorage.setItem('sim-ok','1'); }catch(e){}
+    }
+    form.addEventListener('submit',e=>{
+      e.preventDefault();
+      const val=(document.getElementById('sim-code').value||'').trim();
+      if(val===SIM_ACCESS_CODE){ err.classList.remove('show'); unlock(); }
+      else{ err.classList.add('show'); document.getElementById('sim-code').value=''; }
+    });
+    try{ if(sessionStorage.getItem('sim-ok')==='1') unlock(); }catch(e){}
   })();
 </script>
 </body>
