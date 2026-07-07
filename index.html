@@ -280,6 +280,10 @@
   #sim-app:-webkit-full-screen .sim-frame-wrap { flex:1 1 auto; }
   #sim-app:fullscreen .sim-frame { height:100%; }
   #sim-app:-webkit-full-screen .sim-frame { height:100%; }
+  #pkg-app:fullscreen { display:flex; flex-direction:column; width:100vw; height:100vh; height:100dvh; background:#09090b; }
+  #pkg-app:-webkit-full-screen { display:flex; flex-direction:column; width:100vw; height:100vh; background:#09090b; }
+  #pkg-app:fullscreen .sim-frame-wrap, #pkg-app:-webkit-full-screen .sim-frame-wrap { flex:1 1 auto; }
+  #pkg-app:fullscreen .sim-frame, #pkg-app:-webkit-full-screen .sim-frame { height:100%; }
 
   /* SKILLS */
   .skills-grid { display:grid; grid-template-columns:1fr 1fr; gap:2px; background:var(--GAP); }
@@ -467,6 +471,7 @@
     <li><a href="#projects"   data-en="Projects"    data-de="Projekte">Projects</a></li>
     <li><a href="#apps"       data-en="Apps"        data-de="Apps">Apps</a></li>
     <li><a href="#simulator"  data-en="Simulator"   data-de="Simulator">Simulator</a></li>
+    <li><a href="#packaging"  data-en="Packaging"   data-de="Verpackung">Packaging</a></li>
     <li><a href="#contact"    data-en="Contact"     data-de="Kontakt">Contact</a></li>
   </ul>
   <div class="nav-right">
@@ -487,6 +492,7 @@
   <a href="#projects"   onclick="closeMenu()" data-en="Projects"    data-de="Projekte">Projects</a>
   <a href="#apps"       onclick="closeMenu()" data-en="Apps"        data-de="Apps">Apps</a>
   <a href="#simulator"  onclick="closeMenu()" data-en="Simulator"   data-de="Simulator">Simulator</a>
+  <a href="#packaging"  onclick="closeMenu()" data-en="Packaging"   data-de="Verpackung">Packaging</a>
   <a href="#contact"    onclick="closeMenu()" data-en="Contact"     data-de="Kontakt">Contact</a>
   <div class="mobile-menu-footer">
     <button class="lang-btn active" onclick="setLang('en')">EN</button>
@@ -681,11 +687,12 @@
           <div class="app-desc" data-en="Interactive CableCutter PRO simulation with a PLC-style FC/OB1 engine. Code-protected." data-de="Interaktive CableCutter-PRO-Simulation mit SPS-artiger FC/OB1-Logik. Code-geschützt.">Interactive CableCutter PRO simulation with a PLC-style FC/OB1 engine. Code-protected.</div>
           <span class="app-cta" data-en="Enter code →" data-de="Code eingeben →">Enter code →</span>
         </div>
-        <div class="app-card">
-          <span class="app-icon">🔩</span>
-          <div><span class="app-badge" data-en="In development" data-de="In Entwicklung">In development</span></div>
-          <div class="app-name" data-en="More coming…" data-de="Weitere folgen…">More coming…</div>
-          <div class="app-desc" data-en="More engineering tools are in development." data-de="Weitere Engineering-Tools sind in Entwicklung.">More engineering tools are in development.</div>
+        <div class="app-card" style="cursor:pointer" onclick="document.getElementById('packaging').scrollIntoView({behavior:'smooth'})">
+          <span class="app-icon">📦</span>
+          <div><span class="app-badge live" data-en="Available" data-de="Verfügbar">Available</span></div>
+          <div class="app-name" data-en="Packaging Line Simulator" data-de="Verpackungslinien-Simulator">Packaging Line Simulator</div>
+          <div class="app-desc" data-en="ParcelSort PRO — a live conveyor sorting &amp; packaging line with barcode routing, auto-boxing, fault handling and OEE stats." data-de="ParcelSort PRO — eine Live-Förderband-Sortier- und Verpackungslinie mit Barcode-Routing, Auto-Verpackung, Störungsbehandlung und OEE-Statistik.">ParcelSort PRO — a live conveyor sorting &amp; packaging line with barcode routing, auto-boxing, fault handling and OEE stats.</div>
+          <span class="app-cta" data-en="Open live demo" data-de="Live-Demo öffnen">Open live demo</span>
         </div>
       </div>
     </div>
@@ -753,6 +760,29 @@
         </div>
         <div class="sim-frame-wrap">
           <iframe id="sim-frame" class="sim-frame" title="Cutting Machine Simulator" loading="lazy"></iframe>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr>
+
+<!-- PACKAGING LINE SIMULATOR (public showcase) -->
+<section id="packaging">
+  <div class="wrap">
+    <div class="sec-head reveal"><span class="sec-num">05d</span><span class="sec-title" data-en="Packaging Line Simulator" data-de="Verpackungslinien-Simulator">Packaging Line Simulator</span></div>
+    <div class="plate reveal">
+      <div id="pkg-app" class="sim-app open">
+        <div class="sim-app-bar">
+          <span class="sim-app-tag">ParcelSort PRO · <span data-en="live demo" data-de="Live-Demo">live demo</span></span>
+          <span class="sim-app-actions">
+            <button type="button" id="pkg-fs-btn" class="sim-fullscreen" data-en="⛶ Fullscreen" data-de="⛶ Vollbild">⛶ Fullscreen</button>
+            <a href="/packaging/" target="_blank" rel="noopener" class="sim-fullscreen" data-en="New tab ↗" data-de="Neuer Tab ↗">New tab ↗</a>
+          </span>
+        </div>
+        <div class="sim-frame-wrap">
+          <iframe id="pkg-frame" class="sim-frame" title="Packaging Line Simulator" src="/packaging/" loading="lazy"></iframe>
         </div>
       </div>
     </div>
@@ -1039,6 +1069,30 @@
       document.addEventListener('fullscreenchange',syncFsLabel);
       document.addEventListener('webkitfullscreenchange',syncFsLabel);
     }
+  })();
+
+  // Fullscreen toggle for the public packaging demo
+  (function setupPkgFullscreen(){
+    const btn=document.getElementById('pkg-fs-btn');
+    const target=document.getElementById('pkg-app');
+    if(!btn||!target)return;
+    btn.addEventListener('click',()=>{
+      const fsEl=document.fullscreenElement||document.webkitFullscreenElement;
+      if(fsEl){ (document.exitFullscreen||document.webkitExitFullscreen||function(){}).call(document); }
+      else {
+        const req=target.requestFullscreen||target.webkitRequestFullscreen;
+        if(req){ req.call(target); } else { window.open('/packaging/','_blank','noopener'); }
+      }
+    });
+    function lbl(){
+      const on=!!(document.fullscreenElement||document.webkitFullscreenElement);
+      btn.setAttribute('data-en', on?'⤢ Exit':'⛶ Fullscreen');
+      btn.setAttribute('data-de', on?'⤢ Beenden':'⛶ Vollbild');
+      const de=document.querySelectorAll('.lang-btn')[1]&&document.querySelectorAll('.lang-btn')[1].classList.contains('active');
+      btn.textContent=btn.getAttribute('data-'+(de?'de':'en'));
+    }
+    document.addEventListener('fullscreenchange',lbl);
+    document.addEventListener('webkitfullscreenchange',lbl);
   })();
 </script>
 </body>
