@@ -311,6 +311,14 @@
   .app-cta { margin-top:0.9rem; display:inline-block; font-family:var(--MONO); font-size:0.58rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--INK2); padding:0.25rem 0.65rem; background:rgba(0,0,0,0.15); border:1px solid var(--S3); text-decoration:none; transition:all 0.1s; }
   .app-cta:hover { background:rgba(0,0,0,0.28); color:var(--INK); }
 
+  /* EXAMPLE PROJECTS (REPOS) */
+  .repo-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:2px; background:var(--GAP); }
+  .repo-card { background:linear-gradient(135deg, var(--S1) 0%, var(--S) 55%, var(--S3) 100%); padding:1.5rem 1.3rem; transition:filter 0.15s; text-decoration:none; display:block; color:inherit; }
+  .repo-card:hover { filter:brightness(1.07); }
+  .repo-cta-line { font-family:var(--MONO); font-size:0.74rem; color:var(--INK); line-height:1.75; text-align:center; margin-top:2px; padding:1.1rem 1.2rem; background:linear-gradient(135deg, var(--S) 0%, var(--S3) 100%); border-top:2px solid var(--GAP); }
+  .repo-cta-line a { color:var(--INK); font-weight:600; border-bottom:1px solid var(--INK2); text-decoration:none; padding-bottom:1px; }
+  .repo-cta-line a:hover { border-color:var(--INK); }
+
   /* LANGUAGES */
   .lang-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:2px; background:var(--GAP); }
   .lang-cell { background:linear-gradient(135deg, var(--S1) 0%, var(--S) 100%); padding:1.2rem 1rem; transition:filter 0.12s; }
@@ -404,6 +412,7 @@
     .proj-cell { border-right:none; border-bottom:1px solid rgba(0,0,0,0.1); }
     .proj-cell:last-child { border-bottom:none; text-align:left; }
     .apps-grid { grid-template-columns:1fr; }
+    .repo-grid { grid-template-columns:1fr; }
     .lang-grid { grid-template-columns:repeat(2,1fr); }
     .contact-halves { grid-template-columns:1fr; }
     footer { flex-direction:column; gap:0.3rem; text-align:center; padding:0.8rem 1.2rem; }
@@ -429,6 +438,7 @@
     <li><a href="#projects"   data-en="Projects"    data-de="Projekte">Projects</a></li>
     <li><a href="#apps"       data-en="Apps"        data-de="Apps">Apps</a></li>
     <li><a href="#packaging"  data-en="Packaging"   data-de="Verpackung">Packaging</a></li>
+    <li><a href="#code"       data-en="Code"        data-de="Code">Code</a></li>
     <li><a href="#contact"    data-en="Contact"     data-de="Kontakt">Contact</a></li>
   </ul>
   <div class="nav-right">
@@ -449,6 +459,7 @@
   <a href="#projects"   onclick="closeMenu()" data-en="Projects"    data-de="Projekte">Projects</a>
   <a href="#apps"       onclick="closeMenu()" data-en="Apps"        data-de="Apps">Apps</a>
   <a href="#packaging"  onclick="closeMenu()" data-en="Packaging"   data-de="Verpackung">Packaging</a>
+  <a href="#code"       onclick="closeMenu()" data-en="Code"        data-de="Code">Code</a>
   <a href="#contact"    onclick="closeMenu()" data-en="Contact"     data-de="Kontakt">Contact</a>
   <div class="mobile-menu-footer">
     <button class="lang-btn active" onclick="setLang('en')">EN</button>
@@ -701,6 +712,34 @@
           <iframe id="pkg-frame" class="sim-frame" title="Packaging Line Simulator" src="/packaging/" loading="lazy"></iframe>
         </div>
       </div>
+    </div>
+  </div>
+</section>
+
+<hr>
+
+<!-- EXAMPLE PROJECTS — SOURCE CODE ON GITHUB -->
+<section id="code">
+  <div class="wrap">
+    <div class="sec-head reveal"><span class="sec-num">05e</span><span class="sec-title" data-en="Example Projects" data-de="Beispielprojekte">Example Projects</span></div>
+    <div class="plate reveal">
+      <div class="repo-grid">
+        <a class="repo-card" href="https://github.com/Lehel4321/MotionProfileSolver" target="_blank" rel="noopener">
+          <span class="app-icon">⚙</span>
+          <div><span class="app-badge" data-en="GitHub · Repository" data-de="GitHub · Repository">GitHub · Repository</span></div>
+          <div class="app-name" data-en="Motion Profile Solver" data-de="Bewegungsprofil-Löser">Motion Profile Solver</div>
+          <div class="app-desc" data-en="Motor motion planning program — S-curve trajectory generation with jerk, acceleration and velocity limits. The engine behind the calculator embedded above." data-de="Programm zur Bewegungsplanung von Motoren — S-Kurven-Trajektorien mit Ruck-, Beschleunigungs- und Geschwindigkeitsgrenzen. Die Engine hinter dem oben eingebetteten Rechner.">Motor motion planning program — S-curve trajectory generation with jerk, acceleration and velocity limits. The engine behind the calculator embedded above.</div>
+          <span class="app-cta" data-en="View on GitHub ↗" data-de="Auf GitHub ansehen ↗">View on GitHub ↗</span>
+        </a>
+        <a class="repo-card" href="https://github.com/Lehel4321/PackegingSystem" target="_blank" rel="noopener">
+          <span class="app-icon">📦</span>
+          <div><span class="app-badge" data-en="GitHub · Repository" data-de="GitHub · Repository">GitHub · Repository</span></div>
+          <div class="app-name" data-en="Packaging System" data-de="Verpackungssystem">Packaging System</div>
+          <div class="app-desc" data-en="Conveyor sorting &amp; packaging line simulation — barcode routing, auto-boxing, fault handling and OEE statistics. Source code behind the simulator embedded above." data-de="Simulation einer Förderband-Sortier- und Verpackungslinie — Barcode-Routing, Auto-Verpackung, Störungsbehandlung und OEE-Statistik. Quellcode hinter dem oben eingebetteten Simulator.">Conveyor sorting &amp; packaging line simulation — barcode routing, auto-boxing, fault handling and OEE statistics. Source code behind the simulator embedded above.</div>
+          <span class="app-cta" data-en="View on GitHub ↗" data-de="Auf GitHub ansehen ↗">View on GitHub ↗</span>
+        </a>
+      </div>
+      <p class="repo-cta-line" data-en="Interested in these projects, a collaboration or a similar build? Feel free to <a href='#contact'>get in contact</a>." data-de="Interesse an diesen Projekten, einer Zusammenarbeit oder einem ähnlichen Aufbau? Gerne <a href='#contact'>Kontakt aufnehmen</a>.">Interested in these projects, a collaboration or a similar build? Feel free to <a href="#contact">get in contact</a>.</p>
     </div>
   </div>
 </section>
