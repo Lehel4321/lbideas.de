@@ -1,0 +1,1086 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Precision Motion Solver</title>
+<style>
+  /* ── Instrument-panel tokens (deliberate dark: servo-drive / oscilloscope world) ── */
+  :root{
+    --plane:#0c0f14; --panel:#131822; --raised:#1a2130; --inset:#0e1219;
+    --line:#273043; --line-soft:#1d2534;
+    --ink:#e8ecf4; --ink-2:#94a0b4; --ink-3:#5f6b80;
+    --accent:#3987e5; --accent-soft:rgba(57,135,229,.14);
+    --pos:#3987e5; --vel:#199e70; --acc:#c98500; --jerk:#9085e9;
+    --m1:#3987e5; --m2:#199e70; --m3:#c98500; --m4:#9085e9; --m5:#e66767; --m6:#d55181;
+    --good:#0ca30c; --crit:#d03b3b; --dead:#5f6b80;
+    --mono:ui-monospace,"Cascadia Code","JetBrains Mono",Consolas,"SF Mono",monospace;
+    --sans:system-ui,-apple-system,"Segoe UI",sans-serif;
+    --r:8px;
+  }
+  *{box-sizing:border-box;margin:0}
+  html,body{background:var(--plane);color:var(--ink);font-family:var(--sans);font-size:14px}
+  body{padding:0 0 48px}
+  button{font:inherit;cursor:pointer;border:1px solid var(--line);background:var(--raised);
+    color:var(--ink);border-radius:6px;padding:7px 13px;transition:background .12s,border-color .12s}
+  button:hover{background:#212a3d;border-color:#35406a}
+  button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+  button.primary{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}
+  button.primary:hover{background:#2a72c9}
+  button.ghost{background:transparent}
+  button.danger{color:#f0a0a0;border-color:#4a2a2e;background:#221419}
+  button.danger:hover{background:#31191f}
+  input[type=text],select{background:var(--inset);border:1px solid var(--line);color:var(--ink);
+    border-radius:6px;padding:7px 10px;font-family:var(--mono);font-size:15px;width:100%}
+  input.bad{border-color:var(--crit);box-shadow:0 0 0 1px var(--crit)}
+  .num{font-family:var(--mono);font-variant-numeric:tabular-nums}
+  .lbl{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3);font-weight:600}
+
+  /* ── Top bar ── */
+  .topbar{display:flex;align-items:center;gap:16px;flex-wrap:wrap;
+    padding:14px 22px;border-bottom:1px solid var(--line);background:var(--panel)}
+  .nameplate{font-family:var(--mono);font-size:17px;font-weight:700;letter-spacing:.12em}
+  .nameplate .dot{color:var(--accent)}
+  .nameplate small{display:block;font-family:var(--sans);font-weight:400;letter-spacing:.02em;
+    color:var(--ink-3);font-size:11.5px;margin-top:2px}
+  .topbar .actions{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  .docname{font-family:var(--mono);font-size:12px;color:var(--ink-3);padding:4px 10px;
+    border:1px solid var(--line-soft);border-radius:6px;background:var(--inset)}
+  .docname.dirty{color:var(--acc)}
+
+  /* ── File menu ── */
+  .menu-wrap{position:relative}
+  .menu{position:absolute;top:calc(100% + 6px);right:0;min-width:250px;background:var(--raised);
+    border:1px solid var(--line);border-radius:8px;padding:6px;z-index:40;display:flex;
+    flex-direction:column;box-shadow:0 12px 34px rgba(0,0,0,.55)}
+  .menu[hidden]{display:none}
+  .menu button{background:none;border:0;text-align:left;padding:8px 11px;border-radius:5px;
+    display:flex;gap:14px;align-items:center;width:100%;color:var(--ink)}
+  .menu button span{margin-left:auto;color:var(--ink-3);font-size:11px;font-family:var(--mono)}
+  .menu button:hover{background:var(--accent-soft)}
+  .menu hr{border:0;border-top:1px solid var(--line-soft);margin:5px 2px}
+
+  .wrap{max-width:1460px;margin:0 auto;padding:16px 22px;display:flex;flex-direction:column;gap:14px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px}
+  .card h2{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-2);
+    font-weight:700;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+  .card h2::after{content:"";flex:1;height:1px;background:var(--line-soft)}
+
+  /* ── Timeline ── */
+  .tl-head{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:10px}
+  .seg{display:inline-flex;border:1px solid var(--line);border-radius:6px;overflow:hidden}
+  .seg button{border:0;border-radius:0;background:transparent;color:var(--ink-2);padding:6px 14px;
+    font-size:11px;letter-spacing:.1em;font-weight:700}
+  .seg button.on{background:var(--accent-soft);color:var(--accent)}
+  .total{margin-left:auto;font-family:var(--mono);font-size:16px;font-variant-numeric:tabular-nums}
+  .total b{color:var(--accent);font-size:19px}
+  .total .cpu-part{color:var(--ink-2)}
+  .bars{display:flex;flex-direction:column;gap:6px}
+  .bar-row{display:grid;grid-template-columns:96px 1fr;gap:10px;align-items:center}
+  .bar-name{font-family:var(--mono);font-size:13px;text-align:right;white-space:nowrap;overflow:hidden}
+  .track{position:relative;height:26px;background:var(--inset);border:1px solid var(--line-soft);
+    border-radius:5px;overflow:hidden}
+  .seg-motion{position:absolute;top:1px;bottom:1px;border-radius:3px;display:flex;align-items:center;
+    justify-content:flex-end;padding:0 7px;min-width:2px}
+  .seg-motion span{font-family:var(--mono);font-size:11.5px;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.5)}
+  .seg-dead{position:absolute;top:1px;bottom:1px;border-radius:3px;
+    background:repeating-linear-gradient(45deg,rgba(95,107,128,.55) 0 4px,rgba(95,107,128,.15) 4px 8px)}
+  .tag-bneck{font-size:10px;letter-spacing:.08em;font-weight:700;color:var(--crit);
+    position:absolute;right:7px;top:50%;transform:translateY(-50%)}
+  .tl-legend{display:flex;gap:16px;margin-top:8px;font-size:11px;color:var(--ink-3)}
+  .tl-legend .sw{display:inline-block;width:14px;height:9px;border-radius:2px;vertical-align:-1px;margin-right:5px}
+
+  /* ── Main grid ── */
+  .grid{display:grid;grid-template-columns:330px 1fr;gap:14px;align-items:start}
+  @media (max-width:980px){.grid{grid-template-columns:1fr}}
+  .rail{display:flex;flex-direction:column;gap:14px}
+  .main{display:flex;flex-direction:column;gap:14px;min-width:0}
+
+  /* ── Motors ── */
+  .chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+  .chip{display:inline-flex;align-items:center;gap:7px;padding:6px 12px;border-radius:999px;
+    border:1px solid var(--line);background:var(--inset);color:var(--ink-2);font-family:var(--mono);font-size:13px}
+  .chip .cdot{width:8px;height:8px;border-radius:50%}
+  .chip.on{background:var(--raised);color:var(--ink);border-color:#3a4666}
+  .chip.add{color:var(--good);border-style:dashed}
+  .mtools{display:flex;gap:6px}
+  .mtools button{flex:1;padding:5px 4px;font-size:11.5px;color:var(--ink-2)}
+
+  /* ── Params ── */
+  .prow{display:grid;grid-template-columns:1fr 108px 62px;gap:8px;align-items:center;margin-bottom:8px}
+  .prow label{color:var(--ink-2)}
+  .prow .unit{font-family:var(--mono);font-size:12px;color:var(--ink-3)}
+  .uni-row{display:flex;gap:8px;align-items:center;margin-bottom:12px;flex-wrap:wrap}
+  .uni-row select{width:70px}
+  .uni-row .seg button{padding:6px 10px}
+  .readout{background:var(--inset);border:1px solid var(--line-soft);border-radius:6px;
+    padding:9px 11px;margin-top:10px;font-family:var(--mono);font-size:12.5px;color:var(--ink-2)}
+  .readout .rt{color:var(--acc);font-weight:600;font-size:11px;letter-spacing:.1em;margin-bottom:5px}
+  .readout table{width:100%;border-collapse:collapse}
+  .readout td{padding:1.5px 0;font-variant-numeric:tabular-nums}
+  .readout td:last-child{text-align:right;color:var(--ink)}
+  .shape-line{margin-top:12px;padding-top:10px;border-top:1px solid var(--line-soft)}
+  .shape-line .num{font-size:16px;color:var(--accent);font-weight:600}
+  .shape-line small{display:block;color:var(--ink-3);margin-top:2px}
+
+  /* ── CPU ── */
+  .cpu-out{background:var(--inset);border:1px solid var(--line-soft);border-radius:6px;
+    padding:9px 11px;margin-top:10px;font-family:var(--mono);font-size:12.5px;
+    display:flex;flex-direction:column;gap:4px;font-variant-numeric:tabular-nums}
+  .cpu-out .hl{color:var(--acc);font-weight:600}
+  .cpu-out .dim{color:var(--ink-3)}
+
+  /* ── Charts ── */
+  .scope{background:var(--inset);border:1px solid var(--line-soft);border-radius:6px;padding:6px 4px 2px}
+  .readbar{display:flex;gap:18px;flex-wrap:wrap;font-family:var(--mono);font-size:12.5px;
+    padding:4px 10px 10px;font-variant-numeric:tabular-nums;color:var(--ink-2)}
+  .readbar b{color:var(--ink);font-weight:600}
+  .readbar .k{display:inline-flex;align-items:center;gap:6px}
+  .readbar .k i{width:9px;height:9px;border-radius:2px;display:inline-block}
+  .chart-msg{padding:40px;text-align:center;color:var(--ink-3)}
+  svg text{font-family:var(--mono);font-size:10px;fill:var(--ink-3)}
+  svg .ylab{font-size:10.5px;font-weight:600}
+
+  /* ── Table ── */
+  .crit-table{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:12.5px;
+    font-variant-numeric:tabular-nums}
+  .crit-table th{text-align:right;padding:6px 10px;color:var(--ink-3);font-weight:600;font-size:11px;
+    border-bottom:1px solid var(--line);white-space:nowrap}
+  .crit-table td{text-align:right;padding:5px 10px;border-bottom:1px solid var(--line-soft);color:var(--ink-2)}
+  .crit-table th:first-child,.crit-table td:first-child{text-align:left}
+  .crit-table tbody tr{cursor:pointer}
+  .crit-table tbody tr:hover{background:var(--raised)}
+  .crit-table tr.hl td{background:var(--accent-soft);color:var(--ink)}
+  .hint{font-size:11.5px;color:var(--ink-3);margin-top:6px}
+
+  /* ── Dialog ── */
+  dialog{background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:10px;
+    padding:0;max-width:560px;width:92vw}
+  dialog::backdrop{background:rgba(4,6,10,.7)}
+  .dlg-h{padding:14px 18px;border-bottom:1px solid var(--line);display:flex;align-items:center}
+  .dlg-h h3{font-size:14px;letter-spacing:.06em}
+  .dlg-h button{margin-left:auto;padding:3px 9px}
+  .dlg-b{padding:12px 18px;max-height:52vh;overflow-y:auto;display:flex;flex-direction:column;gap:8px}
+  .dlg-f{padding:12px 18px;border-top:1px solid var(--line);display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  .prof-row{display:flex;align-items:center;gap:10px;background:var(--raised);
+    border:1px solid var(--line-soft);border-radius:6px;padding:9px 12px}
+  .prof-row .pi{flex:1;min-width:0}
+  .prof-row .pi b{display:block;font-size:13.5px}
+  .prof-row .pi small{color:var(--ink-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}
+  .prof-row button{padding:5px 10px;font-size:12px}
+
+  /* ── Toast ── */
+  #toasts{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);display:flex;
+    flex-direction:column;gap:8px;z-index:50}
+  .toast{max-width:90vw;background:var(--raised);border:1px solid var(--line);border-left:3px solid var(--good);
+    border-radius:6px;padding:9px 16px;font-size:13px;box-shadow:0 6px 24px rgba(0,0,0,.5);
+    animation:tin .18s ease-out}
+  .toast.err{border-left-color:var(--crit)}
+  @keyframes tin{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  @media (prefers-reduced-motion:reduce){.toast{animation:none}}
+</style>
+
+<header class="topbar">
+  <div class="nameplate">PRECISION<span class="dot">·</span>MOTION<span class="dot">·</span>SOLVER
+    <small>Multi-axis S-curve trajectory planner · gear ratio · CPU execution time</small>
+  </div>
+  <div class="actions">
+    <span class="docname" id="docName">unsaved setup</span>
+    <div class="menu-wrap">
+      <button id="btnFile">File ▾</button>
+      <div class="menu" id="fileMenu" hidden>
+        <button data-act="new">New setup</button>
+        <button data-act="open">Open… <span>Ctrl+O</span></button>
+        <button data-act="save">Save <span>Ctrl+S</span></button>
+        <button data-act="saveas">Save As…</button>
+        <hr>
+        <button data-act="std">Set current as standard</button>
+        <button data-act="clearstd" id="miClearStd">Clear standard setup</button>
+        <hr>
+        <button data-act="import">Import profiles…</button>
+        <button data-act="export">Export profile library</button>
+        <hr>
+        <button data-act="csv">Export CSV data</button>
+        <button data-act="pdf">Export PDF report</button>
+      </div>
+    </div>
+    <button id="btnProfiles">Profiles</button>
+    <button id="btnPdf" class="primary">⤓ PDF Report</button>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <section class="card">
+    <div class="tl-head">
+      <span class="lbl">Axis times</span>
+      <div class="seg" role="group" aria-label="Timing mode">
+        <button id="modePar">PARALLEL</button><button id="modeSeq">SEQUENTIAL</button>
+      </div>
+      <div class="total" id="totalOut">—</div>
+    </div>
+    <div class="bars" id="bars"></div>
+    <div class="tl-legend">
+      <span><i class="sw" style="background:repeating-linear-gradient(45deg,rgba(95,107,128,.55) 0 4px,rgba(95,107,128,.15) 4px 8px)"></i>CPU dead time</span>
+      <span><i class="sw" style="background:var(--m1)"></i>Motion</span>
+    </div>
+  </section>
+
+  <div class="grid">
+    <aside class="rail">
+
+      <section class="card">
+        <h2>Motors</h2>
+        <div class="chips" id="chips"></div>
+        <div class="mtools">
+          <button id="mDup">Duplicate</button>
+          <button id="mRen">Rename</button>
+          <button id="mDel" class="danger">Delete</button>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Parameters</h2>
+        <div class="uni-row">
+          <span class="lbl" style="letter-spacing:.06em">Unit</span>
+          <select id="unitSel"></select>
+          <span class="lbl" style="letter-spacing:.06em;margin-left:auto">Input as</span>
+          <div class="seg"><button id="sideLoad">LOAD</button><button id="sideMotor">MOTOR</button></div>
+        </div>
+        <div class="prow"><label>Distance</label><input type="text" inputmode="decimal" id="in_s"><span class="unit" id="u_s"></span></div>
+        <div class="prow"><label>Max velocity</label><input type="text" inputmode="decimal" id="in_vmax"><span class="unit" id="u_vmax"></span></div>
+        <div class="prow"><label>Max acceleration</label><input type="text" inputmode="decimal" id="in_amax"><span class="unit" id="u_amax"></span></div>
+        <div class="prow"><label>Max jerk</label><input type="text" inputmode="decimal" id="in_jmax"><span class="unit" id="u_jmax"></span></div>
+        <div class="prow"><label>Gear ratio N (motor:load)</label><input type="text" inputmode="decimal" id="in_gear"><span class="unit">: 1</span></div>
+        <div class="readout" id="gearOut"></div>
+        <div class="shape-line" id="shapeOut"></div>
+      </section>
+
+      <section class="card">
+        <h2>CPU execution time</h2>
+        <div class="prow"><label>Cycle time</label><input type="text" inputmode="decimal" id="in_cpums"><span class="unit">ms/cycle</span></div>
+        <div class="prow"><label>Cycles / command</label><input type="text" inputmode="numeric" id="in_cpucyc"><span class="unit">cycles</span></div>
+        <div class="cpu-out" id="cpuOut"></div>
+      </section>
+
+    </aside>
+
+    <section class="main">
+      <section class="card">
+        <h2 id="chartTitle">Trajectory</h2>
+        <div class="readbar" id="readbar"></div>
+        <div id="charts"></div>
+      </section>
+      <section class="card">
+        <h2>Critical points</h2>
+        <div style="overflow-x:auto"><table class="crit-table" id="critTable"></table></div>
+        <div class="hint">Click a row — or a marker on the charts — to highlight the point everywhere.</div>
+      </section>
+    </section>
+  </div>
+</div>
+
+<dialog id="dlgProfiles">
+  <div class="dlg-h"><h3>Profiles</h3><button class="ghost" id="dlgClose">✕</button></div>
+  <div class="dlg-b" id="profList"></div>
+  <div class="dlg-f">
+    <input type="text" id="profName" placeholder="Profile name…" style="flex:1;min-width:140px;font-family:var(--sans);font-size:13px">
+    <button class="primary" id="profSave">Save current setup</button>
+    <button id="profImport">Import…</button>
+  </div>
+</dialog>
+
+<input type="file" id="fileIn" accept=".json,application/json" hidden>
+<div id="toasts"></div>
+
+<script>
+"use strict";
+/* ════════════════ Engine — direct port of the Python solver ════════════════ */
+const UNITS={
+  mm:{label:"mm",vel:"mm/s",acc:"mm/s²",jerk:"mm/s³"},
+  m:{label:"m",vel:"m/s",acc:"m/s²",jerk:"m/s³"},
+  inch:{label:"in",vel:"in/s",acc:"in/s²",jerk:"in/s³"},
+  deg:{label:"°",vel:"°/s",acc:"°/s²",jerk:"°/s³"},
+  rad:{label:"rad",vel:"rad/s",acc:"rad/s²",jerk:"rad/s³"},
+  rev:{label:"rev",vel:"rev/s",acc:"rev/s²",jerk:"rev/s³"}};
+const SHAPES={1:"Triangular accel · Vmax reached",2:"Triangular accel · Short move",
+  3:"Triangular accel · Vmax reached",4:"Triangular accel · Minimal move",
+  5:"Trapezoidal accel · Vmax reached",6:"Trapezoidal accel · No cruise"};
+
+function defineShape(amax,jmax,vmax,s){
+  const va=amax*amax/jmax, sa=2*Math.pow(amax,3)/(jmax*jmax);
+  const m=vmax*jmax<amax*amax?1:0, n=1-m;
+  const sv=vmax*(m*2*Math.sqrt(vmax/jmax)+n*(vmax/amax+amax/jmax));
+  let sh=null;
+  if(vmax<=va&&s>=sa)sh=1; else if(vmax>va&&s<=sa)sh=2;
+  else if(vmax<=va&&s<sa&&s>sv)sh=3; else if(vmax<=va&&s<sa&&s<=sv)sh=4;
+  else if(vmax>va&&s>sa&&s>sv)sh=5; else if(vmax>va&&s>sa&&s<=sv)sh=6;
+  return{sh,va,sa,sv};
+}
+function timeParams(vmax,amax,jmax,s,sh){
+  let tj,ta,tv;
+  if(sh===1||sh===3){tj=Math.sqrt(vmax/jmax);ta=tj;tv=s/vmax;}
+  else if(sh===2||sh===4){tj=Math.cbrt(s/(2*jmax));ta=tj;tv=2*tj;}
+  else if(sh===5){tj=amax/jmax;ta=vmax/amax;tv=s/vmax;}
+  else if(sh===6){tj=amax/jmax;
+    ta=.5*(Math.sqrt((4*s*jmax*jmax+Math.pow(amax,3))/(amax*jmax*jmax))-amax/jmax);tv=ta+tj;}
+  else return null;
+  return{tj,ta,tv,t1:tj,t2:ta,t3:ta+tj,t4:tv,t5:tv+tj,t6:tv+ta,t7:tv+tj+ta};
+}
+function evalAt(j,tp,t){
+  const{t1,t2,t3,t4,t5,t6}=tp;
+  const a1=j*t1,v1=.5*j*t1*t1,p1=j*t1*t1*t1/6;
+  const v2=v1+a1*(t2-t1),p2=p1+v1*(t2-t1)+.5*a1*(t2-t1)**2,a2=a1;
+  const v3=v2+a2*(t3-t2)-.5*j*(t3-t2)**2;
+  const p3=p2+v2*(t3-t2)+.5*a2*(t3-t2)**2-j*(t3-t2)**3/6;
+  const v4=v3,p4=p3+v3*(t4-t3);
+  const a5=-j*(t5-t4),v5=v4-.5*j*(t5-t4)**2;
+  const p5=p4+v4*(t5-t4)-j*(t5-t4)**3/6;
+  const v6=v5+a5*(t6-t5),p6=p5+v5*(t6-t5)+.5*a5*(t6-t5)**2,a6=a5;
+  let dt;
+  if(t<=t1)return[j,j*t,.5*j*t*t,j*t*t*t/6];
+  if(t<=t2)return[0,a1,v1+a1*(t-t1),p1+v1*(t-t1)+.5*a1*(t-t1)**2];
+  if(t<=t3){dt=t-t2;return[-j,a2-j*dt,v2+a2*dt-.5*j*dt*dt,p2+v2*dt+.5*a2*dt*dt-j*dt**3/6];}
+  if(t<=t4)return[0,0,v3,p3+v3*(t-t3)];
+  if(t<=t5){dt=t-t4;return[-j,-j*dt,v4-.5*j*dt*dt,p4+v4*dt-j*dt**3/6];}
+  if(t<=t6){dt=t-t5;return[0,a5,v5+a5*dt,p5+v5*dt+.5*a5*dt*dt];}
+  dt=t-t6;return[j,a6+j*dt,v6+a6*dt+.5*j*dt*dt,p6+v6*dt+.5*a5*dt*dt+j*dt**3/6];
+}
+function computeMotor(s,vmax,amax,jmax){
+  if(!(s>0&&vmax>0&&amax>0&&jmax>0))return null;
+  const{sh,va,sa,sv}=defineShape(amax,jmax,vmax,s);
+  if(sh===null)return null;
+  const tp=timeParams(vmax,amax,jmax,s,sh);
+  if(!tp||!isFinite(tp.t7)||tp.t7<=0)return null;
+  const N=600,times=new Float64Array(N+1),jerks=new Float64Array(N+1),
+    accels=new Float64Array(N+1),vels=new Float64Array(N+1),poss=new Float64Array(N+1);
+  for(let i=0;i<=N;i++){const t=tp.t7*i/N;times[i]=t;
+    const[jj,aa,vv,pp]=evalAt(jmax,tp,t);jerks[i]=jj;accels[i]=aa;vels[i]=vv;poss[i]=pp;}
+  const crit=[0,tp.t1,tp.t2,tp.t3,tp.t4,tp.t5,tp.t6,tp.t7].map(ct=>{
+    const[j,a,v,p]=evalAt(jmax,tp,Math.min(ct,tp.t7));
+    return{t:ct,jerk:j,accel:a,vel:v,pos:p};});
+  return{shape:sh,va,sa,sv,tp,times,jerks,accels,vels,poss,crit};
+}
+
+/* ════════════════ State ════════════════ */
+const MCOL=["var(--m1)","var(--m2)","var(--m3)","var(--m4)","var(--m5)","var(--m6)"];
+const MHEX=["#3987e5","#199e70","#c98500","#9085e9","#e66767","#d55181"];
+const CH=[{k:"pos",arr:"poss",name:"Position",col:"var(--pos)",hex:"#3987e5",u:m=>UNITS[m.unit].label},
+          {k:"vel",arr:"vels",name:"Velocity",col:"var(--vel)",hex:"#199e70",u:m=>UNITS[m.unit].vel},
+          {k:"accel",arr:"accels",name:"Acceleration",col:"var(--acc)",hex:"#c98500",u:m=>UNITS[m.unit].acc},
+          {k:"jerk",arr:"jerks",name:"Jerk",col:"var(--jerk)",hex:"#9085e9",u:m=>UNITS[m.unit].jerk}];
+const LS_KEY="pms-web-v1";
+const defMotor=()=>({name:"M1",s:100,vmax:20,amax:10,jmax:50,gear:1,unit:"mm",side:"load"});
+const DEF_PROFILES=[
+  {name:"Single axis default",motors:[defMotor()]},
+  {name:"3-axis pick & place",motors:[
+    {name:"X-Axis",s:200,vmax:50,amax:20,jmax:200,gear:1,unit:"mm",side:"load"},
+    {name:"Y-Axis",s:150,vmax:50,amax:25,jmax:250,gear:1,unit:"mm",side:"load"},
+    {name:"Z-Axis",s:80,vmax:30,amax:15,jmax:150,gear:2,unit:"mm",side:"load"}]}];
+
+let S={motors:[defMotor()],sel:0,mode:"parallel",cpuMs:0,cpuCyc:1,
+       profiles:JSON.parse(JSON.stringify(DEF_PROFILES))};
+let results=[],highlight=null,hoverT=null;
+
+function loadState(){
+  try{const d=JSON.parse(localStorage.getItem(LS_KEY));
+    if(d&&Array.isArray(d.motors)&&d.motors.length){S={...S,...d};
+      S.sel=Math.min(S.sel||0,S.motors.length-1);}}catch(e){}
+}
+function saveState(){try{localStorage.setItem(LS_KEY,JSON.stringify(S));}catch(e){}}
+
+function loadSide(m){const g=m.gear>0?m.gear:1;
+  return m.side==="motor"?[m.s/g,m.vmax/g,m.amax/g,m.jmax/g]:[m.s,m.vmax,m.amax,m.jmax];}
+function motorSide(m){const g=m.gear>0?m.gear:1;
+  return m.side==="load"?[m.s*g,m.vmax*g,m.amax*g,m.jmax*g]:[m.s,m.vmax,m.amax,m.jmax];}
+function recalc(){results=S.motors.map(m=>computeMotor(...loadSide(m)));}
+function cpuOverheadS(){return S.cpuMs*S.cpuCyc/1000;}
+function cpuDeadS(n){const o=cpuOverheadS();return o<=0||n<=0?0:(S.mode==="parallel"?o:o*n);}
+
+/* ════════════════ DOM helpers ════════════════ */
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const fmt=(v,d=3)=>Number(v).toFixed(d);
+function toast(msg,err){const t=document.createElement("div");
+  t.className="toast"+(err?" err":"");t.textContent=msg;$("toasts").appendChild(t);
+  setTimeout(()=>t.remove(),3800);}
+
+/* ════════════════ Timeline ════════════════ */
+function renderTimeline(){
+  const times=results.map(r=>r?r.tp.t7:null);
+  const valid=times.filter(t=>t!==null);
+  const bars=$("bars");bars.innerHTML="";
+  if(!valid.length){$("totalOut").textContent="—";return;}
+  const maxT=Math.max(...valid),sumT=valid.reduce((a,b)=>a+b,0);
+  const motion=S.mode==="parallel"?maxT:sumT;
+  const ov=cpuOverheadS(),dead=cpuDeadS(valid.length),total=motion+dead;
+  const lbl=S.mode==="parallel"?"MAX":"SUM";
+  $("totalOut").innerHTML=dead>0
+    ?`${lbl} ${fmt(motion,4)} s <span class="cpu-part">+ CPU ${S.mode==="parallel"?"":valid.length+"×"}${fmt(ov*1000,2)} ms</span> = <b>${fmt(total,4)} s</b>`
+    :`${lbl} = <b>${fmt(motion,4)} s</b>`;
+  const scale=total>0?total:1;
+  const bneck=S.mode==="parallel"?times.indexOf(maxT):-1;
+  let cum=0;
+  S.motors.forEach((m,i)=>{
+    const row=document.createElement("div");row.className="bar-row";
+    const col=MCOL[i%MCOL.length];
+    let inner;
+    const t=times[i];
+    if(t===null){inner=`<span style="position:absolute;left:8px;top:4px;font-size:11px;color:var(--crit)">invalid parameters</span>`;}
+    else{
+      let x0=0;
+      let deadSeg="";
+      if(ov>0){
+        const dw=ov/scale*100;
+        const dx=S.mode==="parallel"?0:cum/scale*100;
+        deadSeg=`<div class="seg-dead" style="left:${dx}%;width:${dw}%"></div>`;
+        x0=S.mode==="parallel"?dw:(cum+ov)/scale*100;
+        if(S.mode==="sequential")cum+=ov;
+      }else x0=S.mode==="parallel"?0:cum/scale*100;
+      const w=t/scale*100;
+      if(S.mode==="sequential")cum+=t;
+      inner=deadSeg+`<div class="seg-motion" style="left:${x0}%;width:${w}%;background:${col}">
+        ${w>9?`<span>${fmt(t,3)} s</span>`:""}</div>`+
+        (i===bneck&&S.motors.length>1?`<span class="tag-bneck">◄ BOTTLENECK</span>`:"");
+    }
+    row.innerHTML=`<span class="bar-name" style="color:${col}">${esc(m.name)}</span>
+      <div class="track">${inner}</div>`;
+    bars.appendChild(row);
+  });
+}
+
+/* ════════════════ Motors rail ════════════════ */
+function renderChips(){
+  const c=$("chips");c.innerHTML="";
+  S.motors.forEach((m,i)=>{
+    const b=document.createElement("button");
+    b.className="chip"+(i===S.sel?" on":"");
+    b.innerHTML=`<span class="cdot" style="background:${MCOL[i%MCOL.length]}"></span>${esc(m.name)}`;
+    b.onclick=()=>{S.sel=i;highlight=null;refresh(true);saveState();};
+    c.appendChild(b);
+  });
+  const add=document.createElement("button");
+  add.className="chip add";add.textContent="+ Add";
+  add.onclick=()=>{S.motors.push({...defMotor(),name:"M"+(S.motors.length+1)});
+    S.sel=S.motors.length-1;highlight=null;markDirty();recalc();refresh(true);saveState();
+    toast("Motor added");};
+  c.appendChild(add);
+}
+
+/* ════════════════ Parameters panel ════════════════ */
+const PKEYS=["s","vmax","amax","jmax","gear"];
+function renderParams(){
+  const m=S.motors[S.sel],u=UNITS[m.unit];
+  $("in_s").value=m.s;$("in_vmax").value=m.vmax;$("in_amax").value=m.amax;
+  $("in_jmax").value=m.jmax;$("in_gear").value=m.gear;
+  PKEYS.forEach(k=>$("in_"+k).classList.remove("bad"));
+  $("u_s").textContent=u.label;$("u_vmax").textContent=u.vel;
+  $("u_amax").textContent=u.acc;$("u_jmax").textContent=u.jerk;
+  $("unitSel").value=m.unit;
+  $("sideLoad").className=m.side==="load"?"on":"";
+  $("sideMotor").className=m.side==="motor"?"on":"";
+  renderGearOut();renderShape();
+}
+function renderGearOut(){
+  const m=S.motors[S.sel],u=UNITS[m.unit],g=m.gear>0?m.gear:1;
+  const el=$("gearOut");
+  if(g===1){el.innerHTML=`<span style="color:var(--ink-3)">Gear ratio 1:1 — motor side equals load side</span>`;return;}
+  const other=m.side==="load"?motorSide(m):loadSide(m);
+  const ttl=m.side==="load"?"MOTOR SIDE":"LOAD SIDE";
+  el.innerHTML=`<div class="rt">▸ ${ttl} (N = ${g}:1)</div><table>
+    <tr><td>Distance</td><td>${fmt(other[0],4)} ${u.label}</td></tr>
+    <tr><td>Max vel</td><td>${fmt(other[1],4)} ${u.vel}</td></tr>
+    <tr><td>Max acc</td><td>${fmt(other[2],4)} ${u.acc}</td></tr>
+    <tr><td>Max jerk</td><td>${fmt(other[3],4)} ${u.jerk}</td></tr></table>`;
+}
+function renderShape(){
+  const r=results[S.sel],el=$("shapeOut");
+  if(!r){el.innerHTML=`<span style="color:var(--crit)">⚠ Invalid parameters — all values must be &gt; 0</span>`;return;}
+  el.innerHTML=`<span class="num">Shape ${r.shape} · T = ${fmt(r.tp.t7,4)} s</span>
+    <small>${SHAPES[r.shape]}</small>`;
+}
+
+/* ════════════════ CPU panel ════════════════ */
+function renderCpu(){
+  $("in_cpums").value=S.cpuMs;$("in_cpucyc").value=S.cpuCyc;
+  const el=$("cpuOut"),ovMs=S.cpuMs*S.cpuCyc;
+  if(ovMs<=0){el.innerHTML=`<span class="dim">CPU model off — set a cycle time &gt; 0 to add command overhead</span>`;return;}
+  const nValid=results.filter(Boolean).length;
+  const totMs=cpuDeadS(nValid)*1000;
+  const r=results[S.sel];
+  let motorLine="";
+  if(r&&S.cpuMs>0){
+    const nc=Math.ceil(r.tp.t7*1000/S.cpuMs);
+    motorLine=`<span>${esc(S.motors[S.sel].name)}: ${fmt(r.tp.t7,4)} s motion = <b>${nc.toLocaleString()}</b> CPU cycles @ ${S.cpuMs} ms</span>`;
+  }
+  el.innerHTML=`<span class="hl">Overhead: ${S.cpuCyc} × ${S.cpuMs} ms = ${fmt(ovMs,3)} ms / command</span>
+    <span>${S.mode==="parallel"
+      ?`Total dead time: ${fmt(totMs,3)} ms (parallel — one command window)`
+      :`Total dead time: ${nValid} cmd × ${fmt(ovMs,3)} ms = ${fmt(totMs,3)} ms`}</span>${motorLine}`;
+}
+
+/* ════════════════ Charts ════════════════ */
+function niceTicks(min,max,n=4){
+  if(min===max){max=min+1;}
+  const span=max-min,step0=span/n,mag=Math.pow(10,Math.floor(Math.log10(step0)));
+  const step=[1,2,2.5,5,10].map(s=>s*mag).find(s=>span/s<=n)||10*mag;
+  const out=[];for(let v=Math.ceil(min/step)*step;v<=max+1e-9;v+=step)out.push(v);
+  return out;
+}
+function renderCharts(){
+  const box=$("charts"),m=S.motors[S.sel],r=results[S.sel];
+  const col=MCOL[S.sel%MCOL.length];
+  $("chartTitle").innerHTML=`<span style="color:${col}">${esc(m.name)}</span>&nbsp;— S-curve trajectory`;
+  if(!r){box.innerHTML=`<div class="scope"><div class="chart-msg">Invalid parameters for ${esc(m.name)} — enter positive values on the left.</div></div>`;
+    $("readbar").innerHTML="";return;}
+  const W=Math.max(box.clientWidth-2,420);
+  const PL=58,PR=14,H=148,PT=8;
+  const t7=r.tp.t7,X=t=>PL+(t/t7)*(W-PL-PR);
+  let html="";
+  CH.forEach((ch,ci)=>{
+    const data=r[ch.arr];const last=ci===CH.length-1;
+    const hgt=H+(last?22:0);
+    let lo=Math.min(0,...data),hi=Math.max(0,...data);
+    if(hi-lo<1e-12){hi=lo+1;}
+    const pad=(hi-lo)*.08;lo-=pad;hi+=pad;
+    const Y=v=>PT+(1-(v-lo)/(hi-lo))*(H-PT-8);
+    // grid + y ticks
+    let g="";
+    niceTicks(lo,hi,3).forEach(v=>{const y=Y(v);
+      g+=`<line x1="${PL}" y1="${y}" x2="${W-PR}" y2="${y}" stroke="var(--line-soft)" stroke-width="1"/>
+          <text x="${PL-7}" y="${y+3}" text-anchor="end">${Math.abs(v)>=1000?v.toFixed(0):+v.toPrecision(3)}</text>`;});
+    // x grid on all, labels only on last
+    niceTicks(0,t7,6).forEach(v=>{if(v<0||v>t7+1e-9)return;const x=X(v);
+      g+=`<line x1="${x}" y1="${PT}" x2="${x}" y2="${H-8}" stroke="var(--line-soft)" stroke-width="1"/>`;
+      if(last)g+=`<text x="${x}" y="${H+12}" text-anchor="middle">${+v.toPrecision(3)}</text>`;});
+    // phase boundaries
+    r.crit.slice(1,-1).forEach(cp=>{const x=X(cp.t);
+      g+=`<line x1="${x}" y1="${PT}" x2="${x}" y2="${H-8}" stroke="#2c3750" stroke-width="1" stroke-dasharray="2 3"/>`;});
+    // zero line
+    if(lo<0&&hi>0)g+=`<line x1="${PL}" y1="${Y(0)}" x2="${W-PR}" y2="${Y(0)}" stroke="var(--line)" stroke-width="1"/>`;
+    // area + line
+    let pts="",area=`M ${X(0)} ${Y(0)}`;
+    for(let i=0;i<data.length;i++){const x=X(r.times[i]),y=Y(data[i]);
+      pts+=(i?" L ":"M ")+x.toFixed(1)+" "+y.toFixed(1);area+=` L ${x.toFixed(1)} ${y.toFixed(1)}`;}
+    area+=` L ${X(t7)} ${Y(0)} Z`;
+    g+=`<path d="${area}" fill="${ch.hex}" opacity="0.10"/>
+        <path d="${pts}" fill="none" stroke="${ch.hex}" stroke-width="2" stroke-linejoin="round"/>`;
+    // critical markers
+    r.crit.forEach((cp,i)=>{const x=X(cp.t),y=Y(cp[ch.k]);
+      const hl=highlight===i;
+      g+=`<circle class="crit" data-i="${i}" cx="${x}" cy="${y}" r="${hl?6.5:4.5}"
+           fill="${hl?ch.hex:"var(--inset)"}" stroke="${ch.hex}" stroke-width="2" style="cursor:pointer"/>`;
+      if(hl)g+=`<line x1="${x}" y1="${PT}" x2="${x}" y2="${H-8}" stroke="${ch.hex}" stroke-width="1" stroke-dasharray="3 3" opacity=".7"/>`;});
+    // hover crosshair placeholder
+    g+=`<line class="xh" x1="0" y1="${PT}" x2="0" y2="${H-8}" stroke="var(--ink-2)" stroke-width="1" stroke-dasharray="3 2" visibility="hidden"/>`;
+    html+=`<div class="scope" style="margin-bottom:6px">
+      <div style="display:flex;align-items:center;gap:7px;padding:2px 8px 0">
+        <i style="width:9px;height:9px;border-radius:2px;background:${ch.hex}"></i>
+        <span class="lbl" style="letter-spacing:.08em">${ch.name} (${ch.u(m)})</span>
+      </div>
+      <svg data-ch="${ci}" width="${W}" height="${hgt}" viewBox="0 0 ${W} ${hgt}">${g}</svg></div>`;
+  });
+  box.innerHTML=html;
+  // interactions
+  box.querySelectorAll("svg").forEach(svg=>{
+    svg.addEventListener("mousemove",e=>{
+      const rect=svg.getBoundingClientRect();
+      const t=(e.clientX-rect.left-PL)/(W-PL-PR)*t7;
+      hoverT=(t>=0&&t<=t7)?t:null;updateHover();
+    });
+    svg.addEventListener("mouseleave",()=>{hoverT=null;updateHover();});
+    svg.addEventListener("click",e=>{
+      const rect=svg.getBoundingClientRect();
+      const t=(e.clientX-rect.left-PL)/(W-PL-PR)*t7;
+      let best=-1,bd=1/0;
+      r.crit.forEach((cp,i)=>{const d=Math.abs(cp.t-t);if(d<bd){bd=d;best=i;}});
+      if(best>=0&&bd<t7*.04){highlight=highlight===best?null:best;
+        renderCharts();renderCritTable();}
+    });
+  });
+  updateHover();
+}
+function updateHover(){
+  const r=results[S.sel];if(!r)return;
+  const m=S.motors[S.sel],u=UNITS[m.unit];
+  const box=$("charts");
+  const W=Math.max(box.clientWidth-2,420),PL=58,PR=14;
+  const t=hoverT!==null?hoverT:(highlight!==null?r.crit[highlight].t:r.tp.t7);
+  const x=PL+(t/r.tp.t7)*(W-PL-PR);
+  box.querySelectorAll("svg .xh").forEach(l=>{
+    if(hoverT!==null){l.setAttribute("x1",x);l.setAttribute("x2",x);l.setAttribute("visibility","visible");}
+    else l.setAttribute("visibility","hidden");});
+  const interp=arr=>{const n=arr.length-1,f=Math.min(Math.max(t/r.tp.t7,0),1)*n,
+    i=Math.min(Math.floor(f),n-1),w=f-i;return arr[i]*(1-w)+arr[i+1]*w;};
+  const vals=[interp(r.poss),interp(r.vels),interp(r.accels),interp(r.jerks)];
+  const us=[u.label,u.vel,u.acc,u.jerk];
+  $("readbar").innerHTML=`<span class="k"><b>t = ${fmt(t,4)} s</b></span>`+
+    CH.map((ch,i)=>`<span class="k"><i style="background:${ch.hex}"></i>${fmt(vals[i],3)} ${us[i]}</span>`).join("");
+}
+
+/* ════════════════ Critical points table ════════════════ */
+function renderCritTable(){
+  const r=results[S.sel],m=S.motors[S.sel],u=UNITS[m.unit],tbl=$("critTable");
+  if(!r){tbl.innerHTML="<tbody><tr><td style='color:var(--ink-3)'>No data</td></tr></tbody>";return;}
+  const names=["Start","End jerk⁺","End accel","Cruise start","Cruise end","End jerk⁻","End decel","Finish"];
+  let h=`<thead><tr><th>Phase point</th><th>t (s)</th><th>Pos (${u.label})</th>
+    <th>Vel (${u.vel})</th><th>Acc (${u.acc})</th><th>Jerk (${u.jerk})</th></tr></thead><tbody>`;
+  r.crit.forEach((cp,i)=>{
+    h+=`<tr data-i="${i}" class="${highlight===i?"hl":""}"><td>${names[i]||("P"+i)}</td>
+      <td>${fmt(cp.t,4)}</td><td>${fmt(cp.pos,2)}</td><td>${fmt(cp.vel,2)}</td>
+      <td>${fmt(cp.accel,2)}</td><td>${fmt(cp.jerk,2)}</td></tr>`;});
+  tbl.innerHTML=h+"</tbody>";
+  tbl.querySelectorAll("tbody tr").forEach(tr=>tr.onclick=()=>{
+    const i=+tr.dataset.i;highlight=highlight===i?null:i;
+    renderCharts();renderCritTable();});
+}
+
+/* ════════════════ Profiles: manage / import / export ════════════════ */
+async function download(name,text,type){
+  // Prefer the native save dialog (Chrome/Edge/desktop app); fall back to a plain download
+  if(window.showSaveFilePicker){
+    try{
+      const h=await showSaveFilePicker({suggestedName:name});
+      const w=await h.createWritable();
+      await w.write(new Blob([text],{type:type||"application/json"}));
+      await w.close();
+      return;
+    }catch(e){if(e&&e.name==="AbortError")return;/* picker unavailable → fall back */}
+  }
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(new Blob([text],{type:type||"application/json"}));
+  a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),4000);
+}
+function exportJSON(){
+  download("motion_profiles_"+new Date().toISOString().slice(0,10)+".json",
+    JSON.stringify({app:"precision-motion-solver",version:2,exported:new Date().toISOString(),
+      mode:S.mode,cpu:{cycleMs:S.cpuMs,cyclesPerCommand:S.cpuCyc},
+      currentSetup:S.motors,profiles:S.profiles},null,2));
+  toast("Exported all profiles + current setup as JSON");
+}
+function sanitizeMotor(m){
+  const n={name:String(m.name||"M?").slice(0,40),
+    s:+m.s,vmax:+m.vmax,amax:+m.amax,jmax:+m.jmax,
+    gear:+(m.gear??m.gear_ratio??1)||1,
+    unit:UNITS[m.unit]?m.unit:"mm",
+    side:(m.side||m.input_side)==="motor"?"motor":"load"};
+  return[n.s,n.vmax,n.amax,n.jmax].every(v=>isFinite(v)&&v>0)?n:null;
+}
+function importJSON(text){
+  let d;try{d=JSON.parse(text);}catch(e){toast("Import failed: not valid JSON","err");return;}
+  importParsed(d);
+}
+function importParsed(d){
+  let profs=[];
+  if(Array.isArray(d))profs=d;
+  else if(Array.isArray(d.profiles))profs=d.profiles;
+  else if(Array.isArray(d.motors))profs=[{name:d.name||"Imported profile",motors:d.motors}];
+  const clean=[];
+  profs.forEach(p=>{
+    const ms=(p.motors||[]).map(sanitizeMotor).filter(Boolean);
+    if(ms.length)clean.push({name:String(p.name||"Imported").slice(0,60),motors:ms});});
+  if(!clean.length){toast("Import failed: no valid profiles found in file","err");return;}
+  const existing=new Set(S.profiles.map(p=>p.name));
+  clean.forEach(p=>{let nm=p.name,k=2;
+    while(existing.has(nm))nm=p.name+" ("+k+++")";
+    existing.add(nm);S.profiles.push({name:nm,motors:p.motors});});
+  // Optionally restore CPU settings from a full export
+  if(d.cpu){if(isFinite(+d.cpu.cycleMs)&&+d.cpu.cycleMs>=0)S.cpuMs=+d.cpu.cycleMs;
+    if(isFinite(+d.cpu.cyclesPerCommand)&&+d.cpu.cyclesPerCommand>=0)S.cpuCyc=Math.round(+d.cpu.cyclesPerCommand);}
+  saveState();renderCpu();renderProfileList();
+  toast(`Imported ${clean.length} profile(s)`);
+}
+/* ════════════════ File workflow: New / Open / Save / Standard ════════════════ */
+const STD_KEY="pms-standard-v1";
+let fileHandle=null,fileName="motion_setup.json",dirty=false;
+function renderDoc(){const el=$("docName");
+  el.textContent=(dirty?"● ":"")+fileName;
+  el.classList.toggle("dirty",dirty);}
+function markDirty(){if(!dirty){dirty=true;renderDoc();}}
+function setupJSON(){
+  return JSON.stringify({app:"precision-motion-solver",version:3,kind:"setup",
+    saved:new Date().toISOString(),mode:S.mode,
+    cpu:{cycleMs:S.cpuMs,cyclesPerCommand:S.cpuCyc},motors:S.motors},null,2);}
+function applySetup(d){
+  const ms=(d.motors||d.currentSetup||[]).map(sanitizeMotor).filter(Boolean);
+  if(!ms.length)return false;
+  S.motors=ms;S.sel=0;highlight=null;
+  if(d.mode==="sequential"||d.mode==="parallel")S.mode=d.mode;
+  if(d.cpu){if(isFinite(+d.cpu.cycleMs)&&+d.cpu.cycleMs>=0)S.cpuMs=+d.cpu.cycleMs;
+    if(isFinite(+d.cpu.cyclesPerCommand))S.cpuCyc=Math.max(0,Math.round(+d.cpu.cyclesPerCommand));}
+  if(Array.isArray(d.profiles))importParsed({profiles:d.profiles});
+  recalc();refresh(true);saveState();
+  return true;
+}
+function openFromText(text,name){
+  let d;try{d=JSON.parse(text);}catch(e){toast("Open failed: not valid JSON","err");return false;}
+  if(d&&(Array.isArray(d.motors)||Array.isArray(d.currentSetup))){
+    if(!applySetup(d)){toast("Open failed: no valid motors in the file","err");return false;}
+    toast(`Opened ${name}`);return true;
+  }
+  if(Array.isArray(d)||(d&&Array.isArray(d.profiles))){
+    importParsed(d);toast("That file is a profile library — added to Profiles instead","err");return false;
+  }
+  toast("Open failed: unrecognized file format","err");return false;
+}
+async function openFile(){
+  if(window.showOpenFilePicker){
+    try{
+      const[h]=await showOpenFilePicker({types:[{description:"Motion setup (JSON)",
+        accept:{"application/json":[".json"]}}]});
+      const f=await h.getFile();
+      if(openFromText(await f.text(),f.name)){fileHandle=h;fileName=f.name;dirty=false;renderDoc();}
+      return;
+    }catch(e){if(e&&e.name==="AbortError")return;/* picker unavailable → fall back */}
+  }
+  openMode="open";$("fileIn").click();
+}
+async function saveFile(saveAs){
+  if(window.showSaveFilePicker){
+    try{
+      if(saveAs||!fileHandle){
+        fileHandle=await showSaveFilePicker({suggestedName:fileName,
+          types:[{description:"Motion setup (JSON)",accept:{"application/json":[".json"]}}]});
+        fileName=fileHandle.name;
+      }
+      const w=await fileHandle.createWritable();
+      await w.write(setupJSON());await w.close();
+      dirty=false;renderDoc();toast(`Saved ${fileName}`);return;
+    }catch(e){if(e&&e.name==="AbortError")return;/* fall back to download */}
+  }
+  if(saveAs){
+    const n=prompt("Save setup as (file name):",fileName);
+    if(!n)return;
+    fileName=/\.json$/i.test(n.trim())?n.trim():n.trim()+".json";
+  }
+  download(fileName,setupJSON());
+  dirty=false;renderDoc();toast(`${fileName} saved to your downloads`);
+}
+function newSetup(){
+  if(dirty&&!confirm("Start a new setup? Unsaved changes will be lost."))return;
+  const std=localStorage.getItem(STD_KEY);
+  let fromStd=false;
+  if(std){try{fromStd=applySetup(JSON.parse(std));}catch(e){}}
+  if(!fromStd){
+    S.motors=[defMotor()];S.sel=0;S.mode="parallel";S.cpuMs=0;S.cpuCyc=1;highlight=null;
+    recalc();refresh(true);saveState();
+  }
+  fileHandle=null;fileName="motion_setup.json";dirty=false;renderDoc();
+  toast(fromStd?"New setup created from your standard":"New setup created");
+}
+function setStandard(){
+  localStorage.setItem(STD_KEY,setupJSON());
+  toast("Saved as standard — File → New and first start will use this setup");
+}
+function clearStandard(){
+  localStorage.removeItem(STD_KEY);
+  toast("Standard setup cleared — defaults will be used");
+}
+
+/* ════════════════ PDF report (generated in-browser, no libraries) ════════════════ */
+function pdfEsc(s){
+  let o="";
+  for(const c of String(s)){
+    const code=c.codePointAt(0);
+    if(c==="("||c===")"||c==="\\")o+="\\"+c;
+    else if(code>=32&&code<127)o+=c;
+    else if(code===8220||code===8221)o+='\\042';
+    else if(code===8216||code===8217)o+="'";
+    else if(code===8211||code===8212)o+="-";
+    else if(code>=160&&code<=255)o+="\\"+code.toString(8).padStart(3,"0");
+    else o+="?";
+  }
+  return o;
+}
+function PDFDoc(){this.pages=[];this.cur=null;this.W=595;this.H=842;}
+PDFDoc.prototype={
+  page(){this.cur=[];this.pages.push(this.cur);return this;},
+  op(s){this.cur.push(s);},
+  col(c){const n=parseInt(c.slice(1),16);
+    return((n>>16&255)/255).toFixed(3)+" "+((n>>8&255)/255).toFixed(3)+" "+((n&255)/255).toFixed(3);},
+  text(x,y,s,size,color,bold){
+    this.op(`BT /${bold?"F2":"F1"} ${size||10} Tf ${this.col(color||"#222222")} rg 1 0 0 1 ${x.toFixed(1)} ${(this.H-y).toFixed(1)} Tm (${pdfEsc(s)}) Tj ET`);},
+  tw(s,size){return String(s).length*(size||10)*0.5;}, // Helvetica avg width estimate
+  textR(xr,y,s,size,color,bold){this.text(xr-this.tw(s,size),y,s,size,color,bold);},
+  textC(xc,y,s,size,color,bold){this.text(xc-this.tw(s,size)/2,y,s,size,color,bold);},
+  line(x1,y1,x2,y2,color,w,dash){
+    this.op(`${dash?"[2 2] 0 d ":"[] 0 d "}${this.col(color)} RG ${w||1} w ${x1.toFixed(1)} ${(this.H-y1).toFixed(1)} m ${x2.toFixed(1)} ${(this.H-y2).toFixed(1)} l S [] 0 d`);},
+  poly(pts,color,w){
+    let s=`[] 0 d ${this.col(color)} RG ${w||1.2} w 1 j 1 J `;
+    pts.forEach((p,i)=>{s+=`${p[0].toFixed(1)} ${(this.H-p[1]).toFixed(1)} ${i?"l ":"m "}`;});
+    this.op(s+"S");},
+  rect(x,y,w,h,fill){
+    this.op(`${this.col(fill)} rg ${x.toFixed(1)} ${(this.H-y-h).toFixed(1)} ${w.toFixed(1)} ${h.toFixed(1)} re f`);},
+  build(){
+    let out="%PDF-1.4\n";
+    const off=[];
+    const add=(num,body)=>{off[num]=out.length;out+=num+" 0 obj\n"+body+"\nendobj\n";};
+    const n=this.pages.length;
+    add(1,"<< /Type /Catalog /Pages 2 0 R >>");
+    add(2,`<< /Type /Pages /Kids [${this.pages.map((_,i)=>(3+2*i)+" 0 R").join(" ")}] /Count ${n} >>`);
+    const f1=3+2*n,f2=4+2*n;
+    this.pages.forEach((p,i)=>{
+      const st=p.join("\n");
+      add(3+2*i,`<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Contents ${4+2*i} 0 R /Resources << /Font << /F1 ${f1} 0 R /F2 ${f2} 0 R >> >> >>`);
+      add(4+2*i,`<< /Length ${st.length} >>\nstream\n${st}\nendstream`);
+    });
+    add(f1,"<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>");
+    add(f2,"<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>");
+    const xr=out.length,total=f2+1;
+    out+="xref\n0 "+total+"\n0000000000 65535 f \n";
+    for(let i=1;i<total;i++)out+=String(off[i]).padStart(10,"0")+" 00000 n \n";
+    out+=`trailer\n<< /Size ${total} /Root 1 0 R >>\nstartxref\n${xr}\n%%EOF`;
+    return out;
+  }
+};
+const PDF_MCOL=["#2a78d6","#1baf7a","#c98500","#4a3aa7","#e34948","#e87ba4"];
+const PDF_CH=[["poss","Position","#2a78d6",m=>UNITS[m.unit].label],
+              ["vels","Velocity","#157f57",m=>UNITS[m.unit].vel],
+              ["accels","Acceleration","#b07a00",m=>UNITS[m.unit].acc],
+              ["jerks","Jerk","#4a3aa7",m=>UNITS[m.unit].jerk]];
+function pdfChart(doc,x,y,w,h,r,arrKey,color,label){
+  const data=r[arrKey],t7=r.tp.t7;
+  let lo=Math.min(0,...data),hi=Math.max(0,...data);
+  if(hi-lo<1e-12)hi=lo+1;
+  const pad=(hi-lo)*.07;lo-=pad;hi+=pad;
+  const X=t=>x+(t/t7)*w, Y=v=>y+(1-(v-lo)/(hi-lo))*h;
+  doc.text(x,y-5,label,9,color,true);
+  doc.line(x,y,x,y+h,"#bbbbbb",0.7);
+  doc.line(x,y+h,x+w,y+h,"#bbbbbb",0.7);
+  niceTicks(lo,hi,3).forEach(v=>{const yy=Y(v);
+    doc.line(x,yy,x+w,yy,"#e8e8e8",0.5);
+    doc.textR(x-3,yy+2.5,(+v.toPrecision(3)).toString(),7,"#777777");});
+  niceTicks(0,t7,6).forEach(v=>{if(v<0||v>t7+1e-9)return;const xx=X(v);
+    doc.line(xx,y,xx,y+h,"#f0f0f0",0.5);
+    doc.textC(xx,y+h+9,(+v.toPrecision(3)).toString(),7,"#777777");});
+  if(lo<0&&hi>0)doc.line(x,Y(0),x+w,Y(0),"#999999",0.6,true);
+  const pts=[];const step=Math.max(1,Math.floor(data.length/300));
+  for(let i=0;i<data.length;i+=step)pts.push([X(r.times[i]),Y(data[i])]);
+  pts.push([X(t7),Y(data[data.length-1])]);
+  doc.poly(pts,color,1.3);
+  const k={poss:"pos",vels:"vel",accels:"accel",jerks:"jerk"}[arrKey];
+  r.crit.forEach(cp=>doc.rect(X(cp.t)-1.6,Y(cp[k])-1.6,3.2,3.2,color));
+}
+function exportPDF(){
+  const doc=new PDFDoc();
+  const times=results.map(r=>r?r.tp.t7:null),valid=times.filter(t=>t!==null);
+  const motion=valid.length?(S.mode==="parallel"?Math.max(...valid):valid.reduce((a,b)=>a+b,0)):0;
+  const ov=cpuOverheadS(),dead=cpuDeadS(valid.length),total=motion+dead;
+  // ── Page 1: summary ──
+  doc.page();
+  doc.textC(297,60,"Motion Profile Report",21,"#1c2733",true);
+  doc.textC(297,80,new Date().toLocaleString(),9,"#888888");
+  let modeLine=`Mode: ${S.mode.toUpperCase()}   |   Motion time: ${fmt(motion,4)} s`;
+  if(dead>0)modeLine+=`   |   CPU dead time: ${fmt(dead*1000,2)} ms   |   Total: ${fmt(total,4)} s`;
+  doc.textC(297,102,modeLine,10,"#333333");
+  if(dead>0)doc.textC(297,116,
+    `CPU model: ${S.cpuCyc} cycle(s) x ${S.cpuMs} ms per motion command (${S.mode==="parallel"?"counted once - commands issued in parallel":"counted per motion - sequential"})`,
+    8.5,"#777777");
+  // Timeline bars
+  const bx=150,bw=380,bh=16,by0=150;
+  const scale=total>0?total:1;let cum=0;
+  doc.text(60,by0-12,"Axis timeline",10,"#333333",true);
+  S.motors.forEach((m,i)=>{
+    const yy=by0+i*(bh+8),col=PDF_MCOL[i%PDF_MCOL.length],t=times[i];
+    doc.textR(bx-8,yy+bh-4,m.name.slice(0,16),9,"#333333");
+    doc.rect(bx,yy,bw,bh,"#f0f0f0");
+    if(t===null){doc.text(bx+6,yy+bh-4,"invalid",8,"#cc6600");return;}
+    let x0=bx;
+    if(ov>0){const dw=ov/scale*bw,dx=S.mode==="parallel"?bx:bx+cum/scale*bw;
+      doc.rect(dx,yy,dw,bh,"#c8c8c8");
+      x0=S.mode==="parallel"?bx+dw:dx+dw;
+      if(S.mode==="sequential")cum+=ov;}
+    else if(S.mode==="sequential")x0=bx+cum/scale*bw;
+    const w2=t/scale*bw;
+    doc.rect(x0,yy+1,w2,bh-2,col);
+    if(S.mode==="sequential")cum+=t;
+    doc.text(x0+w2+4,yy+bh-4,fmt(t,3)+" s",8,"#333333");
+  });
+  // Motor table
+  const ty=by0+S.motors.length*(bh+8)+30;
+  doc.text(60,ty-8,"Motor parameters",10,"#333333",true);
+  const cols=[60,130,175,235,295,355,415,455,535];
+  const heads=["Motor","Shape","Distance","Max vel","Max acc","Max jerk","Gear","Time"];
+  doc.rect(cols[0],ty,cols[8]-cols[0],18,"#34495e");
+  heads.forEach((hh,i)=>doc.text(cols[i]+4,ty+13,hh,8.5,"#ffffff",true));
+  S.motors.forEach((m,i)=>{
+    const r=results[i],u=UNITS[m.unit],yy=ty+18+i*16;
+    if(i%2===0)doc.rect(cols[0],yy,cols[8]-cols[0],16,"#f4f6f8");
+    const cells=[m.name.slice(0,13),r?"Shape "+r.shape:"Invalid",
+      `${m.s} ${u.label}`,`${m.vmax} ${u.vel}`,`${m.amax} ${u.acc}`,`${m.jmax} ${u.jerk}`,
+      `${m.gear}:1`,r?fmt(r.tp.t7,4)+" s":"-"];
+    cells.forEach((cc,j)=>doc.text(cols[j]+4,yy+11.5,String(cc),8,"#333333"));
+  });
+  // ── Per-motor pages ──
+  S.motors.forEach((m,i)=>{
+    const r=results[i];if(!r)return;
+    const u=UNITS[m.unit];
+    doc.page();
+    doc.text(60,52,`Axis: ${m.name}`,15,"#1c2733",true);
+    doc.textR(535,52,`T = ${fmt(r.tp.t7,4)} s   |   Shape ${r.shape}`,11,"#333333",true);
+    doc.text(60,70,`Dist=${m.s} ${u.label}   Vmax=${m.vmax} ${u.vel}   Amax=${m.amax} ${u.acc}   Jmax=${m.jmax} ${u.jerk}   Gear=${m.gear}:1 (${m.side})`,9,"#666666");
+    if(S.cpuMs>0)doc.text(60,84,`CPU: ${Math.ceil(r.tp.t7*1000/S.cpuMs).toLocaleString("en")} cycles @ ${S.cpuMs} ms/cycle`,9,"#666666");
+    PDF_CH.forEach((ch,ci)=>{
+      pdfChart(doc,95,115+ci*180,440,140,r,ch[0],ch[2],`${ch[1]} (${ch[3](m)})`);
+    });
+  });
+  download("Motion_Profile_Report.pdf",doc.build(),"application/pdf");
+  toast("PDF report exported");
+}
+
+function exportCSV(){
+  let out=`# Multi-axis motion profile data | Mode: ${S.mode.toUpperCase()}\n\n`;
+  S.motors.forEach((m,i)=>{
+    const r=results[i],u=UNITS[m.unit];
+    out+=`--- MOTOR: ${m.name} ---\n`;
+    out+=`Dist=${m.s},Vmax=${m.vmax},Amax=${m.amax},Jmax=${m.jmax},Gear=${m.gear}:1\n`;
+    if(!r){out+="INVALID\n\n";return;}
+    out+=`Total Time: ${r.tp.t7.toFixed(6)} s\n`;
+    out+=`time(s),pos(${u.label}),vel(${u.vel}),acc(${u.acc}),jerk(${u.jerk})\n`;
+    for(let k=0;k<r.times.length;k++)
+      out+=`${r.times[k].toFixed(6)},${r.poss[k].toFixed(6)},${r.vels[k].toFixed(6)},${r.accels[k].toFixed(6)},${r.jerks[k].toFixed(6)}\n`;
+    out+="\n";});
+  download("motion_profile_data.csv",out,"text/csv");
+  toast("Exported trajectory data as CSV");
+}
+function renderProfileList(){
+  const el=$("profList");el.innerHTML="";
+  if(!S.profiles.length){el.innerHTML=`<div style="color:var(--ink-3);padding:14px;text-align:center">No profiles yet — save your current setup below.</div>`;return;}
+  S.profiles.forEach((p,i)=>{
+    const row=document.createElement("div");row.className="prof-row";
+    row.innerHTML=`<div class="pi"><b>${esc(p.name)}</b>
+      <small>${p.motors.length} motor(s): ${esc(p.motors.map(m=>m.name).join(", "))}</small></div>`;
+    const bLoad=document.createElement("button");bLoad.className="primary";bLoad.textContent="Load";
+    bLoad.onclick=()=>{S.motors=JSON.parse(JSON.stringify(p.motors));S.sel=0;highlight=null;
+      markDirty();recalc();refresh(true);saveState();$("dlgProfiles").close();
+      toast(`Profile “${p.name}” loaded`);};
+    const bExp=document.createElement("button");bExp.textContent="Export";
+    bExp.onclick=()=>{download(p.name.replace(/[^\w\-]+/g,"_")+".json",
+      JSON.stringify({app:"precision-motion-solver",version:2,name:p.name,motors:p.motors},null,2));
+      toast(`Profile “${p.name}” exported`);};
+    const bDel=document.createElement("button");bDel.className="danger";bDel.textContent="✕";
+    bDel.title="Delete profile";
+    bDel.onclick=()=>{if(confirm(`Delete profile “${p.name}”?`)){
+      S.profiles.splice(i,1);saveState();renderProfileList();toast("Profile deleted");}};
+    row.append(bLoad,bExp,bDel);el.appendChild(row);
+  });
+}
+
+/* ════════════════ Input wiring ════════════════ */
+let deb=null;
+function numInput(id,apply){
+  $(id).addEventListener("input",e=>{
+    const v=parseFloat(e.target.value);
+    const ok=isFinite(v)&&v>0;
+    e.target.classList.toggle("bad",!ok);
+    if(!ok)return;
+    apply(v);markDirty();
+    clearTimeout(deb);deb=setTimeout(()=>{recalc();refresh();saveState();},150);
+  });
+}
+["s","vmax","amax","jmax"].forEach(k=>numInput("in_"+k,v=>S.motors[S.sel][k]=v));
+numInput("in_gear",v=>S.motors[S.sel].gear=v);
+$("in_cpums").addEventListener("input",e=>{
+  const v=parseFloat(e.target.value);const ok=isFinite(v)&&v>=0;
+  e.target.classList.toggle("bad",!ok);if(!ok)return;
+  S.cpuMs=v;markDirty();renderCpu();renderTimeline();saveState();});
+$("in_cpucyc").addEventListener("input",e=>{
+  const v=Math.round(parseFloat(e.target.value));const ok=isFinite(v)&&v>=0;
+  e.target.classList.toggle("bad",!ok);if(!ok)return;
+  S.cpuCyc=v;markDirty();renderCpu();renderTimeline();saveState();});
+
+Object.keys(UNITS).forEach(u=>{
+  const o=document.createElement("option");o.value=u;o.textContent=u;$("unitSel").appendChild(o);});
+$("unitSel").onchange=e=>{S.motors[S.sel].unit=e.target.value;markDirty();refresh();saveState();};
+$("sideLoad").onclick=()=>{S.motors[S.sel].side="load";markDirty();recalc();refresh();saveState();};
+$("sideMotor").onclick=()=>{S.motors[S.sel].side="motor";markDirty();recalc();refresh();saveState();};
+$("modePar").onclick=()=>{S.mode="parallel";markDirty();renderModes();renderTimeline();renderCpu();saveState();};
+$("modeSeq").onclick=()=>{S.mode="sequential";markDirty();renderModes();renderTimeline();renderCpu();saveState();};
+function renderModes(){
+  $("modePar").className=S.mode==="parallel"?"on":"";
+  $("modeSeq").className=S.mode==="sequential"?"on":"";
+}
+
+$("mDup").onclick=()=>{const m=JSON.parse(JSON.stringify(S.motors[S.sel]));
+  m.name+=" copy";S.motors.push(m);S.sel=S.motors.length-1;markDirty();
+  recalc();refresh(true);saveState();toast("Motor duplicated");};
+$("mRen").onclick=()=>{const m=S.motors[S.sel];
+  const n=prompt("New name for "+m.name+":",m.name);
+  if(n&&n.trim()){m.name=n.trim().slice(0,40);markDirty();refresh(true);saveState();}};
+$("mDel").onclick=()=>{if(S.motors.length<=1){toast("Cannot delete the last motor","err");return;}
+  if(!confirm(`Delete motor “${S.motors[S.sel].name}”?`))return;
+  S.motors.splice(S.sel,1);S.sel=Math.min(S.sel,S.motors.length-1);highlight=null;markDirty();
+  recalc();refresh(true);saveState();toast("Motor deleted");};
+
+$("btnProfiles").onclick=()=>{renderProfileList();$("profName").value="";$("dlgProfiles").showModal();};
+$("dlgClose").onclick=()=>$("dlgProfiles").close();
+$("profSave").onclick=()=>{
+  const n=$("profName").value.trim();
+  if(!n){toast("Enter a profile name first","err");$("profName").focus();return;}
+  S.profiles.push({name:n,motors:JSON.parse(JSON.stringify(S.motors))});
+  saveState();renderProfileList();$("profName").value="";
+  toast(`Profile “${n}” saved (${S.motors.length} motor(s))`);};
+$("btnPdf").onclick=exportPDF;
+
+/* File menu */
+let openMode="import";
+const fileMenu=$("fileMenu");
+$("btnFile").onclick=e=>{e.stopPropagation();
+  if(fileMenu.hidden){$("miClearStd").style.display=localStorage.getItem(STD_KEY)?"":"none";}
+  fileMenu.hidden=!fileMenu.hidden;};
+document.addEventListener("click",e=>{
+  if(!fileMenu.hidden&&!fileMenu.contains(e.target))fileMenu.hidden=true;});
+document.addEventListener("keydown",e=>{
+  if(e.key==="Escape")fileMenu.hidden=true;
+  if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="s"){e.preventDefault();saveFile(false);}
+  if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="o"){e.preventDefault();openFile();}});
+fileMenu.addEventListener("click",e=>{
+  const act=e.target.closest("button")?.dataset.act;
+  if(!act)return;
+  fileMenu.hidden=true;
+  ({new:newSetup,
+    open:openFile,
+    save:()=>saveFile(false),
+    saveas:()=>saveFile(true),
+    std:setStandard,
+    clearstd:clearStandard,
+    import:()=>{openMode="import";$("fileIn").click();},
+    export:exportJSON,
+    csv:exportCSV,
+    pdf:exportPDF}[act])();
+});
+$("profImport").onclick=()=>{openMode="import";$("fileIn").click();};
+$("fileIn").addEventListener("change",e=>{
+  const f=e.target.files[0];if(!f)return;
+  const rd=new FileReader();
+  rd.onload=()=>{
+    if(openMode==="open"){
+      if(openFromText(rd.result,f.name)){fileHandle=null;fileName=f.name;dirty=false;renderDoc();}
+    }else importJSON(rd.result);
+    openMode="import";
+  };
+  rd.readAsText(f);
+  e.target.value="";});
+
+let rTimer=null;
+window.addEventListener("resize",()=>{clearTimeout(rTimer);rTimer=setTimeout(renderCharts,120);});
+
+/* ════════════════ Boot ════════════════ */
+function refresh(full){
+  if(full)renderChips();
+  renderParams();renderCpu();renderTimeline();renderCharts();renderCritTable();renderModes();
+}
+loadState();
+if(!localStorage.getItem(LS_KEY)){
+  // First start in this browser: begin from the standard setup if one exists
+  try{const std=JSON.parse(localStorage.getItem(STD_KEY));
+    if(std&&Array.isArray(std.motors)){
+      const ms=std.motors.map(sanitizeMotor).filter(Boolean);
+      if(ms.length){S.motors=ms;S.sel=0;
+        if(std.mode==="sequential"||std.mode==="parallel")S.mode=std.mode;
+        if(std.cpu){S.cpuMs=+std.cpu.cycleMs||0;
+          S.cpuCyc=Math.max(0,Math.round(+std.cpu.cyclesPerCommand))||1;}}}}catch(e){}
+}
+recalc();renderChips();refresh();renderDoc();
+</script>
+
+</html>

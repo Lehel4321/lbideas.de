@@ -238,10 +238,14 @@
   .sim-frame { width:100%; height:760px; border:0; display:block; background:#09090b; }
   @media (max-width:640px){ .sim-frame { height:600px; } }
   /* true fullscreen — the whole app fills the screen, toolbar stays on top */
-  #pkg-app:fullscreen { display:flex; flex-direction:column; width:100vw; height:100vh; height:100dvh; background:#09090b; }
-  #pkg-app:-webkit-full-screen { display:flex; flex-direction:column; width:100vw; height:100vh; background:#09090b; }
-  #pkg-app:fullscreen .sim-frame-wrap, #pkg-app:-webkit-full-screen .sim-frame-wrap { flex:1 1 auto; }
-  #pkg-app:fullscreen .sim-frame, #pkg-app:-webkit-full-screen .sim-frame { height:100%; }
+  #pkg-app:fullscreen, #motion-app:fullscreen, #packline-app:fullscreen { display:flex; flex-direction:column; width:100vw; height:100vh; height:100dvh; background:#09090b; }
+  #pkg-app:-webkit-full-screen, #motion-app:-webkit-full-screen, #packline-app:-webkit-full-screen { display:flex; flex-direction:column; width:100vw; height:100vh; background:#09090b; }
+  #pkg-app:fullscreen .sim-frame-wrap, #pkg-app:-webkit-full-screen .sim-frame-wrap,
+  #motion-app:fullscreen .sim-frame-wrap, #motion-app:-webkit-full-screen .sim-frame-wrap,
+  #packline-app:fullscreen .sim-frame-wrap, #packline-app:-webkit-full-screen .sim-frame-wrap { flex:1 1 auto; }
+  #pkg-app:fullscreen .sim-frame, #pkg-app:-webkit-full-screen .sim-frame,
+  #motion-app:fullscreen .sim-frame, #motion-app:-webkit-full-screen .sim-frame,
+  #packline-app:fullscreen .sim-frame, #packline-app:-webkit-full-screen .sim-frame { height:100%; }
 
   /* SKILLS */
   .skills-grid { display:grid; grid-template-columns:1fr 1fr; gap:2px; background:var(--GAP); }
@@ -311,11 +315,8 @@
   .app-cta { margin-top:0.9rem; display:inline-block; font-family:var(--MONO); font-size:0.58rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--INK2); padding:0.25rem 0.65rem; background:rgba(0,0,0,0.15); border:1px solid var(--S3); text-decoration:none; transition:all 0.1s; }
   .app-cta:hover { background:rgba(0,0,0,0.28); color:var(--INK); }
 
-  /* EXAMPLE PROJECTS (REPOS) */
-  .repo-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:2px; background:var(--GAP); }
-  .repo-card { background:linear-gradient(135deg, var(--S1) 0%, var(--S) 55%, var(--S3) 100%); padding:1.5rem 1.3rem; transition:filter 0.15s; text-decoration:none; display:block; color:inherit; }
-  .repo-card:hover { filter:brightness(1.07); }
-  .repo-cta-line { font-family:var(--MONO); font-size:0.74rem; color:var(--INK); line-height:1.75; text-align:center; margin-top:2px; padding:1.1rem 1.2rem; background:linear-gradient(135deg, var(--S) 0%, var(--S3) 100%); border-top:2px solid var(--GAP); }
+  /* EXAMPLE PROJECTS — get-in-contact CTA line under the embedded demos */
+  .repo-cta-line { font-family:var(--MONO); font-size:0.74rem; color:var(--INK); line-height:1.75; text-align:center; margin-top:2rem; padding:1.1rem 1.2rem; background:linear-gradient(170deg, var(--S1) 0%, var(--S) 100%); border-left:1px solid rgba(255,255,255,0.2); border-right:2px solid #5a6870; border-bottom:4px solid var(--GAP); box-shadow: 2px 4px 16px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.15); }
   .repo-cta-line a { color:var(--INK); font-weight:600; border-bottom:1px solid var(--INK2); text-decoration:none; padding-bottom:1px; }
   .repo-cta-line a:hover { border-color:var(--INK); }
 
@@ -412,7 +413,6 @@
     .proj-cell { border-right:none; border-bottom:1px solid rgba(0,0,0,0.1); }
     .proj-cell:last-child { border-bottom:none; text-align:left; }
     .apps-grid { grid-template-columns:1fr; }
-    .repo-grid { grid-template-columns:1fr; }
     .lang-grid { grid-template-columns:repeat(2,1fr); }
     .contact-halves { grid-template-columns:1fr; }
     footer { flex-direction:column; gap:0.3rem; text-align:center; padding:0.8rem 1.2rem; }
@@ -718,29 +718,44 @@
 
 <hr>
 
-<!-- EXAMPLE PROJECTS — SOURCE CODE ON GITHUB -->
+<!-- EXAMPLE PROJECTS — LIVE APPS HOSTED FROM THE OPEN-SOURCE REPOS -->
 <section id="code">
   <div class="wrap">
     <div class="sec-head reveal"><span class="sec-num">05e</span><span class="sec-title" data-en="Example Projects" data-de="Beispielprojekte">Example Projects</span></div>
+
     <div class="plate reveal">
-      <div class="repo-grid">
-        <a class="repo-card" href="https://github.com/Lehel4321/MotionProfileSolver" target="_blank" rel="noopener">
-          <span class="app-icon">⚙</span>
-          <div><span class="app-badge" data-en="GitHub · Repository" data-de="GitHub · Repository">GitHub · Repository</span></div>
-          <div class="app-name" data-en="Motion Profile Solver" data-de="Bewegungsprofil-Löser">Motion Profile Solver</div>
-          <div class="app-desc" data-en="Motor motion planning program — S-curve trajectory generation with jerk, acceleration and velocity limits. The engine behind the calculator embedded above." data-de="Programm zur Bewegungsplanung von Motoren — S-Kurven-Trajektorien mit Ruck-, Beschleunigungs- und Geschwindigkeitsgrenzen. Die Engine hinter dem oben eingebetteten Rechner.">Motor motion planning program — S-curve trajectory generation with jerk, acceleration and velocity limits. The engine behind the calculator embedded above.</div>
-          <span class="app-cta" data-en="View on GitHub ↗" data-de="Auf GitHub ansehen ↗">View on GitHub ↗</span>
-        </a>
-        <a class="repo-card" href="https://github.com/Lehel4321/PackegingSystem" target="_blank" rel="noopener">
-          <span class="app-icon">📦</span>
-          <div><span class="app-badge" data-en="GitHub · Repository" data-de="GitHub · Repository">GitHub · Repository</span></div>
-          <div class="app-name" data-en="Packaging System" data-de="Verpackungssystem">Packaging System</div>
-          <div class="app-desc" data-en="Conveyor sorting &amp; packaging line simulation — barcode routing, auto-boxing, fault handling and OEE statistics. Source code behind the simulator embedded above." data-de="Simulation einer Förderband-Sortier- und Verpackungslinie — Barcode-Routing, Auto-Verpackung, Störungsbehandlung und OEE-Statistik. Quellcode hinter dem oben eingebetteten Simulator.">Conveyor sorting &amp; packaging line simulation — barcode routing, auto-boxing, fault handling and OEE statistics. Source code behind the simulator embedded above.</div>
-          <span class="app-cta" data-en="View on GitHub ↗" data-de="Auf GitHub ansehen ↗">View on GitHub ↗</span>
-        </a>
+      <div id="motion-app" class="sim-app open">
+        <div class="sim-app-bar">
+          <span class="sim-app-tag">Precision Motion Solver · <span data-en="live demo" data-de="Live-Demo">live demo</span></span>
+          <span class="sim-app-actions">
+            <a href="https://github.com/Lehel4321/MotionProfileSolver" target="_blank" rel="noopener" class="sim-fullscreen" data-en="Source ↗" data-de="Quellcode ↗">Source ↗</a>
+            <button type="button" id="motion-fs-btn" class="sim-fullscreen" data-en="⛶ Fullscreen" data-de="⛶ Vollbild">⛶ Fullscreen</button>
+            <a href="/motion-solver/" target="_blank" rel="noopener" class="sim-fullscreen" data-en="New tab ↗" data-de="Neuer Tab ↗">New tab ↗</a>
+          </span>
+        </div>
+        <div class="sim-frame-wrap">
+          <iframe id="motion-frame" class="sim-frame" title="Precision Motion Solver" src="/motion-solver/" loading="lazy"></iframe>
+        </div>
       </div>
-      <p class="repo-cta-line" data-en="Interested in these projects, a collaboration or a similar build? Feel free to <a href='#contact'>get in contact</a>." data-de="Interesse an diesen Projekten, einer Zusammenarbeit oder einem ähnlichen Aufbau? Gerne <a href='#contact'>Kontakt aufnehmen</a>.">Interested in these projects, a collaboration or a similar build? Feel free to <a href="#contact">get in contact</a>.</p>
     </div>
+
+    <div class="plate reveal" style="margin-top:2rem;">
+      <div id="packline-app" class="sim-app open">
+        <div class="sim-app-bar">
+          <span class="sim-app-tag">PackLine CP-6 · <span data-en="live demo" data-de="Live-Demo">live demo</span></span>
+          <span class="sim-app-actions">
+            <a href="https://github.com/Lehel4321/PackegingSystem" target="_blank" rel="noopener" class="sim-fullscreen" data-en="Source ↗" data-de="Quellcode ↗">Source ↗</a>
+            <button type="button" id="packline-fs-btn" class="sim-fullscreen" data-en="⛶ Fullscreen" data-de="⛶ Vollbild">⛶ Fullscreen</button>
+            <a href="/packline/" target="_blank" rel="noopener" class="sim-fullscreen" data-en="New tab ↗" data-de="Neuer Tab ↗">New tab ↗</a>
+          </span>
+        </div>
+        <div class="sim-frame-wrap">
+          <iframe id="packline-frame" class="sim-frame" title="PackLine CP-6" src="/packline/" loading="lazy"></iframe>
+        </div>
+      </div>
+    </div>
+
+    <p class="repo-cta-line" data-en="Interested in these projects, a collaboration or a similar build? Feel free to <a href='#contact'>get in contact</a>." data-de="Interesse an diesen Projekten, einer Zusammenarbeit oder einem ähnlichen Aufbau? Gerne <a href='#contact'>Kontakt aufnehmen</a>.">Interested in these projects, a collaboration or a similar build? Feel free to <a href="#contact">get in contact</a>.</p>
   </div>
 </section>
 
@@ -975,25 +990,36 @@
     if(link)link.href=URL.createObjectURL(blob);
   })();
 
-  // Fullscreen toggle for the public packaging demo
-  (function setupPkgFullscreen(){
-    const btn=document.getElementById('pkg-fs-btn');
-    const target=document.getElementById('pkg-app');
-    if(!btn||!target)return;
-    btn.addEventListener('click',()=>{
-      const fsEl=document.fullscreenElement||document.webkitFullscreenElement;
-      if(fsEl){ (document.exitFullscreen||document.webkitExitFullscreen||function(){}).call(document); }
-      else {
-        const req=target.requestFullscreen||target.webkitRequestFullscreen;
-        if(req){ req.call(target); } else { window.open('/packaging/','_blank','noopener'); }
-      }
+  // Fullscreen toggle for embedded live demos (packaging + motion solver + packline)
+  (function setupDemoFullscreens(){
+    const demos=[
+      {btnId:'pkg-fs-btn',      targetId:'pkg-app',      fallback:'/packaging/'},
+      {btnId:'motion-fs-btn',   targetId:'motion-app',   fallback:'/motion-solver/'},
+      {btnId:'packline-fs-btn', targetId:'packline-app', fallback:'/packline/'}
+    ];
+    const btns=[];
+    demos.forEach(({btnId,targetId,fallback})=>{
+      const btn=document.getElementById(btnId);
+      const target=document.getElementById(targetId);
+      if(!btn||!target)return;
+      btns.push(btn);
+      btn.addEventListener('click',()=>{
+        const fsEl=document.fullscreenElement||document.webkitFullscreenElement;
+        if(fsEl){ (document.exitFullscreen||document.webkitExitFullscreen||function(){}).call(document); }
+        else {
+          const req=target.requestFullscreen||target.webkitRequestFullscreen;
+          if(req){ req.call(target); } else { window.open(fallback,'_blank','noopener'); }
+        }
+      });
     });
     function lbl(){
       const on=!!(document.fullscreenElement||document.webkitFullscreenElement);
-      btn.setAttribute('data-en', on?'⤢ Exit':'⛶ Fullscreen');
-      btn.setAttribute('data-de', on?'⤢ Beenden':'⛶ Vollbild');
       const de=document.querySelectorAll('.lang-btn')[1]&&document.querySelectorAll('.lang-btn')[1].classList.contains('active');
-      btn.textContent=btn.getAttribute('data-'+(de?'de':'en'));
+      btns.forEach(btn=>{
+        btn.setAttribute('data-en', on?'⤢ Exit':'⛶ Fullscreen');
+        btn.setAttribute('data-de', on?'⤢ Beenden':'⛶ Vollbild');
+        btn.textContent=btn.getAttribute('data-'+(de?'de':'en'));
+      });
     }
     document.addEventListener('fullscreenchange',lbl);
     document.addEventListener('webkitfullscreenchange',lbl);
