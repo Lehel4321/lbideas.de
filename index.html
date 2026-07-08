@@ -214,7 +214,7 @@
     overflow:hidden;
   }
 
-  /* Embedded app frame (shared by the packaging demo) */
+  /* Embedded app frame (shared by the live demo sections) */
   .sim-app { display:none; }
   .sim-app.open { display:block; }
   .sim-app-bar {
@@ -238,13 +238,11 @@
   .sim-frame { width:100%; height:760px; border:0; display:block; background:#09090b; }
   @media (max-width:640px){ .sim-frame { height:600px; } }
   /* true fullscreen — the whole app fills the screen, toolbar stays on top */
-  #pkg-app:fullscreen, #motion-app:fullscreen, #packline-app:fullscreen, #workflow-app:fullscreen { display:flex; flex-direction:column; width:100vw; height:100vh; height:100dvh; background:#09090b; }
-  #pkg-app:-webkit-full-screen, #motion-app:-webkit-full-screen, #packline-app:-webkit-full-screen, #workflow-app:-webkit-full-screen { display:flex; flex-direction:column; width:100vw; height:100vh; background:#09090b; }
-  #pkg-app:fullscreen .sim-frame-wrap, #pkg-app:-webkit-full-screen .sim-frame-wrap,
+  #motion-app:fullscreen, #packline-app:fullscreen, #workflow-app:fullscreen { display:flex; flex-direction:column; width:100vw; height:100vh; height:100dvh; background:#09090b; }
+  #motion-app:-webkit-full-screen, #packline-app:-webkit-full-screen, #workflow-app:-webkit-full-screen { display:flex; flex-direction:column; width:100vw; height:100vh; background:#09090b; }
   #motion-app:fullscreen .sim-frame-wrap, #motion-app:-webkit-full-screen .sim-frame-wrap,
   #packline-app:fullscreen .sim-frame-wrap, #packline-app:-webkit-full-screen .sim-frame-wrap,
   #workflow-app:fullscreen .sim-frame-wrap, #workflow-app:-webkit-full-screen .sim-frame-wrap { flex:1 1 auto; }
-  #pkg-app:fullscreen .sim-frame, #pkg-app:-webkit-full-screen .sim-frame,
   #motion-app:fullscreen .sim-frame, #motion-app:-webkit-full-screen .sim-frame,
   #packline-app:fullscreen .sim-frame, #packline-app:-webkit-full-screen .sim-frame,
   #workflow-app:fullscreen .sim-frame, #workflow-app:-webkit-full-screen .sim-frame { height:100%; }
@@ -306,7 +304,7 @@
   .proj-tech { font-family:var(--MONO); font-size:0.55rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:var(--INK2); }
 
   /* APPS */
-  .apps-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:2px; background:var(--GAP); }
+  .apps-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:2px; background:var(--GAP); }
   .app-card { background:linear-gradient(135deg, var(--S1) 0%, var(--S) 55%, var(--S3) 100%); padding:1.5rem 1.3rem; transition:filter 0.15s; }
   .app-card:hover { filter:brightness(1.07); }
   .app-icon { font-size:1.3rem; margin-bottom:0.9rem; display:block; filter:grayscale(1) contrast(0.7); }
@@ -408,7 +406,6 @@
     <li><a href="#education"  data-en="Education"   data-de="Ausbildung">Education</a></li>
     <li><a href="#projects"   data-en="Projects"    data-de="Projekte">Projects</a></li>
     <li><a href="#apps"       data-en="Apps"        data-de="Apps">Apps</a></li>
-    <li><a href="#packaging"  data-en="Packaging"   data-de="Verpackung">Packaging</a></li>
     <li><a href="#code"       data-en="Code"        data-de="Code">Code</a></li>
     <li><a href="#contact"    data-en="Contact"     data-de="Kontakt">Contact</a></li>
   </ul>
@@ -429,7 +426,6 @@
   <a href="#education"  onclick="closeMenu()" data-en="Education"   data-de="Ausbildung">Education</a>
   <a href="#projects"   onclick="closeMenu()" data-en="Projects"    data-de="Projekte">Projects</a>
   <a href="#apps"       onclick="closeMenu()" data-en="Apps"        data-de="Apps">Apps</a>
-  <a href="#packaging"  onclick="closeMenu()" data-en="Packaging"   data-de="Verpackung">Packaging</a>
   <a href="#code"       onclick="closeMenu()" data-en="Code"        data-de="Code">Code</a>
   <a href="#contact"    onclick="closeMenu()" data-en="Contact"     data-de="Kontakt">Contact</a>
   <div class="mobile-menu-footer">
@@ -618,36 +614,6 @@
           <div class="app-desc" data-en="Automation workflow blueprint tracker with 4-level task hierarchy, timers, problem log and progress dashboards." data-de="Workflow-Blueprint-Tracker mit 4-stufiger Aufgabenhierarchie, Timern, Problem-Log und Fortschritts-Dashboards.">Automation workflow blueprint tracker with 4-level task hierarchy, timers, problem log and progress dashboards.</div>
           <span class="app-cta" data-en="Open live demo" data-de="Live-Demo öffnen">Open live demo</span>
         </div>
-        <div class="app-card" style="cursor:pointer" onclick="document.getElementById('packaging').scrollIntoView({behavior:'smooth'})">
-          <span class="app-icon">📦</span>
-          <div><span class="app-badge live" data-en="Available" data-de="Verfügbar">Available</span></div>
-          <div class="app-name" data-en="Packaging Line Simulator" data-de="Verpackungslinien-Simulator">Packaging Line Simulator</div>
-          <div class="app-desc" data-en="ParcelSort PRO — a live conveyor sorting &amp; packaging line with barcode routing, auto-boxing, fault handling and OEE stats." data-de="ParcelSort PRO — eine Live-Förderband-Sortier- und Verpackungslinie mit Barcode-Routing, Auto-Verpackung, Störungsbehandlung und OEE-Statistik.">ParcelSort PRO — a live conveyor sorting &amp; packaging line with barcode routing, auto-boxing, fault handling and OEE stats.</div>
-          <span class="app-cta" data-en="Open live demo" data-de="Live-Demo öffnen">Open live demo</span>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<hr>
-
-<!-- PACKAGING LINE SIMULATOR (public showcase) -->
-<section id="packaging">
-  <div class="wrap">
-    <div class="sec-head reveal"><span class="sec-num">05d</span><span class="sec-title" data-en="Packaging Line Simulator" data-de="Verpackungslinien-Simulator">Packaging Line Simulator</span></div>
-    <div class="plate reveal">
-      <div id="pkg-app" class="sim-app open">
-        <div class="sim-app-bar">
-          <span class="sim-app-tag">ParcelSort PRO · <span data-en="live demo" data-de="Live-Demo">live demo</span></span>
-          <span class="sim-app-actions">
-            <button type="button" id="pkg-fs-btn" class="sim-fullscreen" data-en="⛶ Fullscreen" data-de="⛶ Vollbild">⛶ Fullscreen</button>
-            <a href="/packaging/" target="_blank" rel="noopener" class="sim-fullscreen" data-en="New tab ↗" data-de="Neuer Tab ↗">New tab ↗</a>
-          </span>
-        </div>
-        <div class="sim-frame-wrap">
-          <iframe id="pkg-frame" class="sim-frame" title="Packaging Line Simulator" src="/packaging/" loading="lazy"></iframe>
-        </div>
       </div>
     </div>
   </div>
@@ -801,10 +767,9 @@
     document.querySelectorAll('.reveal').forEach(el => el.classList.add('in'));
   }, 600);
 
-  // Fullscreen toggle for embedded live demos (packaging + motion solver + packline + workflow tracker)
+  // Fullscreen toggle for embedded live demos (motion solver + packline + workflow tracker)
   (function setupDemoFullscreens(){
     const demos=[
-      {btnId:'pkg-fs-btn',      targetId:'pkg-app',      fallback:'/packaging/'},
       {btnId:'motion-fs-btn',   targetId:'motion-app',   fallback:'/motion-solver/'},
       {btnId:'packline-fs-btn', targetId:'packline-app', fallback:'/packline/'},
       {btnId:'workflow-fs-btn', targetId:'workflow-app', fallback:'/workflow-tracker/'}
