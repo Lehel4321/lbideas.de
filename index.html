@@ -23,9 +23,31 @@
 <meta name="twitter:title" content="Lehel Balog — SPS Programmer & Software Developer">
 <meta name="twitter:description" content="Over 10 years of experience in industrial automation, PLC programming, and SCADA systems. Based in Neu-Ulm, Germany.">
 <meta name="twitter:image" content="https://lbideas.de/assets/og-image.png">
+<link rel="canonical" href="https://lbideas.de/">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Person",
+  "name": "Lehel Balog",
+  "jobTitle": "SPS Programmer & Software Developer",
+  "worksFor": { "@type": "Organization", "name": "Metzner Maschinenbau GmbH" },
+  "address": { "@type": "PostalAddress", "addressLocality": "Neu-Ulm", "addressCountry": "DE" },
+  "url": "https://lbideas.de/",
+  "image": "https://lbideas.de/assets/og-image.png",
+  "sameAs": [
+    "https://www.linkedin.com/in/lehel-balog-75b9b2129/",
+    "https://github.com/Lehel4321"
+  ],
+  "knowsAbout": ["Industrial Automation", "PLC Programming", "Siemens TIA Portal", "WinCC", "SCADA", "Machine Control"]
+}
+</script>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=Barlow+Condensed:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<!-- Fonts load async so a slow/blocked fonts CDN can never delay first paint -->
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=Barlow+Condensed:wght@300;400;600;700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<noscript><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=Barlow+Condensed:wght@300;400;600;700;800&display=swap" rel="stylesheet"></noscript>
 <style>
   :root {
     /* THE steel — Cybertruck stainless */
@@ -220,7 +242,7 @@
     border-bottom:4px solid var(--GAP);
   }
   .sec-num { font-family:var(--MONO); font-size:0.55rem; color:var(--INK2); letter-spacing:0.1em; opacity:0.5; }
-  .sec-title { font-family:var(--MONO); font-size:0.72rem; font-weight:700; letter-spacing:0.18em; text-transform:uppercase; color:var(--INK); }
+  .sec-title { margin:0; font-family:var(--MONO); font-size:0.72rem; font-weight:700; letter-spacing:0.18em; text-transform:uppercase; color:var(--INK); }
 
   /* PLATE — panel surface for sections */
   .plate {
@@ -257,6 +279,18 @@
   .sim-frame-wrap { background:#09090b; line-height:0; }
   .sim-frame { width:100%; height:760px; border:0; display:block; background:#09090b; }
   @media (max-width:640px){ .sim-frame { height:600px; } }
+  /* Click-to-load poster — demo only boots when the visitor asks for it */
+  .sim-poster { position:relative; display:block; width:100%; padding:0; border:0; background:#09090b; cursor:pointer; }
+  .sim-poster img { width:100%; height:auto; display:block; opacity:0.8; transition:opacity 0.15s; }
+  .sim-poster:hover img, .sim-poster:focus-visible img { opacity:1; }
+  .sim-poster-btn {
+    position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+    font-family:var(--MONO); font-size:0.72rem; font-weight:600;
+    letter-spacing:0.14em; text-transform:uppercase; white-space:nowrap;
+    color:#e4e4e7; background:rgba(9,9,11,0.88); border:1px solid #52525b;
+    padding:0.85rem 1.7rem;
+  }
+  .sim-poster:hover .sim-poster-btn, .sim-poster:focus-visible .sim-poster-btn { background:#18181b; border-color:#a1a1aa; }
   /* true fullscreen — the whole app fills the screen, toolbar stays on top */
   #motion-app:fullscreen, #packline-app:fullscreen, #workflow-app:fullscreen { display:flex; flex-direction:column; width:100vw; height:100vh; height:100dvh; background:#09090b; }
   #motion-app:-webkit-full-screen, #packline-app:-webkit-full-screen, #workflow-app:-webkit-full-screen { display:flex; flex-direction:column; width:100vw; height:100vh; background:#09090b; }
@@ -489,7 +523,7 @@
   <div class="wrap">
     <div class="sec-head reveal">
       <span class="sec-num">01</span>
-      <span class="sec-title" data-en="Skills &amp; Tools" data-de="Fähigkeiten &amp; Tools">Skills &amp; Tools</span>
+      <h2 class="sec-title" data-en="Skills &amp; Tools" data-de="Fähigkeiten &amp; Tools">Skills &amp; Tools</h2>
     </div>
     <div class="plate reveal">
       <div class="skills-grid">
@@ -511,7 +545,7 @@
 <!-- EXPERIENCE -->
 <section id="experience">
   <div class="wrap">
-    <div class="sec-head reveal"><span class="sec-num">02</span><span class="sec-title" data-en="Experience" data-de="Erfahrung">Experience</span></div>
+    <div class="sec-head reveal"><span class="sec-num">02</span><h2 class="sec-title" data-en="Experience" data-de="Erfahrung">Experience</h2></div>
     <div class="plate reveal">
       <div class="exp-block"><div class="exp-grid">
         <div class="exp-meta">
@@ -572,7 +606,7 @@
 <!-- EDUCATION -->
 <section id="education">
   <div class="wrap">
-    <div class="sec-head reveal"><span class="sec-num">03</span><span class="sec-title" data-en="Education" data-de="Ausbildung">Education</span></div>
+    <div class="sec-head reveal"><span class="sec-num">03</span><h2 class="sec-title" data-en="Education" data-de="Ausbildung">Education</h2></div>
     <div class="plate reveal">
       <div class="exp-block"><div class="exp-grid">
         <div class="exp-meta">
@@ -594,7 +628,7 @@
 <!-- PROJECTS -->
 <section id="projects">
   <div class="wrap">
-    <div class="sec-head reveal"><span class="sec-num">04</span><span class="sec-title" data-en="Projects" data-de="Projekte">Projects</span></div>
+    <div class="sec-head reveal"><span class="sec-num">04</span><h2 class="sec-title" data-en="Projects" data-de="Projekte">Projects</h2></div>
     <div class="plate reveal">
       <div class="proj-header">
         <div class="proj-th" data-en="Company" data-de="Firma">Company</div>
@@ -622,7 +656,7 @@
 <!-- APPS -->
 <section id="apps">
   <div class="wrap">
-    <div class="sec-head reveal"><span class="sec-num">05</span><span class="sec-title" data-en="Apps &amp; Tools" data-de="Apps &amp; Tools">Apps &amp; Tools</span></div>
+    <div class="sec-head reveal"><span class="sec-num">05</span><h2 class="sec-title" data-en="Apps &amp; Tools" data-de="Apps &amp; Tools">Apps &amp; Tools</h2></div>
     <div class="plate reveal">
       <div class="apps-grid">
         <div class="app-card">
@@ -648,7 +682,7 @@
 <!-- EXAMPLE PROJECTS — LIVE APPS HOSTED FROM THE OPEN-SOURCE REPOS -->
 <section id="code">
   <div class="wrap">
-    <div class="sec-head reveal"><span class="sec-num">05e</span><span class="sec-title" data-en="Example Projects" data-de="Beispielprojekte">Example Projects</span></div>
+    <div class="sec-head reveal"><span class="sec-num">05e</span><h2 class="sec-title" data-en="Example Projects" data-de="Beispielprojekte">Example Projects</h2></div>
 
     <div class="plate reveal">
       <div id="motion-app" class="sim-app open">
@@ -661,7 +695,10 @@
           </span>
         </div>
         <div class="sim-frame-wrap">
-          <iframe id="motion-frame" class="sim-frame" title="Precision Motion Solver" src="/motion-solver/" loading="lazy"></iframe>
+          <button type="button" class="sim-poster" data-frame-id="motion-frame" data-src="/motion-solver/" data-title="Precision Motion Solver">
+            <img src="/assets/poster-motion.png" alt="Precision Motion Solver — app preview" loading="lazy" width="1240" height="760">
+            <span class="sim-poster-btn" data-en="▶&nbsp; Load live demo" data-de="▶&nbsp; Live-Demo laden">▶&nbsp; Load live demo</span>
+          </button>
         </div>
       </div>
     </div>
@@ -677,7 +714,10 @@
           </span>
         </div>
         <div class="sim-frame-wrap">
-          <iframe id="packline-frame" class="sim-frame" title="PackLine CP-6" src="/packline/" loading="lazy"></iframe>
+          <button type="button" class="sim-poster" data-frame-id="packline-frame" data-src="/packline/" data-title="PackLine CP-6">
+            <img src="/assets/poster-packline.png" alt="PackLine CP-6 packaging line simulator — app preview" loading="lazy" width="1240" height="760">
+            <span class="sim-poster-btn" data-en="▶&nbsp; Load live demo" data-de="▶&nbsp; Live-Demo laden">▶&nbsp; Load live demo</span>
+          </button>
         </div>
       </div>
     </div>
@@ -693,7 +733,10 @@
           </span>
         </div>
         <div class="sim-frame-wrap">
-          <iframe id="workflow-frame" class="sim-frame" title="Workflow Tracker" src="/workflow-tracker/" loading="lazy"></iframe>
+          <button type="button" class="sim-poster" data-frame-id="workflow-frame" data-src="/workflow-tracker/" data-title="Workflow Tracker">
+            <img src="/assets/poster-workflow.png" alt="Workflow Tracker — app preview" loading="lazy" width="1240" height="760">
+            <span class="sim-poster-btn" data-en="▶&nbsp; Load live demo" data-de="▶&nbsp; Live-Demo laden">▶&nbsp; Load live demo</span>
+          </button>
         </div>
       </div>
     </div>
@@ -707,7 +750,7 @@
 <!-- LANGUAGES -->
 <section id="languages">
   <div class="wrap">
-    <div class="sec-head reveal"><span class="sec-num">06</span><span class="sec-title" data-en="Languages" data-de="Sprachen">Languages</span></div>
+    <div class="sec-head reveal"><span class="sec-num">06</span><h2 class="sec-title" data-en="Languages" data-de="Sprachen">Languages</h2></div>
     <div class="plate reveal">
       <div class="lang-grid">
         <div class="lang-cell"><div class="lang-name" data-en="Hungarian" data-de="Ungarisch">Hungarian</div><div class="lang-lvl" data-en="Native" data-de="Muttersprache">Native</div></div>
@@ -724,7 +767,7 @@
 <!-- CONTACT -->
 <section id="contact">
   <div class="wrap">
-    <div class="sec-head reveal"><span class="sec-num">07</span><span class="sec-title" data-en="Contact" data-de="Kontakt">Contact</span></div>
+    <div class="sec-head reveal"><span class="sec-num">07</span><h2 class="sec-title" data-en="Contact" data-de="Kontakt">Contact</h2></div>
     <div class="plate reveal">
       <div class="contact-halves">
         <div class="ch-left">
@@ -751,7 +794,7 @@
 
 <footer>
   <span class="foot-name">Lehel Balog</span>
-  <span class="foot-copy">© 2025 · lbideas.de</span>
+  <span class="foot-copy">© <span id="foot-year">2026</span> · lbideas.de</span>
 </footer>
 
 <script>
@@ -769,9 +812,12 @@
   }
   document.addEventListener('keydown', e => { if (e.key === 'Escape') closeMenu(); });
 
+  document.getElementById('foot-year').textContent = new Date().getFullYear();
+
   function setLang(lang) {
+    document.documentElement.lang = lang;
     document.querySelectorAll('.lang-btn').forEach((b,i) =>
-      b.classList.toggle('active', (i===0&&lang==='en')||(i===1&&lang==='de'))
+      b.classList.toggle('active', (i%2===0) ? lang==='en' : lang==='de')
     );
     document.querySelectorAll('[data-en]').forEach(el => {
       if (el.tagName==='INPUT'||el.tagName==='TEXTAREA') return;
@@ -794,6 +840,19 @@
     document.querySelectorAll('.reveal').forEach(el => el.classList.add('in'));
   }, 600);
 
+  // Click-to-load demo posters — keeps the page light until a demo is requested
+  function loadDemo(poster){
+    const f=document.createElement('iframe');
+    f.className='sim-frame';
+    f.id=poster.dataset.frameId;
+    f.title=poster.dataset.title;
+    f.src=poster.dataset.src;
+    poster.replaceWith(f);
+  }
+  document.querySelectorAll('.sim-poster').forEach(p=>{
+    p.addEventListener('click',()=>loadDemo(p),{once:true});
+  });
+
   // Fullscreen toggle for embedded live demos (motion solver + packline + workflow tracker)
   (function setupDemoFullscreens(){
     const demos=[
@@ -811,6 +870,8 @@
         const fsEl=document.fullscreenElement||document.webkitFullscreenElement;
         if(fsEl){ (document.exitFullscreen||document.webkitExitFullscreen||function(){}).call(document); }
         else {
+          const poster=target.querySelector('.sim-poster');
+          if(poster) loadDemo(poster);
           const req=target.requestFullscreen||target.webkitRequestFullscreen;
           if(req){ req.call(target); } else { window.open(fallback,'_blank','noopener'); }
         }
