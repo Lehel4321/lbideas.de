@@ -161,6 +161,7 @@
     border:1px solid var(--GAP);
     box-shadow:inset 0 1px 0 rgba(255,255,255,0.08);
     display:inline-block; transition:all 0.15s;
+    cursor:pointer; -webkit-appearance:none; appearance:none;
   }
   .btn-primary:hover { background:#0d1518; color:var(--S1); }
 
@@ -710,12 +711,12 @@
           <div class="contact-line"><div class="contact-icon">◎</div><div class="contact-val" data-en="Neu-Ulm, Germany" data-de="Neu-Ulm, Deutschland">Neu-Ulm, Germany</div></div>
         </div>
         <div class="ch-right">
-          <div class="form">
-            <input type="text"  data-placeholder-en="Name"    data-placeholder-de="Name"      placeholder="Name" autocomplete="name">
-            <input type="email" data-placeholder-en="Email"   data-placeholder-de="E-Mail"    placeholder="Email" autocomplete="email">
-            <textarea rows="5"  data-placeholder-en="Message" data-placeholder-de="Nachricht" placeholder="Message"></textarea>
-            <a href="#contact" class="btn-primary" data-en="Send message" data-de="Nachricht senden">Send message</a>
-          </div>
+          <form class="form" id="contact-form">
+            <input type="text"  id="contact-name"    data-placeholder-en="Name"    data-placeholder-de="Name"      placeholder="Name" autocomplete="name" required>
+            <input type="email" id="contact-email"   data-placeholder-en="Email"   data-placeholder-de="E-Mail"    placeholder="Email" autocomplete="email" required>
+            <textarea rows="5"  id="contact-message" data-placeholder-en="Message" data-placeholder-de="Nachricht" placeholder="Message" required></textarea>
+            <button type="submit" class="btn-primary" data-en="Send message" data-de="Nachricht senden">Send message</button>
+          </form>
         </div>
       </div>
     </div>
@@ -800,6 +801,21 @@
     }
     document.addEventListener('fullscreenchange',lbl);
     document.addEventListener('webkitfullscreenchange',lbl);
+  })();
+
+  // CONTACT FORM — static site, no backend, so hand off to the visitor's mail client
+  (function setupContactForm(){
+    const form = document.getElementById('contact-form');
+    if(!form) return;
+    form.addEventListener('submit', e => {
+      e.preventDefault();
+      const name = document.getElementById('contact-name').value.trim();
+      const email = document.getElementById('contact-email').value.trim();
+      const message = document.getElementById('contact-message').value.trim();
+      const subject = encodeURIComponent(`Portfolio contact from ${name}`);
+      const body = encodeURIComponent(`${message}\n\n— ${name} (${email})`);
+      window.location.href = `mailto:baloglehel91@gmail.com?subject=${subject}&body=${body}`;
+    });
   })();
 </script>
 </body>
