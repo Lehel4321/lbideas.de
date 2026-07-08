@@ -238,14 +238,16 @@
   .sim-frame { width:100%; height:760px; border:0; display:block; background:#09090b; }
   @media (max-width:640px){ .sim-frame { height:600px; } }
   /* true fullscreen — the whole app fills the screen, toolbar stays on top */
-  #pkg-app:fullscreen, #motion-app:fullscreen, #packline-app:fullscreen { display:flex; flex-direction:column; width:100vw; height:100vh; height:100dvh; background:#09090b; }
-  #pkg-app:-webkit-full-screen, #motion-app:-webkit-full-screen, #packline-app:-webkit-full-screen { display:flex; flex-direction:column; width:100vw; height:100vh; background:#09090b; }
+  #pkg-app:fullscreen, #motion-app:fullscreen, #packline-app:fullscreen, #workflow-app:fullscreen { display:flex; flex-direction:column; width:100vw; height:100vh; height:100dvh; background:#09090b; }
+  #pkg-app:-webkit-full-screen, #motion-app:-webkit-full-screen, #packline-app:-webkit-full-screen, #workflow-app:-webkit-full-screen { display:flex; flex-direction:column; width:100vw; height:100vh; background:#09090b; }
   #pkg-app:fullscreen .sim-frame-wrap, #pkg-app:-webkit-full-screen .sim-frame-wrap,
   #motion-app:fullscreen .sim-frame-wrap, #motion-app:-webkit-full-screen .sim-frame-wrap,
-  #packline-app:fullscreen .sim-frame-wrap, #packline-app:-webkit-full-screen .sim-frame-wrap { flex:1 1 auto; }
+  #packline-app:fullscreen .sim-frame-wrap, #packline-app:-webkit-full-screen .sim-frame-wrap,
+  #workflow-app:fullscreen .sim-frame-wrap, #workflow-app:-webkit-full-screen .sim-frame-wrap { flex:1 1 auto; }
   #pkg-app:fullscreen .sim-frame, #pkg-app:-webkit-full-screen .sim-frame,
   #motion-app:fullscreen .sim-frame, #motion-app:-webkit-full-screen .sim-frame,
-  #packline-app:fullscreen .sim-frame, #packline-app:-webkit-full-screen .sim-frame { height:100%; }
+  #packline-app:fullscreen .sim-frame, #packline-app:-webkit-full-screen .sim-frame,
+  #workflow-app:fullscreen .sim-frame, #workflow-app:-webkit-full-screen .sim-frame { height:100%; }
 
   /* SKILLS */
   .skills-grid { display:grid; grid-template-columns:1fr 1fr; gap:2px; background:var(--GAP); }
@@ -367,34 +369,6 @@
   .reveal.in { opacity:1; transform:translateY(0); }
   @keyframes rise { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
 
-  /* MOTION CALC */
-  .mc-wrapper { display:grid; grid-template-columns:268px 1fr; gap:2px; background:var(--GAP); }
-  .mc-left { display:flex; flex-direction:column; gap:2px; background:var(--GAP); }
-  .mc-inputs { background:linear-gradient(180deg, var(--S1) 0%, var(--S) 100%); padding:1rem; display:flex; flex-direction:column; gap:0.5rem; }
-  .mc-param { display:flex; flex-direction:column; gap:0.18rem; }
-  .mc-label { font-family:var(--MONO); font-size:0.54rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--INK2); font-weight:700; }
-  .mc-input-row { display:flex; align-items:center; background:rgba(0,0,0,0.18); border:1px solid var(--S3); transition:border-color 0.15s; overflow:hidden; }
-  .mc-input-row:focus-within { border-color:var(--GAP); }
-  .mc-input { flex:1; background:transparent; border:none; color:var(--INK); font-family:var(--MONO); font-size:0.82rem; font-weight:600; padding:0.35rem 0.6rem; outline:none; }
-  .mc-unit { font-family:var(--MONO); font-size:0.54rem; color:var(--INK2); padding:0 0.5rem; border-left:1px solid var(--S3); white-space:nowrap; line-height:2rem; }
-  .mc-status-bar { display:flex; justify-content:space-between; align-items:center; padding:0.35rem 1rem; background:linear-gradient(90deg, var(--S) 0%, var(--S1) 100%); }
-  .mc-status-label { font-family:var(--MONO); font-size:0.54rem; text-transform:uppercase; letter-spacing:0.1em; color:var(--INK2); font-weight:700; }
-  .mc-status-val { font-family:var(--MONO); font-size:0.7rem; color:var(--INK); font-weight:700; }
-  .mc-table-head { display:flex; justify-content:space-between; font-family:var(--MONO); font-size:0.54rem; text-transform:uppercase; letter-spacing:0.1em; color:var(--INK2); font-weight:700; padding:0.38rem 1rem 0.2rem; background:linear-gradient(90deg, #748590 0%, var(--S) 100%); border-top:1px solid var(--S3); }
-  .mc-table-scroll { overflow-x:auto; background:linear-gradient(180deg, var(--S) 0%, #748590 100%); }
-  .mc-table { width:100%; border-collapse:collapse; font-family:var(--MONO); font-size:0.64rem; }
-  .mc-table th { padding:0.28rem 0.6rem; text-align:right; background:rgba(0,0,0,0.14); color:var(--INK2); font-size:0.54rem; letter-spacing:0.08em; text-transform:uppercase; border-bottom:1px solid var(--S3); font-weight:700; }
-  .mc-table th:first-child { text-align:left; }
-  .mc-table td { padding:0.28rem 0.6rem; text-align:right; color:var(--INK); opacity:1; border-bottom:1px solid rgba(0,0,0,0.1); cursor:pointer; transition:opacity 0.1s; }
-  .mc-table td:first-child { text-align:left; opacity:1; font-weight:700; }
-  .mc-table tr:hover td { opacity:1; }
-  .mc-table tr.mc-row-selected td { background:rgba(0,0,0,0.15); opacity:1; }
-  .mc-right { background:var(--GAP); padding:1px; }
-  .mc-right canvas { width:100%; height:auto; display:block; }
-  .mc-download-btn { display:flex; align-items:center; gap:0.6rem; padding:0.5rem 1rem; background:linear-gradient(90deg, #748590 0%, var(--S) 100%); border-top:1px solid var(--S3); color:var(--INK2); text-decoration:none; font-family:var(--MONO); font-size:0.6rem; letter-spacing:0.08em; text-transform:uppercase; transition:filter 0.1s; }
-  .mc-download-btn:hover { filter:brightness(1.1); color:var(--INK); }
-  .mc-download-btn span:first-child { font-size:1rem; }
-
   @media (max-width:768px) {
     nav { padding:0 1.2rem; }
     .nav-links { display:none; }
@@ -416,9 +390,6 @@
     .lang-grid { grid-template-columns:repeat(2,1fr); }
     .contact-halves { grid-template-columns:1fr; }
     footer { flex-direction:column; gap:0.3rem; text-align:center; padding:0.8rem 1.2rem; }
-    .mc-wrapper { grid-template-columns:1fr; }
-    .mc-right { order:-1; }
-    .mc-right canvas { max-height:360px; }
   }
   @media (max-width:380px) {
     h1 { font-size:2.9rem; }
@@ -640,12 +611,12 @@
           <div class="app-name" data-en="Personal Calendar" data-de="Persönlicher Kalender">Personal Calendar</div>
           <div class="app-desc" data-en="A custom-built calendar for personal scheduling and productivity." data-de="Ein maßgeschneiderter Kalender für persönliche Planung.">A custom-built calendar for personal scheduling and productivity.</div>
         </div>
-        <div class="app-card" style="cursor:pointer" onclick="document.getElementById('motion-calc').scrollIntoView({behavior:'smooth'})">
-          <span class="app-icon">📐</span>
+        <div class="app-card" style="cursor:pointer" onclick="document.getElementById('workflow-app').scrollIntoView({behavior:'smooth'})">
+          <span class="app-icon">🗂️</span>
           <div><span class="app-badge live" data-en="Available" data-de="Verfügbar">Available</span></div>
-          <div class="app-name" data-en="Motion Profile Calculator" data-de="Bewegungsprofil-Rechner">Motion Profile Calculator</div>
-          <div class="app-desc" data-en="S-curve 7-segment motion solver. Real-time position, velocity, acceleration and jerk profiles." data-de="S-Kurven 7-Segment-Löser. Echtzeit-Bewegungsprofile.">S-curve 7-segment motion solver. Real-time position, velocity, acceleration and jerk profiles.</div>
-          <span class="app-cta" data-en="Open calculator" data-de="Rechner öffnen">Open calculator</span>
+          <div class="app-name" data-en="Workflow Tracker" data-de="Workflow Tracker">Workflow Tracker</div>
+          <div class="app-desc" data-en="Automation workflow blueprint tracker with 4-level task hierarchy, timers, problem log and progress dashboards." data-de="Workflow-Blueprint-Tracker mit 4-stufiger Aufgabenhierarchie, Timern, Problem-Log und Fortschritts-Dashboards.">Automation workflow blueprint tracker with 4-level task hierarchy, timers, problem log and progress dashboards.</div>
+          <span class="app-cta" data-en="Open live demo" data-de="Live-Demo öffnen">Open live demo</span>
         </div>
         <div class="app-card" style="cursor:pointer" onclick="document.getElementById('packaging').scrollIntoView({behavior:'smooth'})">
           <span class="app-icon">📦</span>
@@ -654,40 +625,6 @@
           <div class="app-desc" data-en="ParcelSort PRO — a live conveyor sorting &amp; packaging line with barcode routing, auto-boxing, fault handling and OEE stats." data-de="ParcelSort PRO — eine Live-Förderband-Sortier- und Verpackungslinie mit Barcode-Routing, Auto-Verpackung, Störungsbehandlung und OEE-Statistik.">ParcelSort PRO — a live conveyor sorting &amp; packaging line with barcode routing, auto-boxing, fault handling and OEE stats.</div>
           <span class="app-cta" data-en="Open live demo" data-de="Live-Demo öffnen">Open live demo</span>
         </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<hr>
-
-<!-- MOTION CALCULATOR -->
-<section id="motion-calc">
-  <div class="wrap">
-    <div class="sec-head reveal"><span class="sec-num">05b</span><span class="sec-title" data-en="Motion Profile Calculator" data-de="Bewegungsprofil-Rechner">Motion Profile Calculator</span></div>
-    <div class="plate reveal">
-      <div class="mc-wrapper">
-        <div class="mc-left">
-          <div class="mc-inputs">
-            <div class="mc-param"><label class="mc-label" data-en="Distance" data-de="Strecke">Distance</label><div class="mc-input-row"><input class="mc-input" type="number" id="mc-dist" value="100" step="any"><span class="mc-unit">mm</span></div></div>
-            <div class="mc-param"><label class="mc-label" data-en="Max Velocity" data-de="Max. Geschwindigkeit">Max Velocity</label><div class="mc-input-row"><input class="mc-input" type="number" id="mc-vel" value="20" step="any"><span class="mc-unit">mm/s</span></div></div>
-            <div class="mc-param"><label class="mc-label" data-en="Max Acceleration" data-de="Max. Beschleunigung">Max Acceleration</label><div class="mc-input-row"><input class="mc-input" type="number" id="mc-acc" value="10" step="any"><span class="mc-unit">mm/s²</span></div></div>
-            <div class="mc-param"><label class="mc-label" data-en="Max Jerk" data-de="Max. Ruck">Max Jerk</label><div class="mc-input-row"><input class="mc-input" type="number" id="mc-jerk" value="50" step="any"><span class="mc-unit">mm/s³</span></div></div>
-          </div>
-          <div class="mc-status-bar"><span class="mc-status-label" data-en="Profile Type" data-de="Profiltyp">Profile Type</span><span id="mc-case" class="mc-status-val">—</span></div>
-          <div class="mc-status-bar"><span class="mc-status-label" data-en="Total Time" data-de="Gesamtzeit">Total Time</span><span id="mc-time" class="mc-status-val">—</span></div>
-          <div class="mc-table-head"><span data-en="Critical Points" data-de="Kritische Punkte">Critical Points</span><span style="font-weight:300" data-en="click to highlight" data-de="anklicken">click to highlight</span></div>
-          <div class="mc-table-scroll">
-            <table class="mc-table">
-              <thead><tr><th>t (s)</th><th>Pos</th><th>Vel</th><th>Acc</th><th>Jerk</th></tr></thead>
-              <tbody id="mc-tbody"></tbody>
-            </table>
-          </div>
-          <a id="mc-download-link" class="mc-download-btn" href="#" download="motion_profile_calculator.py">
-            <span>⬇</span><span data-en="Download Python App (.py)" data-de="Python-App herunterladen (.py)">Download Python App (.py)</span>
-          </a>
-        </div>
-        <div class="mc-right"><canvas id="mc-canvas" width="600" height="640"></canvas></div>
       </div>
     </div>
   </div>
@@ -751,6 +688,22 @@
         </div>
         <div class="sim-frame-wrap">
           <iframe id="packline-frame" class="sim-frame" title="PackLine CP-6" src="/packline/" loading="lazy"></iframe>
+        </div>
+      </div>
+    </div>
+
+    <div class="plate reveal" style="margin-top:2rem;">
+      <div id="workflow-app" class="sim-app open">
+        <div class="sim-app-bar">
+          <span class="sim-app-tag">Workflow Tracker · <span data-en="live demo" data-de="Live-Demo">live demo</span></span>
+          <span class="sim-app-actions">
+            <a href="https://github.com/Lehel4321/workflow-tracker" target="_blank" rel="noopener" class="sim-fullscreen" data-en="Source ↗" data-de="Quellcode ↗">Source ↗</a>
+            <button type="button" id="workflow-fs-btn" class="sim-fullscreen" data-en="⛶ Fullscreen" data-de="⛶ Vollbild">⛶ Fullscreen</button>
+            <a href="/workflow-tracker/" target="_blank" rel="noopener" class="sim-fullscreen" data-en="New tab ↗" data-de="Neuer Tab ↗">New tab ↗</a>
+          </span>
+        </div>
+        <div class="sim-frame-wrap">
+          <iframe id="workflow-frame" class="sim-frame" title="Workflow Tracker" src="/workflow-tracker/" loading="lazy"></iframe>
         </div>
       </div>
     </div>
@@ -848,154 +801,13 @@
     document.querySelectorAll('.reveal').forEach(el => el.classList.add('in'));
   }, 600);
 
-  // MOTION PROFILE CALCULATOR
-  function computeMotionProfile(distance, maxVel, maxAcc, maxJerk) {
-    const sTotal=parseFloat(distance), vMax=Math.abs(parseFloat(maxVel));
-    const aMax=Math.abs(parseFloat(maxAcc)), jMax=Math.abs(parseFloat(maxJerk));
-    const dir=sTotal>=0?1:-1, sMag=Math.abs(sTotal);
-    if(sMag<=0||vMax<=0||aMax<=0||jMax<=0) return null;
-    const Va=(aMax*aMax)/jMax;
-    let Tj,Ta,Tv,caseType,TjStar,TaStar;
-    if(vMax<=Va){TjStar=Math.sqrt(vMax/jMax);TaStar=0;}
-    else{TjStar=aMax/jMax;TaStar=(vMax-jMax*TjStar*TjStar)/aMax;}
-    const sRequired=vMax*(2*TjStar+TaStar);
-    if(sMag>=sRequired){caseType="Long Move (V_max Reached)";Tj=TjStar;Ta=TaStar;Tv=(sMag-sRequired)/vMax;}
-    else{Tv=0;const sHalf=sMag/2;const TjNew=Math.cbrt(sHalf/jMax);
-      if(jMax*TjNew<=aMax){caseType="Short Move (Jerk Limited)";Tj=TjNew;Ta=0;}
-      else{caseType="Short Move (Accel Limited)";Tj=aMax/jMax;const c=2*Tj*Tj-(2*sHalf/aMax),b=3*Tj,disc=b*b-4*c;Ta=(-b+Math.sqrt(Math.max(0,disc)))/2;}}
-    function integrate(base,jerk,dt){
-      const[t0,,a0,v0,p0]=base;
-      return[t0+dt,jerk,a0+jerk*dt,v0+a0*dt+0.5*jerk*dt*dt,p0+v0*dt+0.5*a0*dt*dt+(1/6)*jerk*dt*dt*dt];
-    }
-    const s0=[0,0,0,0,0],s1=integrate(s0,jMax,Tj),s2=integrate(s1,0,Ta),
-          s3=integrate(s2,-jMax,Tj),s4=integrate(s3,0,Tv),
-          s5=integrate(s4,-jMax,Tj),s6=integrate(s5,0,Ta),s7=integrate(s6,jMax,Tj);
-    const snapshots=[s0,s1,s2,s3,s4,s5,s6,s7],jSegs=[jMax,0,-jMax,0,-jMax,0,jMax],tEnd=s7[0];
-    function getState(tQ){
-      if(tQ<0)return[0,0,0,0];
-      const times=snapshots.map(s=>s[0]);
-      if(tQ>=times[times.length-1])return[0,0,0,snapshots[snapshots.length-1][4]*dir];
-      let k=0;for(let i=0;i<times.length-1;i++){if(tQ>=times[i])k=i;}
-      const base=snapshots[k],dt=tQ-base[0],j=jSegs[k]||0;
-      const[,,a0,v0,p0]=base;
-      return[j*dir,(a0+j*dt)*dir,(v0+a0*dt+0.5*j*dt*dt)*dir,(p0+v0*dt+0.5*a0*dt*dt+(1/6)*j*dt*dt*dt)*dir];
-    }
-    return{snapshots,getState,tEnd,caseType,dir};
-  }
-
-  let mcProfile=null, mcHighlight=-1;
-
-  function mcDraw(){
-    const canvas=document.getElementById('mc-canvas');
-    if(!canvas)return;
-    const ctx=canvas.getContext('2d');
-    const dpr=window.devicePixelRatio||1;
-    const w=canvas.clientWidth,h=canvas.clientHeight;
-    canvas.width=w*dpr;canvas.height=h*dpr;
-    ctx.scale(dpr,dpr);
-    // Steel background for canvas
-    ctx.fillStyle='#1a2226';
-    ctx.fillRect(0,0,w,h);
-    if(!mcProfile||!mcProfile.snapshots.length||mcProfile.tEnd<=0)return;
-    const{snapshots,getState,tEnd}=mcProfile;
-    // Steel-toned chart colors — different lightness same hue family
-    const PLOTS=[
-      {key:3,label:'POS',color:'#b8c8d0'},
-      {key:2,label:'VEL',color:'#9aaab2'},
-      {key:1,label:'ACC',color:'#7e8d95'},
-      {key:0,label:'JRK',color:'#637079'}
-    ];
-    const rows=4,padL=48,padR=10,padT=12,padB=24,gap=10;
-    const totalH=h-padT-padB,plotH=(totalH-gap*(rows-1))/rows,plotW=w-padL-padR;
-    const N=400,dt=tEnd/N,allStates=[];
-    for(let i=0;i<=N;i++)allStates.push(getState(i*dt));
-
-    PLOTS.forEach((pl,ri)=>{
-      const y0=padT+ri*(plotH+gap);
-      const vals=allStates.map(s=>s[pl.key]);
-      const vMin=Math.min(...vals),vMax=Math.max(...vals);
-      const range=vMax-vMin||1,pad=range*0.12;
-      const toX=t=>padL+(t/tEnd)*plotW;
-      const toY=v=>y0+plotH-(v-vMin+pad)/(range+2*pad)*plotH;
-
-      ctx.strokeStyle='rgba(255,255,255,0.04)';ctx.lineWidth=1;
-      for(let gi=0;gi<=4;gi++){const gy=y0+(gi/4)*plotH;ctx.beginPath();ctx.moveTo(padL,gy);ctx.lineTo(padL+plotW,gy);ctx.stroke();}
-      if(vMin<0&&vMax>0){ctx.strokeStyle='rgba(255,255,255,0.07)';const zy=toY(0);ctx.beginPath();ctx.moveTo(padL,zy);ctx.lineTo(padL+plotW,zy);ctx.stroke();}
-
-      ctx.beginPath();ctx.moveTo(toX(0),toY(vals[0]));
-      for(let i=1;i<=N;i++)ctx.lineTo(toX(i*dt),toY(vals[i]));
-      ctx.lineTo(toX(tEnd),toY(vMin-pad));ctx.lineTo(toX(0),toY(vMin-pad));ctx.closePath();
-      const grad=ctx.createLinearGradient(0,y0,0,y0+plotH);
-      grad.addColorStop(0,pl.color+'28');grad.addColorStop(1,pl.color+'06');
-      ctx.fillStyle=grad;ctx.fill();
-
-      ctx.strokeStyle=pl.color;ctx.lineWidth=1.6;ctx.lineJoin='round';
-      ctx.beginPath();ctx.moveTo(toX(0),toY(vals[0]));
-      for(let i=1;i<=N;i++)ctx.lineTo(toX(i*dt),toY(vals[i]));
-      ctx.stroke();
-
-      snapshots.forEach((sn,si)=>{
-        const tv=sn[0],sv=getState(tv)[pl.key],sx=toX(tv),sy=toY(sv),isHL=si===mcHighlight;
-        ctx.beginPath();ctx.arc(sx,sy,isHL?5:2.5,0,Math.PI*2);
-        ctx.fillStyle=isHL?'#dce6ec':'rgba(220,230,236,0.6)';ctx.fill();
-        if(isHL){ctx.strokeStyle='#dce6ec';ctx.lineWidth=1;ctx.beginPath();ctx.arc(sx,sy,9,0,Math.PI*2);ctx.stroke();}
-      });
-
-      ctx.fillStyle=pl.color;ctx.font='600 8px "IBM Plex Mono",monospace';
-      ctx.textAlign='left';ctx.fillText(pl.label,padL+4,y0+10);
-      ctx.fillStyle='rgba(180,195,205,0.5)';ctx.font='7px "IBM Plex Mono",monospace';
-      ctx.textAlign='right';
-      ctx.fillText(vMax.toFixed(1),padL-4,y0+9);
-      ctx.fillText(vMin.toFixed(1),padL-4,y0+plotH-2);
-    });
-
-    ctx.fillStyle='rgba(180,195,205,0.4)';ctx.font='7px "IBM Plex Mono",monospace';ctx.textAlign='center';
-    for(let i=0;i<=5;i++){const tx=padL+(i/5)*plotW,tv=(i/5)*tEnd;ctx.fillText(tv.toFixed(2)+'s',tx,h-padB+11);}
-  }
-
-  function mcCalc(){
-    const dist=parseFloat(document.getElementById('mc-dist').value)||0;
-    const vel=parseFloat(document.getElementById('mc-vel').value)||0;
-    const acc=parseFloat(document.getElementById('mc-acc').value)||0;
-    const jerk=parseFloat(document.getElementById('mc-jerk').value)||0;
-    mcProfile=computeMotionProfile(dist,vel,acc,jerk);mcHighlight=-1;
-    if(!mcProfile){document.getElementById('mc-case').textContent='Invalid';document.getElementById('mc-time').textContent='—';return;}
-    document.getElementById('mc-case').textContent=mcProfile.caseType;
-    document.getElementById('mc-time').textContent=mcProfile.tEnd.toFixed(4)+' s';
-    const tbody=document.getElementById('mc-tbody');tbody.innerHTML='';
-    mcProfile.snapshots.forEach((sn,idx)=>{
-      const t=sn[0],[j,a,v,p]=mcProfile.getState(t);
-      const tr=document.createElement('tr');
-      tr.innerHTML=`<td>${t.toFixed(3)}</td><td>${p.toFixed(2)}</td><td>${v.toFixed(2)}</td><td>${a.toFixed(2)}</td><td>${j.toFixed(1)}</td>`;
-      tr.addEventListener('click',()=>{
-        document.querySelectorAll('#mc-tbody tr').forEach(r=>r.classList.remove('mc-row-selected'));
-        tr.classList.add('mc-row-selected');mcHighlight=idx;mcDraw();
-      });
-      tbody.appendChild(tr);
-    });
-    mcDraw();
-  }
-
-  ['mc-dist','mc-vel','mc-acc','mc-jerk'].forEach(id=>{
-    const el=document.getElementById(id);
-    if(el)el.addEventListener('input',mcCalc);
-  });
-  window.addEventListener('resize',mcDraw);
-  mcCalc();
-
-  (function setupDownload(){
-    const py=`import tkinter as tk\nfrom tkinter import ttk\nimport math\nimport matplotlib.pyplot as plt\nfrom matplotlib.backends.backend_tkagg import FigureCanvasTkAgg\nfrom matplotlib.figure import Figure\n\nclass MotionProfile:\n    def __init__(self, distance, max_vel, max_acc, max_jerk):\n        self.target_s=float(distance); self.v_max=float(abs(max_vel))\n        self.a_max=float(abs(max_acc)); self.j_max=float(abs(max_jerk))\n        self.direction=1.0 if self.target_s>=0 else -1.0\n        self.s_mag=abs(self.target_s); self.case_type="Init"; self.snapshots=[]\n        if self.s_mag>0 and self.v_max>0 and self.a_max>0 and self.j_max>0:\n            self._compute_intervals(); self._compute_chain_of_states()\n    def _compute_intervals(self):\n        Va=(self.a_max**2)/self.j_max\n        if self.v_max<=Va: Tj_star=math.sqrt(self.v_max/self.j_max); Ta_star=0.0\n        else: Tj_star=self.a_max/self.j_max; Ta_star=(self.v_max-(self.j_max*Tj_star**2))/self.a_max\n        S_req=self.v_max*(2*Tj_star+Ta_star)\n        if self.s_mag>=S_req:\n            self.case_type="Long Move"; self.Tj=Tj_star; self.Ta=Ta_star; self.Tv=(self.s_mag-S_req)/self.v_max\n        else:\n            self.Tv=0.0; S_half=self.s_mag/2; Tj_new=(S_half/self.j_max)**(1/3)\n            if self.j_max*Tj_new<=self.a_max: self.case_type="Short (Jerk)"; self.Tj=Tj_new; self.Ta=0.0\n            else:\n                self.case_type="Short (Accel)"; self.Tj=self.a_max/self.j_max\n                c=2*self.Tj**2-(2*S_half/self.a_max); b=3*self.Tj\n                self.Ta=(-b+math.sqrt(max(0,b**2-4*c)))/2\n    def _seg(self,base,j,dt):\n        t0,_,a0,v0,p0=base\n        return(t0+dt,j,a0+j*dt,v0+a0*dt+0.5*j*dt**2,p0+v0*dt+0.5*a0*dt**2+(1/6)*j*dt**3)\n    def _compute_chain_of_states(self):\n        s=[(0.,0.,0.,0.,0.)]\n        for j,d in[(self.j_max,self.Tj),(0,self.Ta),(-self.j_max,self.Tj),(0,self.Tv),(-self.j_max,self.Tj),(0,self.Ta),(self.j_max,self.Tj)]:\n            s.append(self._seg(s[-1],j,d))\n        self.snapshots=s\n    def get_state_at(self,t):\n        if t<0: return 0,0,0,0\n        times=[s[0] for s in self.snapshots]\n        if t>=times[-1]: return 0,0,0,self.snapshots[-1][4]*self.direction\n        k=max(i for i in range(len(times)-1) if t>=times[i])\n        jm={0:self.j_max,1:0.,2:-self.j_max,3:0.,4:-self.j_max,5:0.,6:self.j_max}\n        _,_,a0,v0,p0=self.snapshots[k]; dt=t-times[k]; j=jm.get(k,0.)\n        return j*self.direction,(a0+j*dt)*self.direction,(v0+a0*dt+0.5*j*dt**2)*self.direction,(p0+v0*dt+0.5*a0*dt**2+(1/6)*j*dt**3)*self.direction\n\nif __name__=="__main__":\n    print("See full app at lbideas.de")\n`;
-    const blob=new Blob([py],{type:'text/plain'});
-    const link=document.getElementById('mc-download-link');
-    if(link)link.href=URL.createObjectURL(blob);
-  })();
-
-  // Fullscreen toggle for embedded live demos (packaging + motion solver + packline)
+  // Fullscreen toggle for embedded live demos (packaging + motion solver + packline + workflow tracker)
   (function setupDemoFullscreens(){
     const demos=[
       {btnId:'pkg-fs-btn',      targetId:'pkg-app',      fallback:'/packaging/'},
       {btnId:'motion-fs-btn',   targetId:'motion-app',   fallback:'/motion-solver/'},
-      {btnId:'packline-fs-btn', targetId:'packline-app', fallback:'/packline/'}
+      {btnId:'packline-fs-btn', targetId:'packline-app', fallback:'/packline/'},
+      {btnId:'workflow-fs-btn', targetId:'workflow-app', fallback:'/workflow-tracker/'}
     ];
     const btns=[];
     demos.forEach(({btnId,targetId,fallback})=>{
