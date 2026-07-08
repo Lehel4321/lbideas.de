@@ -5,6 +5,25 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Lehel Balog — SPS Programmer & Software Developer</title>
 <meta name="description" content="Lehel Balog — SPS Programmer and Software Developer at Metzner Maschinenbau GmbH. Over 10 years of experience in industrial automation, PLC programming, and SCADA systems. Based in Neu-Ulm, Germany.">
+
+<link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon-16.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png">
+<meta name="theme-color" content="#1e2c33">
+
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://lbideas.de/">
+<meta property="og:title" content="Lehel Balog — SPS Programmer & Software Developer">
+<meta property="og:description" content="Over 10 years of experience in industrial automation, PLC programming, and SCADA systems. Based in Neu-Ulm, Germany.">
+<meta property="og:image" content="https://lbideas.de/assets/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Lehel Balog — SPS Programmer & Software Developer">
+<meta name="twitter:description" content="Over 10 years of experience in industrial automation, PLC programming, and SCADA systems. Based in Neu-Ulm, Germany.">
+<meta name="twitter:image" content="https://lbideas.de/assets/og-image.png">
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=Barlow+Condensed:wght@300;400;600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -351,6 +370,10 @@
   }
   .form input::placeholder, .form textarea::placeholder { color:var(--INK2); opacity:1; }
   .form input:focus, .form textarea:focus { border-color:var(--GAP); background:rgba(0,0,0,0.25); }
+  .form .btn-primary:disabled { opacity:0.55; cursor:default; }
+  .form-status { font-family:var(--MONO); font-size:0.68rem; letter-spacing:0.03em; min-height:1.2em; }
+  .form-status.ok  { color:#2f6b45; }
+  .form-status.err { color:#8a2f2f; }
 
   /* FOOTER */
   footer {
@@ -715,7 +738,9 @@
             <input type="text"  id="contact-name"    data-placeholder-en="Name"    data-placeholder-de="Name"      placeholder="Name" autocomplete="name" required>
             <input type="email" id="contact-email"   data-placeholder-en="Email"   data-placeholder-de="E-Mail"    placeholder="Email" autocomplete="email" required>
             <textarea rows="5"  id="contact-message" data-placeholder-en="Message" data-placeholder-de="Nachricht" placeholder="Message" required></textarea>
-            <button type="submit" class="btn-primary" data-en="Send message" data-de="Nachricht senden">Send message</button>
+            <input type="text" name="_honey" style="display:none" tabindex="-1" autocomplete="off">
+            <button type="submit" class="btn-primary" id="contact-submit" data-en="Send message" data-de="Nachricht senden">Send message</button>
+            <div class="form-status" id="contact-status" role="status" aria-live="polite"></div>
           </form>
         </div>
       </div>
@@ -803,18 +828,55 @@
     document.addEventListener('webkitfullscreenchange',lbl);
   })();
 
-  // CONTACT FORM — static site, no backend, so hand off to the visitor's mail client
+  // CONTACT FORM — static site, submits via FormSubmit.co (no backend to host)
   (function setupContactForm(){
     const form = document.getElementById('contact-form');
     if(!form) return;
-    form.addEventListener('submit', e => {
+    const submitBtn = document.getElementById('contact-submit');
+    const status = document.getElementById('contact-status');
+    const isDe = () => document.querySelectorAll('.lang-btn')[1] &&
+                        document.querySelectorAll('.lang-btn')[1].classList.contains('active');
+    const MSG = {
+      sending: { en:'Sending…',                                   de:'Wird gesendet…' },
+      ok:      { en:'Message sent — thanks, I’ll reply soon.', de:'Nachricht gesendet — danke, ich melde mich bald.' },
+      err:     { en:'Something went wrong. Please email me directly at baloglehel91@gmail.com.',
+                 de:'Etwas ist schiefgelaufen. Bitte schreiben Sie mir direkt an baloglehel91@gmail.com.' }
+    };
+    const setStatus = (key, cls) => {
+      status.textContent = MSG[key][isDe() ? 'de' : 'en'];
+      status.className = 'form-status' + (cls ? ' ' + cls : '');
+    };
+
+    form.addEventListener('submit', async e => {
       e.preventDefault();
       const name = document.getElementById('contact-name').value.trim();
       const email = document.getElementById('contact-email').value.trim();
       const message = document.getElementById('contact-message').value.trim();
-      const subject = encodeURIComponent(`Portfolio contact from ${name}`);
-      const body = encodeURIComponent(`${message}\n\n— ${name} (${email})`);
-      window.location.href = `mailto:baloglehel91@gmail.com?subject=${subject}&body=${body}`;
+
+      submitBtn.disabled = true;
+      setStatus('sending');
+
+      try {
+        const res = await fetch('https://formsubmit.co/ajax/baloglehel91@gmail.com', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+          body: JSON.stringify({
+            name, email, message,
+            _subject: `Portfolio contact from ${name}`,
+            _template: 'table',
+            _honey: document.querySelector('input[name="_honey"]').value
+          })
+        });
+        if (!res.ok) throw new Error('bad status');
+        const data = await res.json().catch(() => null);
+        if (data && String(data.success).toLowerCase() === 'false') throw new Error('rejected');
+        setStatus('ok', 'ok');
+        form.reset();
+      } catch (err) {
+        setStatus('err', 'err');
+      } finally {
+        submitBtn.disabled = false;
+      }
     });
   })();
 </script>
