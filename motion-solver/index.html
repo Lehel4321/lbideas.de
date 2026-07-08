@@ -967,9 +967,11 @@ function renderProfileList(){
 
 /* ════════════════ Input wiring ════════════════ */
 let deb=null;
+/* Accepts both "1.5" and "1,5" (decimal comma). */
+const parseNum=t=>parseFloat(String(t).trim().replace(",","."));
 function numInput(id,apply){
   $(id).addEventListener("input",e=>{
-    const v=parseFloat(e.target.value);
+    const v=parseNum(e.target.value);
     const ok=isFinite(v)&&v>0;
     e.target.classList.toggle("bad",!ok);
     if(!ok)return;
@@ -980,11 +982,11 @@ function numInput(id,apply){
 ["s","vmax","amax","jmax"].forEach(k=>numInput("in_"+k,v=>S.motors[S.sel][k]=v));
 numInput("in_gear",v=>S.motors[S.sel].gear=v);
 $("in_cpums").addEventListener("input",e=>{
-  const v=parseFloat(e.target.value);const ok=isFinite(v)&&v>=0;
+  const v=parseNum(e.target.value);const ok=isFinite(v)&&v>=0;
   e.target.classList.toggle("bad",!ok);if(!ok)return;
   S.cpuMs=v;markDirty();renderCpu();renderTimeline();saveState();});
 $("in_cpucyc").addEventListener("input",e=>{
-  const v=Math.round(parseFloat(e.target.value));const ok=isFinite(v)&&v>=0;
+  const v=Math.round(parseNum(e.target.value));const ok=isFinite(v)&&v>=0;
   e.target.classList.toggle("bad",!ok);if(!ok)return;
   S.cpuCyc=v;markDirty();renderCpu();renderTimeline();saveState();});
 
