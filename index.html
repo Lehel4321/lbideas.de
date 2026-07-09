@@ -517,7 +517,6 @@
       <p class="hero-bio" data-en="SPS Programmer and Software Developer at Metzner Maschinenbau GmbH with over 10 years of experience in industrial automation, machine control, and SCADA systems. Specializing in Siemens TIA Portal and WinCC. Based in Neu-Ulm, Germany." data-de="SPS-Programmierer und Software-Entwickler bei der Metzner Maschinenbau GmbH mit über 10 Jahren Erfahrung in industrieller Automation, Maschinensteuerung und SCADA-Systemen. Spezialisiert auf Siemens TIA Portal und WinCC. Wohnhaft in Neu-Ulm, Deutschland.">SPS Programmer and Software Developer at Metzner Maschinenbau GmbH with over 10 years of experience in industrial automation, machine control, and SCADA systems. Specializing in Siemens TIA Portal and WinCC. Based in Neu-Ulm, Germany.</p>
       <div class="hero-actions">
         <a href="#projects" class="btn-primary" data-en="View work"  data-de="Projekte">View work</a>
-        <a id="cv-link" href="/assets/Lehel-Balog-CV-EN.pdf" download class="btn-ghost" data-en="Download CV ↓" data-de="Lebenslauf ↓">Download CV ↓</a>
         <a href="#contact"  class="btn-ghost"   data-en="Contact"    data-de="Kontakt">Contact</a>
       </div>
     </div>
@@ -845,8 +844,6 @@
     document.querySelectorAll('[data-placeholder-en]').forEach(el => {
       el.placeholder = el.getAttribute('data-placeholder-'+lang) || '';
     });
-    const cv = document.getElementById('cv-link');
-    if (cv) cv.href = lang==='de' ? '/assets/Lehel-Balog-Lebenslauf-DE.pdf' : '/assets/Lehel-Balog-CV-EN.pdf';
   }
 
   // First visit: German browsers start in German; returning visitors keep their choice
