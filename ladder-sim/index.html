@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Logic Lab LD-1 — Ladder Logic Simulator</title>
+<meta name="description" content="Interactive PLC ladder logic simulator running entirely in the browser. Toggle inputs, watch live power flow, edit rungs, and explore classic automation circuits: seal-in latch, timer flasher, conveyor cascade.">
+<link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+<meta name="theme-color" content="#0a0e11">
+<link rel="stylesheet" href="/assets/fonts/fonts.css">
+<style>
+  :root{
+    --bg:#0a0e11; --panel:#12181d; --panel2:#1a232a; --edge:#27333b;
+    --txt:#c9d6dc; --dim:#5f7079; --faint:#3b4a53;
+    --flow:#52e07c; --flow-dim:#1d5433;
+    --amber:#ffb84d; --red:#ff5f52;
+    --mono:'IBM Plex Mono',ui-monospace,Menlo,Consolas,monospace;
+  }
+  *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+  html,body{background:var(--bg);color:var(--txt);font-family:var(--mono);}
+  body{min-height:100vh;display:flex;flex-direction:column;-webkit-font-smoothing:antialiased;}
+
+  /* ── header ─────────────────────────────────── */
+  header{
+    display:flex;align-items:center;gap:1rem;flex-wrap:wrap;
+    padding:0.7rem 1.2rem;background:var(--panel);border-bottom:1px solid var(--edge);
+  }
+  .brand{display:flex;flex-direction:column;line-height:1.25;}
+  .brand b{font-size:0.82rem;letter-spacing:0.14em;color:var(--amber);font-weight:600;}
+  .brand span{font-size:0.6rem;letter-spacing:0.08em;color:var(--dim);}
+  .spacer{flex:1;}
+  .home-link{font-size:0.6rem;letter-spacing:0.1em;color:var(--dim);text-decoration:none;}
+  .home-link:hover{color:var(--txt);}
+
+  .ctl{display:flex;gap:6px;align-items:center;flex-wrap:wrap;}
+  button{
+    font-family:var(--mono);font-size:0.62rem;letter-spacing:0.1em;
+    background:var(--panel2);color:var(--txt);border:1px solid var(--edge);
+    padding:0.42rem 0.75rem;cursor:pointer;text-transform:uppercase;
+    transition:all .12s;-webkit-tap-highlight-color:transparent;
+  }
+  button:hover{border-color:var(--dim);}
+  #run-btn.running{background:#173324;border-color:var(--flow);color:var(--flow);}
+  #run-btn.stopped{background:#33201a;border-color:var(--red);color:var(--red);}
+  #edit-btn.on{background:#332a14;border-color:var(--amber);color:var(--amber);}
+
+  /* ── preset chips + status ──────────────────── */
+  .subbar{
+    display:flex;align-items:center;gap:0.6rem;flex-wrap:wrap;
+    padding:0.55rem 1.2rem;background:var(--bg);border-bottom:1px solid var(--edge);
+  }
+  .subbar .lbl{font-size:0.56rem;letter-spacing:0.14em;color:var(--dim);text-transform:uppercase;}
+  .chip{font-size:0.6rem;padding:0.3rem 0.65rem;}
+  .chip.active{background:var(--panel2);border-color:var(--amber);color:var(--amber);}
+  .status{margin-left:auto;font-size:0.58rem;color:var(--dim);letter-spacing:0.06em;white-space:nowrap;}
+  .status b{color:var(--flow);font-weight:500;}
+
+  .desc{padding:0.55rem 1.2rem;font-size:0.66rem;color:var(--dim);line-height:1.5;border-bottom:1px solid var(--edge);}
+  .desc em{color:var(--txt);font-style:normal;}
+
+  /* ── ladder area ────────────────────────────── */
+  main{flex:1;display:flex;flex-direction:column;}
+  #ladder-wrap{flex:1;overflow:auto;padding:1rem 1.2rem 0.5rem;}
+  .rung-block{margin-bottom:0.4rem;position:relative;}
+  .rung-svg{display:block;width:100%;max-width:960px;min-width:680px;height:auto;}
+  .rung-tools{
+    position:absolute;top:2px;right:0;display:none;gap:4px;
+  }
+  body.editing .rung-tools{display:flex;}
+  .rung-tools button{padding:0.2rem 0.45rem;font-size:0.55rem;}
+  #add-rung{display:none;margin:0.4rem 0 1rem;}
+  body.editing #add-rung{display:inline-block;}
+
+  svg text{font-family:var(--mono);}
+  .cell-hit{fill:transparent;cursor:pointer;}
+  body.editing .cell-hit:hover{fill:rgba(255,184,77,0.08);stroke:rgba(255,184,77,0.4);stroke-dasharray:3 3;}
+  .vlink-hit{cursor:pointer;fill:transparent;}
+  body.editing .vlink-hit{fill:rgba(255,184,77,0.12);}
+  body.editing .vlink-hit:hover{fill:rgba(255,184,77,0.35);}
+
+  /* ── I/O panel ──────────────────────────────── */
+  #io{
+    display:flex;gap:1.6rem;flex-wrap:wrap;align-items:flex-start;
+    padding:0.9rem 1.2rem 1.1rem;background:var(--panel);border-top:1px solid var(--edge);
+  }
+  .io-group{display:flex;flex-direction:column;gap:0.45rem;}
+  .io-title{font-size:0.56rem;letter-spacing:0.16em;color:var(--dim);text-transform:uppercase;}
+  .io-row{display:flex;gap:0.7rem;flex-wrap:wrap;}
+  .io-item{display:flex;flex-direction:column;align-items:center;gap:0.25rem;width:58px;}
+  .io-item .tag{font-size:0.55rem;color:var(--dim);}
+  .io-item .name{font-size:0.5rem;color:var(--dim);text-align:center;line-height:1.2;min-height:2em;}
+
+  .switch{
+    width:26px;height:42px;border:1px solid var(--edge);background:var(--panel2);
+    border-radius:4px;cursor:pointer;position:relative;padding:0;
+  }
+  .switch::after{
+    content:'';position:absolute;left:3px;right:3px;height:16px;border-radius:3px;
+    background:var(--faint);bottom:3px;transition:all .1s;
+  }
+  .switch.on{border-color:var(--amber);}
+  .switch.on::after{top:3px;bottom:auto;background:var(--amber);box-shadow:0 0 8px rgba(255,184,77,0.55);}
+
+  .lamp{
+    width:30px;height:30px;border-radius:50%;border:2px solid var(--edge);
+    background:#151d23;transition:all .12s;
+  }
+  .lamp.on{background:var(--flow);border-color:var(--flow);box-shadow:0 0 14px rgba(82,224,124,0.65);}
+
+  .led{width:14px;height:14px;border-radius:2px;border:1px solid var(--edge);background:#151d23;}
+  .led.on{background:var(--flow);border-color:var(--flow);box-shadow:0 0 7px rgba(82,224,124,0.6);}
+
+  .tmr{width:58px;}
+  .tmr .bar{height:8px;border:1px solid var(--edge);background:#151d23;position:relative;overflow:hidden;border-radius:2px;}
+  .tmr .bar i{position:absolute;left:0;top:0;bottom:0;background:var(--amber);width:0%;}
+  .tmr.done .bar i{background:var(--flow);}
+
+  /* ── legend / footer ────────────────────────── */
+  footer{padding:0.8rem 1.2rem 1.2rem;background:var(--panel);border-top:1px solid var(--edge);}
+  .legend{display:flex;gap:1.4rem;flex-wrap:wrap;font-size:0.56rem;color:var(--dim);line-height:1.5;}
+  .legend b{color:var(--txt);font-weight:500;}
+
+  /* ── palette modal ──────────────────────────── */
+  #overlay{
+    position:fixed;inset:0;background:rgba(0,0,0,0.6);display:none;
+    align-items:center;justify-content:center;z-index:50;padding:1rem;
+  }
+  #overlay.open{display:flex;}
+  #palette{
+    background:var(--panel);border:1px solid var(--edge);padding:1.1rem;
+    width:100%;max-width:380px;box-shadow:0 12px 48px rgba(0,0,0,0.7);
+  }
+  #palette h3{font-size:0.66rem;letter-spacing:0.14em;color:var(--amber);text-transform:uppercase;margin-bottom:0.8rem;font-weight:600;}
+  .pal-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-bottom:0.8rem;}
+  .pal-grid button{padding:0.5rem 0.2rem;font-size:0.58rem;}
+  .pal-grid button.sel{border-color:var(--amber);color:var(--amber);background:#241d10;}
+  .pal-field{display:flex;align-items:center;gap:0.6rem;margin-bottom:0.6rem;}
+  .pal-field label{font-size:0.58rem;color:var(--dim);width:70px;text-transform:uppercase;letter-spacing:0.08em;}
+  .pal-field select,.pal-field input{
+    flex:1;font-family:var(--mono);font-size:0.66rem;background:var(--panel2);
+    color:var(--txt);border:1px solid var(--edge);padding:0.35rem 0.5rem;
+  }
+  .pal-actions{display:flex;gap:6px;justify-content:flex-end;margin-top:0.9rem;}
+  #pal-apply{border-color:var(--flow);color:var(--flow);}
+
+  @media(max-width:640px){
+    header{padding:0.6rem 0.8rem;}
+    .subbar,.desc,#io,footer{padding-left:0.8rem;padding-right:0.8rem;}
+    #ladder-wrap{padding:0.8rem 0.8rem 0.4rem;}
+    .status{margin-left:0;width:100%;}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <b>LOGIC LAB LD-1</b>
+    <span>ladder logic simulator — a tiny PLC in your browser</span>
+  </div>
+  <div class="spacer"></div>
+  <div class="ctl">
+    <button id="run-btn" class="running">■ RUN</button>
+    <button id="edit-btn">✎ Edit</button>
+    <button id="reset-btn">↺ Reset</button>
+  </div>
+  <a class="home-link" href="/" target="_top">lbideas.de ↗</a>
+</header>
+
+<div class="subbar">
+  <span class="lbl">Programs:</span>
+  <span id="chips"></span>
+  <span class="status">SCAN <b id="st-scan">0</b> · CYCLE <b id="st-cyc">—</b> · <span id="st-mode" style="color:var(--flow)">RUN</span></span>
+</div>
+
+<div class="desc" id="desc"></div>
+
+<main>
+  <div id="ladder-wrap">
+    <div id="rungs"></div>
+    <button id="add-rung">+ Add rung</button>
+  </div>
+</main>
+
+<div id="io">
+  <div class="io-group">
+    <div class="io-title">Inputs — click to toggle</div>
+    <div class="io-row" id="io-inputs"></div>
+  </div>
+  <div class="io-group">
+    <div class="io-title">Outputs</div>
+    <div class="io-row" id="io-outputs"></div>
+  </div>
+  <div class="io-group">
+    <div class="io-title">Flags</div>
+    <div class="io-row" id="io-flags"></div>
+  </div>
+  <div class="io-group">
+    <div class="io-title">Timers</div>
+    <div class="io-row" id="io-timers"></div>
+  </div>
+</div>
+
+<footer>
+  <div class="legend">
+    <span><b>─┤ ├─</b> NO contact — passes power while its bit is ON</span>
+    <span><b>─┤/├─</b> NC contact — passes power while its bit is OFF</span>
+    <span><b>─( )─</b> coil — writes the incoming power to its bit</span>
+    <span><b>(S)/(R)</b> set / reset coil — latches the bit ON or OFF</span>
+    <span><b>TON</b> on-delay timer — output turns ON after the preset time</span>
+    <span><b>✎ Edit</b> click any cell to place elements, click the small squares between rows to wire parallel branches</span>
+  </div>
+</footer>
+
+<div id="overlay">
+  <div id="palette">
+    <h3 id="pal-title">Place element</h3>
+    <div class="pal-grid" id="pal-types"></div>
+    <div class="pal-field" id="pal-addr-row">
+      <label>Address</label>
+      <select id="pal-addr"></select>
+    </div>
+    <div class="pal-field" id="pal-preset-row" style="display:none">
+      <label>Preset ms</label>
+      <input id="pal-preset" type="number" min="100" max="60000" step="100" value="1000">
+    </div>
+    <div class="pal-actions">
+      <button id="pal-cancel">Cancel</button>
+      <button id="pal-apply">Apply</button>
+    </div>
+  </div>
+</div>
+
+<script>
+'use strict';
+/* ══════════════════════════════════════════════════════════════════
+   LOGIC LAB LD-1 — a small ladder-logic (LAD) runtime + editor.
+   Cell grid per rung; power flows from the left rail through
+   conducting cells; vertical links join rows into parallel branches.
+   Rungs execute top-to-bottom each scan, like a real PLC.
+   ══════════════════════════════════════════════════════════════════ */
+
+const COLS = 9;                       // cells per row; column 8 is the usual coil column
+const INPUTS  = ['I0.0','I0.1','I0.2','I0.3','I0.4','I0.5'];
+const OUTPUTS = ['Q0.0','Q0.1','Q0.2','Q0.3'];
+const FLAGS   = ['M0.0','M0.1','M0.2','M0.3'];
+const TIMERS  = ['T1','T2','T3','T4'];
+
+/* ── state ── */
+const bits = {};
+[...INPUTS,...OUTPUTS,...FLAGS,...TIMERS].forEach(a=>bits[a]=false);
+const timers = {};
+TIMERS.forEach(t=>timers[t]={acc:0,preset:1000,running:false});
+
+let program = [];          // array of rungs
+let labels  = {};          // addr -> human label
+let running = true;
+let editing = false;
+let scanCount = 0;
+let cycleUs = 0;
+
+/* ── cell helpers ── */
+const W = t => ({t});                                  // wire / empty
+const NO = a => ({t:'no',a});
+const NC = a => ({t:'nc',a});
+const TON = (a,p) => ({t:'ton',a,p});
+const CO = a => ({t:'coil',a});
+const SET = a => ({t:'set',a});
+const RST = a => ({t:'rst',a});
+
+function row(...cells){                                // pad a row to COLS with wire
+  const r=cells.map(c=>c||W('wire'));
+  while(r.length<COLS) r.splice(r.length-1,0,W('wire'));  // pad before last cell (coil col)
+  return r.slice(0,COLS);
+}
+function emptyRow(){ return Array.from({length:COLS},()=>W('empty')); }
+function rung(rows,vlinks){ return {rows,vlinks:vlinks||[]}; }
+
+/* ── preset programs ── */
+const PRESETS = [
+  {
+    id:'latch', name:'Motor seal-in',
+    desc:'<em>The classic start/stop latch.</em> Press START — the motor coil Q0.0 energises and its own contact seals the circuit in, so the motor keeps running when you release START. STOP (wired as NC) breaks the seal.',
+    labels:{'I0.0':'START','I0.1':'STOP','Q0.0':'MOTOR'},
+    inputs:{'I0.1':false},
+    build:()=>[
+      rung([
+        row(NO('I0.0'),NC('I0.1'),CO('Q0.0')),
+        (()=>{const r=emptyRow(); r[0]=NO('Q0.0'); return r;})()
+      ],[{row:0,col:1}])
+    ]
+  },
+  {
+    id:'flasher', name:'Timer flasher',
+    desc:'<em>Two on-delay timers chasing each other.</em> Flip ENABLE: T1 times out, starts T2, and the lamp follows T1 — 0.7&thinsp;s ON, 0.7&thinsp;s OFF, forever. This two-timer oscillator runs in thousands of real machines.',
+    labels:{'I0.0':'ENABLE','Q0.0':'LAMP'},
+    inputs:{'I0.0':true},
+    build:()=>[
+      rung([row(NO('I0.0'),NC('T2'),TON('T1',700))]),
+      rung([row(NO('T1'),TON('T2',700))]),
+      rung([row(NO('T1'),CO('Q0.0'))])
+    ]
+  },
+  {
+    id:'conveyor', name:'Conveyor cascade',
+    desc:'<em>Staged conveyor start-up.</em> Press START: belt 3 starts instantly, belt 2 follows after 1.2&thinsp;s, belt 1 after another 1.2&thinsp;s — downstream first, so product never piles up. STOP drops the whole line.',
+    labels:{'I0.0':'START','I0.1':'STOP','Q0.0':'BELT 3','Q0.1':'BELT 2','Q0.2':'BELT 1','M0.0':'LINE ON'},
+    inputs:{},
+    build:()=>[
+      rung([
+        row(NO('I0.0'),NC('I0.1'),CO('M0.0')),
+        (()=>{const r=emptyRow(); r[0]=NO('M0.0'); return r;})()
+      ],[{row:0,col:1}]),
+      rung([row(NO('M0.0'),CO('Q0.0'))]),
+      rung([row(NO('M0.0'),TON('T1',1200),CO('Q0.1'))]),
+      rung([row(NO('Q0.1'),TON('T2',1200),CO('Q0.2'))])
+    ]
+  },
+  {
+    id:'blank', name:'Blank — build your own',
+    desc:'<em>Empty rack.</em> Hit <em>✎ Edit</em>, click a cell, and wire whatever you like — contacts, coils, timers, parallel branches. Your program runs live as you build it.',
+    labels:{},
+    inputs:{},
+    build:()=>[ rung([emptyRow()]), rung([emptyRow()]) ]
+  }
+];
+
+/* ── ladder evaluation ── */
+function conducts(cell){
+  switch(cell.t){
+    case 'wire': return true;
+    case 'no':   return !!bits[cell.a];
+    case 'nc':   return  !bits[cell.a];
+    case 'ton':  return !!bits[cell.a];        // TON passes power once done (done bit = bits[T*])
+    case 'coil': case 'set': case 'rst': return true;
+    default:     return false;                 // empty
+  }
+}
+
+function solveRung(rg){
+  const R=rg.rows.length;
+  const powered=Array.from({length:R},()=>Array(COLS+1).fill(false));
+  const stack=[];
+  for(let r=0;r<R;r++){ powered[r][0]=true; stack.push([r,0]); }
+  while(stack.length){
+    const [r,c]=stack.pop();
+    if(c<COLS && conducts(rg.rows[r][c]) && !powered[r][c+1]){
+      powered[r][c+1]=true; stack.push([r,c+1]);
+    }
+    for(const v of rg.vlinks){
+      if(v.col===c){
+        if(v.row===r && r+1<R && powered[r][c] && !powered[r+1][c]){ powered[r+1][c]=true; stack.push([r+1,c]); }
+        if(v.row===r-1 && powered[r][c] && !powered[r-1][c]){ powered[r-1][c]=true; stack.push([r-1,c]); }
+      }
+    }
+  }
+  return powered;
+}
+
+function scan(dt){
+  const t0=performance.now();
+  for(const rg of program){
+    const powered=solveRung(rg);
+    rg._powered=powered;
+    rg.rows.forEach((cells,r)=>cells.forEach((cell,c)=>{
+      const inPwr=powered[r][c];
+      if(cell.t==='ton'){
+        const tm=timers[cell.a]; tm.preset=cell.p||1000;
+        if(inPwr){ tm.running=true; tm.acc=Math.min(tm.acc+dt,tm.preset); }
+        else     { tm.running=false; tm.acc=0; }
+        bits[cell.a]=tm.acc>=tm.preset;
+      }
+      else if(cell.t==='coil') bits[cell.a]=inPwr;
+      else if(cell.t==='set' && inPwr) bits[cell.a]=true;
+      else if(cell.t==='rst' && inPwr) bits[cell.a]=false;
+    }));
+  }
+  cycleUs=(performance.now()-t0)*1000;
+  scanCount++;
+}
+
+function stopOutputs(){
+  [...OUTPUTS,...FLAGS,...TIMERS].forEach(a=>bits[a]=false);
+  TIMERS.forEach(t=>{timers[t].acc=0;timers[t].running=false;});
+  program.forEach(rg=>rg._powered=null);
+}
+
+/* ══════════════ RENDERING ══════════════ */
+const CW=100, RH=64, RAIL=16;
+const SVGW=RAIL*2+COLS*CW;
+const rungsEl=document.getElementById('rungs');
+
+function wireColor(on){ return on?'var(--flow)':'var(--faint)'; }
+function seg(x1,y1,x2,y2,on,w){ return `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${wireColor(on)}" stroke-width="${w||2}"/>`; }
+
+function cellSVG(cell,r,c,pw,ri){
+  const x0=RAIL+c*CW, xc=x0+CW/2, y=RH/2+r*RH;
+  const inP=pw?pw[r][c]:false, outP=pw?pw[r][c+1]:false;
+  const lbl=labels[cell.a]||'';
+  let s='';
+  const lead=(gap)=>seg(x0,y,xc-gap,y,inP)+seg(xc+gap,y,x0+CW,y,outP);
+  switch(cell.t){
+    case 'empty':
+      if(editing) s+=`<circle cx="${xc}" cy="${y}" r="1.7" fill="var(--edge)"/>`;
+      break;
+    case 'wire':
+      s+=seg(x0,y,x0+CW,y,inP&&outP||inP);
+      break;
+    case 'no': case 'nc':{
+      const on=!!bits[cell.a];
+      s+=lead(8);
+      const bc=inP&&conducts(cell)?'var(--flow)':(on?'var(--amber)':'var(--dim)');
+      s+=`<line x1="${xc-8}" y1="${y-11}" x2="${xc-8}" y2="${y+11}" stroke="${bc}" stroke-width="2.5"/>`;
+      s+=`<line x1="${xc+8}" y1="${y-11}" x2="${xc+8}" y2="${y+11}" stroke="${bc}" stroke-width="2.5"/>`;
+      if(cell.t==='nc') s+=`<line x1="${xc-11}" y1="${y+13}" x2="${xc+11}" y2="${y-13}" stroke="${bc}" stroke-width="2"/>`;
+      s+=`<text x="${xc}" y="${y-18}" text-anchor="middle" font-size="11" fill="${on?'var(--amber)':'var(--dim)'}">${cell.a}</text>`;
+      if(lbl) s+=`<text x="${xc}" y="${y+26}" text-anchor="middle" font-size="8.5" fill="var(--dim)">${lbl}</text>`;
+      break;
+    }
+    case 'coil': case 'set': case 'rst':{
+      const on=!!bits[cell.a], hot=inP;
+      s+=lead(12);
+      const cc=hot?'var(--flow)':(on?'var(--amber)':'var(--dim)');
+      s+=`<path d="M ${xc-6} ${y-11} A 13 13 0 0 0 ${xc-6} ${y+11}" fill="none" stroke="${cc}" stroke-width="2.5"/>`;
+      s+=`<path d="M ${xc+6} ${y-11} A 13 13 0 0 1 ${xc+6} ${y+11}" fill="none" stroke="${cc}" stroke-width="2.5"/>`;
+      if(cell.t!=='coil') s+=`<text x="${xc}" y="${y+4}" text-anchor="middle" font-size="11" fill="${cc}">${cell.t==='set'?'S':'R'}</text>`;
+      s+=`<text x="${xc}" y="${y-18}" text-anchor="middle" font-size="11" fill="${on?'var(--amber)':'var(--dim)'}">${cell.a}</text>`;
+      if(lbl) s+=`<text x="${xc}" y="${y+26}" text-anchor="middle" font-size="8.5" fill="var(--dim)">${lbl}</text>`;
+      break;
+    }
+    case 'ton':{
+      const tm=timers[cell.a], done=!!bits[cell.a];
+      const bw=76,bh=32,bx=xc-bw/2,by=y-bh/2;
+      s+=seg(x0,y,bx,y,inP)+seg(bx+bw,y,x0+CW,y,outP);
+      const frac=tm.preset?Math.min(tm.acc/tm.preset,1):0;
+      const bc=done?'var(--flow)':(tm.running?'var(--amber)':'var(--dim)');
+      s+=`<rect x="${bx}" y="${by}" width="${bw}" height="${bh}" fill="var(--panel2)" stroke="${bc}" stroke-width="1.5"/>`;
+      s+=`<rect x="${bx+1}" y="${by+bh-6}" width="${(bw-2)*frac}" height="5" fill="${done?'var(--flow)':'var(--amber)'}" opacity="0.85"/>`;
+      s+=`<text x="${xc}" y="${y-3}" text-anchor="middle" font-size="10" fill="${bc}">TON ${cell.a}</text>`;
+      s+=`<text x="${xc}" y="${y+8}" text-anchor="middle" font-size="8.5" fill="var(--dim)">${((cell.p||1000)/1000).toFixed(1)}s</text>`;
+      break;
+    }
+  }
+  // edit hit target
+  s+=`<rect class="cell-hit" data-rung="${ri}" data-row="${r}" data-col="${c}" x="${x0+2}" y="${r*RH+2}" width="${CW-4}" height="${RH-4}"/>`;
+  return s;
+}
+
+function rungSVG(rg,ri){
+  const R=rg.rows.length, H=R*RH;
+  const pw=rg._powered;
+  let s=`<svg class="rung-svg" viewBox="0 0 ${SVGW} ${H}" width="${SVGW}" height="${H}" xmlns="http://www.w3.org/2000/svg">`;
+  // rails
+  s+=`<line x1="${RAIL}" y1="0" x2="${RAIL}" y2="${H}" stroke="var(--txt)" stroke-width="3"/>`;
+  s+=`<line x1="${SVGW-RAIL}" y1="0" x2="${SVGW-RAIL}" y2="${H}" stroke="var(--txt)" stroke-width="3"/>`;
+  s+=`<text x="2" y="12" font-size="10" fill="var(--dim)">${String(ri+1).padStart(2,'0')}</text>`;
+  // cells
+  rg.rows.forEach((cells,r)=>cells.forEach((cell,c)=>{ s+=cellSVG(cell,r,c,pw,ri); }));
+  // vlinks
+  for(const v of rg.vlinks){
+    const x=RAIL+v.col*CW, y1=RH/2+v.row*RH, y2=y1+RH;
+    const on=pw?(pw[v.row][v.col]&&pw[v.row+1][v.col]):false;
+    s+=seg(x,y1,x,y2,on,2.5);
+    s+=`<circle cx="${x}" cy="${y1}" r="3" fill="${wireColor(on)}"/><circle cx="${x}" cy="${y2}" r="3" fill="${wireColor(on)}"/>`;
+  }
+  // vlink toggles in edit mode
+  if(editing){
+    for(let r=0;r<R-1;r++) for(let c=1;c<COLS;c++){
+      s+=`<rect class="vlink-hit" data-rung="${ri}" data-vrow="${r}" data-vcol="${c}" x="${RAIL+c*CW-7}" y="${RH/2+r*RH+RH/2-7}" width="14" height="14"/>`;
+    }
+  }
+  s+='</svg>';
+  return s;
+}
+
+/* Re-render a rung only when its SVG actually changed — keeps the DOM
+   stable so clicks land reliably while the scan animates. */
+function fullBuild(){
+  rungsEl.dataset.editing=editing?'1':'0';
+  rungsEl.innerHTML=program.map((rg,ri)=>{
+    rg._svg=rungSVG(rg,ri);
+    return `<div class="rung-block"><div class="svg-holder">${rg._svg}</div>
+      <span class="rung-tools">
+        <button data-act="addrow" data-rung="${ri}" title="add branch row">+row</button>
+        <button data-act="delrow" data-rung="${ri}" title="remove last row">−row</button>
+        <button data-act="delrung" data-rung="${ri}" title="delete rung">✕</button>
+      </span></div>`;
+  }).join('');
+}
+function renderLadder(){
+  if(rungsEl.children.length!==program.length||rungsEl.dataset.editing!==(editing?'1':'0')){ fullBuild(); return; }
+  program.forEach((rg,ri)=>{
+    const s=rungSVG(rg,ri);
+    if(s!==rg._svg){ rg._svg=s; rungsEl.children[ri].querySelector('.svg-holder').innerHTML=s; }
+  });
+}
+
+/* ── I/O panel ── */
+function ioItem(addr,cls,inner){
+  return `<div class="io-item" data-addr="${addr}">
+    ${inner}
+    <span class="tag">${addr}</span>
+    <span class="name">${labels[addr]||''}</span>
+  </div>`;
+}
+function renderIO(){
+  document.getElementById('io-inputs').innerHTML=INPUTS.map(a=>
+    ioItem(a,'sw',`<button class="switch${bits[a]?' on':''}" data-toggle="${a}" aria-label="toggle ${a}"></button>`)).join('');
+  document.getElementById('io-outputs').innerHTML=OUTPUTS.map(a=>
+    ioItem(a,'lamp',`<span class="lamp${bits[a]?' on':''}"></span>`)).join('');
+  document.getElementById('io-flags').innerHTML=FLAGS.map(a=>
+    ioItem(a,'led',`<span class="led${bits[a]?' on':''}"></span>`)).join('');
+  document.getElementById('io-timers').innerHTML=TIMERS.map(a=>{
+    const tm=timers[a], frac=tm.preset?Math.min(tm.acc/tm.preset,1):0;
+    return `<div class="io-item tmr${bits[a]?' done':''}" style="width:58px">
+      <div class="bar" style="width:100%"><i style="width:${(frac*100).toFixed(0)}%"></i></div>
+      <span class="tag">${a}</span>
+      <span class="name">${(tm.preset/1000).toFixed(1)}s</span>
+    </div>`;
+  }).join('');
+}
+
+/* fast per-frame updates without rebuilding DOM */
+function refreshIO(){
+  document.querySelectorAll('[data-toggle]').forEach(el=>el.classList.toggle('on',!!bits[el.dataset.toggle]));
+  document.querySelectorAll('#io-outputs .io-item').forEach(el=>
+    el.querySelector('.lamp').classList.toggle('on',!!bits[el.dataset.addr]));
+  document.querySelectorAll('#io-flags .io-item').forEach(el=>
+    el.querySelector('.led').classList.toggle('on',!!bits[el.dataset.addr]));
+  document.querySelectorAll('#io-timers .io-item').forEach((el,i)=>{
+    const tm=timers[TIMERS[i]], frac=tm.preset?Math.min(tm.acc/tm.preset,1):0;
+    el.classList.toggle('done',!!bits[TIMERS[i]]);
+    el.querySelector('i').style.width=(frac*100).toFixed(0)+'%';
+    el.querySelector('.name').textContent=(tm.preset/1000).toFixed(1)+'s';
+  });
+}
+
+/* ── main loop ── */
+let last=performance.now();
+function loop(now){
+  const dt=Math.min(now-last,100); last=now;
+  if(running){ scan(dt); }
+  renderLadder();
+  refreshIO();
+  document.getElementById('st-scan').textContent=scanCount.toLocaleString('en-US');
+  document.getElementById('st-cyc').textContent=running?(cycleUs<1000?cycleUs.toFixed(0)+'µs':(cycleUs/1000).toFixed(2)+'ms'):'—';
+  requestAnimationFrame(loop);
+}
+
+/* ── presets ── */
+function loadPreset(p){
+  labels={...p.labels};
+  program=p.build();
+  Object.keys(bits).forEach(a=>bits[a]=false);
+  TIMERS.forEach(t=>{timers[t].acc=0;timers[t].running=false;});
+  Object.entries(p.inputs||{}).forEach(([a,v])=>bits[a]=v);
+  scanCount=0;
+  document.getElementById('desc').innerHTML=p.desc;
+  document.querySelectorAll('.chip').forEach(c=>c.classList.toggle('active',c.dataset.id===p.id));
+  renderIO();
+}
+
+const chipsEl=document.getElementById('chips');
+chipsEl.innerHTML=PRESETS.map(p=>`<button class="chip" data-id="${p.id}">${p.name}</button>`).join(' ');
+chipsEl.addEventListener('click',e=>{
+  const id=e.target.dataset&&e.target.dataset.id;
+  if(id) loadPreset(PRESETS.find(p=>p.id===id));
+});
+
+/* ── controls ── */
+const runBtn=document.getElementById('run-btn');
+runBtn.addEventListener('click',()=>{
+  running=!running;
+  runBtn.textContent=running?'■ RUN':'▶ START';
+  runBtn.className=running?'running':'stopped';
+  const m=document.getElementById('st-mode');
+  m.textContent=running?'RUN':'STOP'; m.style.color=running?'var(--flow)':'var(--red)';
+  if(!running) stopOutputs();
+});
+const editBtn=document.getElementById('edit-btn');
+editBtn.addEventListener('click',()=>{
+  editing=!editing;
+  editBtn.classList.toggle('on',editing);
+  document.body.classList.toggle('editing',editing);
+});
+document.getElementById('reset-btn').addEventListener('click',()=>{
+  const p=PRESETS.find(x=>document.querySelector('.chip.active')&&x.id===document.querySelector('.chip.active').dataset.id)||PRESETS[0];
+  loadPreset(p);
+});
+
+/* toggle switches + contact forcing */
+document.getElementById('io').addEventListener('click',e=>{
+  const t=e.target.closest('[data-toggle]');
+  if(t){ bits[t.dataset.toggle]=!bits[t.dataset.toggle]; }
+});
+
+/* ── editor interactions ── */
+let palCtx=null;   // {rung,row,col}
+const overlay=document.getElementById('overlay');
+const TYPES=[
+  {t:'no',   n:'NO ┤├'},
+  {t:'nc',   n:'NC ┤/├'},
+  {t:'ton',  n:'TON ⏱'},
+  {t:'coil', n:'Coil ( )'},
+  {t:'set',  n:'Set (S)'},
+  {t:'rst',  n:'Reset (R)'},
+  {t:'wire', n:'Wire ──'},
+  {t:'empty',n:'Clear ✕'}
+];
+let palType='no';
+
+function addrOptions(type){
+  if(type==='coil'||type==='set'||type==='rst') return [...OUTPUTS,...FLAGS];
+  if(type==='ton') return TIMERS;
+  return [...INPUTS,...OUTPUTS,...FLAGS,...TIMERS];
+}
+function openPalette(ri,r,c){
+  palCtx={ri,r,c};
+  const cell=program[ri].rows[r][c];
+  palType=cell.t!=='empty'&&cell.t!=='wire'?cell.t:(c===COLS-1?'coil':'no');
+  if(cell.t==='wire') palType='no';
+  paintPalette(cell);
+  overlay.classList.add('open');
+}
+function paintPalette(cell){
+  document.getElementById('pal-title').textContent=`Rung ${palCtx.ri+1} · row ${palCtx.r+1} · col ${palCtx.c+1}`;
+  document.getElementById('pal-types').innerHTML=TYPES.map(x=>
+    `<button data-t="${x.t}" class="${x.t===palType?'sel':''}">${x.n}</button>`).join('');
+  const needAddr=!['wire','empty'].includes(palType);
+  document.getElementById('pal-addr-row').style.display=needAddr?'flex':'none';
+  document.getElementById('pal-preset-row').style.display=palType==='ton'?'flex':'none';
+  if(needAddr){
+    const opts=addrOptions(palType);
+    const cur=cell&&cell.a&&opts.includes(cell.a)?cell.a:opts[0];
+    document.getElementById('pal-addr').innerHTML=opts.map(a=>
+      `<option value="${a}" ${a===cur?'selected':''}>${a}${labels[a]?' — '+labels[a]:''}</option>`).join('');
+  }
+  if(palType==='ton'&&cell&&cell.p) document.getElementById('pal-preset').value=cell.p;
+}
+document.getElementById('pal-types').addEventListener('click',e=>{
+  const t=e.target.dataset&&e.target.dataset.t;
+  if(t){ palType=t; paintPalette(program[palCtx.ri].rows[palCtx.r][palCtx.c]); }
+});
+document.getElementById('pal-cancel').addEventListener('click',()=>overlay.classList.remove('open'));
+overlay.addEventListener('click',e=>{ if(e.target===overlay) overlay.classList.remove('open'); });
+document.getElementById('pal-apply').addEventListener('click',()=>{
+  const {ri,r,c}=palCtx;
+  const cell={t:palType};
+  if(!['wire','empty'].includes(palType)) cell.a=document.getElementById('pal-addr').value;
+  if(palType==='ton') cell.p=Math.max(100,parseInt(document.getElementById('pal-preset').value,10)||1000);
+  program[ri].rows[r][c]=cell;
+  overlay.classList.remove('open');
+});
+
+/* ladder interaction: pointerdown so hits register even while the
+   scan animation is re-rendering the SVG underneath the pointer */
+rungsEl.addEventListener('pointerdown',e=>{
+  const v=e.target.closest('.vlink-hit');
+  if(v&&editing){
+    const ri=+v.dataset.rung, row=+v.dataset.vrow, col=+v.dataset.vcol;
+    const rg=program[ri];
+    const i=rg.vlinks.findIndex(x=>x.row===row&&x.col===col);
+    if(i>=0) rg.vlinks.splice(i,1); else rg.vlinks.push({row,col});
+    return;
+  }
+  const h=e.target.closest('.cell-hit');
+  if(h){
+    const ri=+h.dataset.rung, r=+h.dataset.row, c=+h.dataset.col;
+    if(editing){ openPalette(ri,r,c); return; }
+    // operate mode: clicking a contact forces its I/M bit (like flipping the field switch)
+    const cell=program[ri].rows[r][c];
+    if((cell.t==='no'||cell.t==='nc')&&cell.a&&(cell.a[0]==='I'||cell.a[0]==='M')){
+      bits[cell.a]=!bits[cell.a];
+    }
+  }
+});
+rungsEl.addEventListener('click',e=>{
+  const b=e.target.closest('.rung-tools button');
+  if(b){
+    const ri=+b.dataset.rung, rg=program[ri];
+    if(b.dataset.act==='addrow'&&rg.rows.length<3) rg.rows.push(emptyRow());
+    if(b.dataset.act==='delrow'&&rg.rows.length>1){
+      rg.rows.pop();
+      rg.vlinks=rg.vlinks.filter(v=>v.row<rg.rows.length-1);
+    }
+    if(b.dataset.act==='delrung'&&program.length>1) program.splice(ri,1);
+  }
+});
+document.getElementById('add-rung').addEventListener('click',()=>{
+  if(program.length<10) program.push(rung([emptyRow()]));
+});
+
+/* ── boot ── */
+loadPreset(PRESETS[0]);
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>

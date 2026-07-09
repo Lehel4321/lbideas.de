@@ -689,6 +689,13 @@
           <div class="app-desc" data-en="All public projects in one place — motion solver, packaging line simulator, workflow tracker and more, with full source code." data-de="Alle öffentlichen Projekte an einem Ort — Motion Solver, Verpackungslinien-Simulator, Workflow Tracker und mehr, mit vollständigem Quellcode.">All public projects in one place — motion solver, packaging line simulator, workflow tracker and more, with full source code.</div>
           <span class="app-cta" data-en="Open GitHub ↗" data-de="GitHub öffnen ↗">Open GitHub ↗</span>
         </div>
+        <div class="app-card" style="cursor:pointer" onclick="document.getElementById('ladder-app').scrollIntoView({behavior:'smooth'})">
+          <span class="app-icon">⚡</span>
+          <div><span class="app-badge live" data-en="New" data-de="Neu">New</span></div>
+          <div class="app-name" data-en="Logic Lab — Ladder Simulator" data-de="Logic Lab — SPS-Simulator">Logic Lab — Ladder Simulator</div>
+          <div class="app-desc" data-en="A tiny PLC in the browser: live ladder logic with power-flow animation, timers, seal-in circuits and a rung editor to wire your own logic." data-de="Eine kleine SPS im Browser: Kontaktplan in Echtzeit mit Stromfluss-Animation, Timern, Selbsthaltung und einem Editor für eigene Strompfade.">A tiny PLC in the browser: live ladder logic with power-flow animation, timers, seal-in circuits and a rung editor to wire your own logic.</div>
+          <span class="app-cta" data-en="Open live demo" data-de="Live-Demo öffnen">Open live demo</span>
+        </div>
         <div class="app-card" style="cursor:pointer" onclick="document.getElementById('workflow-app').scrollIntoView({behavior:'smooth'})">
           <span class="app-icon">🗂️</span>
           <div><span class="app-badge live" data-en="Available" data-de="Verfügbar">Available</span></div>
@@ -709,6 +716,25 @@
     <div class="sec-head reveal"><span class="sec-num">05e</span><h2 class="sec-title" data-en="Example Projects" data-de="Beispielprojekte">Example Projects</h2></div>
 
     <div class="plate reveal">
+      <div id="ladder-app" class="sim-app open">
+        <div class="sim-app-bar">
+          <span class="sim-app-tag">Logic Lab LD-1 · <span data-en="interactive PLC simulator" data-de="interaktiver SPS-Simulator">interactive PLC simulator</span></span>
+          <span class="sim-app-actions">
+            <a href="https://github.com/Lehel4321/lbideas.de/tree/main/ladder-sim" target="_blank" rel="noopener" class="sim-fullscreen" data-en="Source ↗" data-de="Quellcode ↗">Source ↗</a>
+            <button type="button" id="ladder-fs-btn" class="sim-fullscreen" data-en="⛶ Fullscreen" data-de="⛶ Vollbild">⛶ Fullscreen</button>
+            <a href="/ladder-sim/" target="_blank" rel="noopener" class="sim-fullscreen" data-en="New tab ↗" data-de="Neuer Tab ↗">New tab ↗</a>
+          </span>
+        </div>
+        <div class="sim-frame-wrap">
+          <button type="button" class="sim-poster" data-frame-id="ladder-frame" data-src="/ladder-sim/" data-title="Logic Lab LD-1 — Ladder Logic Simulator">
+            <img src="/assets/poster-ladder.png" alt="Logic Lab LD-1 ladder logic simulator — live power flow through a conveyor cascade program" loading="lazy" width="1240" height="760">
+            <span class="sim-poster-btn" data-en="▶&nbsp; Load live demo" data-de="▶&nbsp; Live-Demo laden">▶&nbsp; Load live demo</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="plate reveal" style="margin-top:2rem;">
       <div id="motion-app" class="sim-app open">
         <div class="sim-app-bar">
           <span class="sim-app-tag">Precision Motion Solver · <span data-en="live demo" data-de="Live-Demo">live demo</span></span>
@@ -902,9 +928,10 @@
     p.addEventListener('click',()=>loadDemo(p),{once:true});
   });
 
-  // Fullscreen toggle for embedded live demos (motion solver + packline + workflow tracker)
+  // Fullscreen toggle for embedded live demos (ladder sim + motion solver + packline + workflow tracker)
   (function setupDemoFullscreens(){
     const demos=[
+      {btnId:'ladder-fs-btn',   targetId:'ladder-app',   fallback:'/ladder-sim/'},
       {btnId:'motion-fs-btn',   targetId:'motion-app',   fallback:'/motion-solver/'},
       {btnId:'packline-fs-btn', targetId:'packline-app', fallback:'/packline/'},
       {btnId:'workflow-fs-btn', targetId:'workflow-app', fallback:'/workflow-tracker/'}
