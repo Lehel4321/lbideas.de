@@ -432,6 +432,11 @@
   .reveal { opacity:0; transform:translateY(12px); transition:opacity 0.55s, transform 0.55s; }
   .reveal.in { opacity:1; transform:translateY(0); }
 
+  /* COMMENTS */
+  .comments-inner { padding:1.6rem 1.5rem; }
+  .comments-note { font-family:var(--MONO); font-size:0.74rem; color:var(--INK2); line-height:1.75; max-width:560px; margin-bottom:1.1rem; }
+  #comments-thread .utterances { max-width:100%; margin:1.2rem 0 0; }
+
   /* Respect visitors who prefer reduced motion: show everything immediately */
   @media (prefers-reduced-motion: reduce) {
     html { scroll-behavior:auto; }
@@ -482,6 +487,7 @@
     <li><a href="#apps"       data-en="Apps"        data-de="Apps">Apps</a></li>
     <li><a href="#code"       data-en="Code"        data-de="Code">Code</a></li>
     <li><a href="#contact"    data-en="Contact"     data-de="Kontakt">Contact</a></li>
+    <li><a href="#comments"   data-en="Comments"    data-de="Kommentare">Comments</a></li>
   </ul>
   <div class="nav-right">
     <div class="lang-toggle">
@@ -502,6 +508,7 @@
   <a href="#apps"       onclick="closeMenu()" data-en="Apps"        data-de="Apps">Apps</a>
   <a href="#code"       onclick="closeMenu()" data-en="Code"        data-de="Code">Code</a>
   <a href="#contact"    onclick="closeMenu()" data-en="Contact"     data-de="Kontakt">Contact</a>
+  <a href="#comments"   onclick="closeMenu()" data-en="Comments"    data-de="Kommentare">Comments</a>
   <div class="mobile-menu-footer">
     <button class="lang-btn active" onclick="setLang('en')">EN</button>
     <button class="lang-btn"        onclick="setLang('de')">DE</button>
@@ -809,6 +816,22 @@
   </div>
 </section>
 
+<hr>
+
+<!-- COMMENTS / GUESTBOOK (utterances — comments live as GitHub issue comments) -->
+<section id="comments">
+  <div class="wrap">
+    <div class="sec-head reveal"><span class="sec-num">08</span><h2 class="sec-title" data-en="Comments" data-de="Kommentare">Comments</h2></div>
+    <div class="plate reveal">
+      <div class="comments-inner">
+        <p class="comments-note" data-en="Leave a note, question or feedback below. Comments are public and are posted with your GitHub account — nothing loads from external servers until you click." data-de="Hinterlassen Sie unten eine Nachricht, Frage oder Feedback. Kommentare sind öffentlich und werden mit Ihrem GitHub-Konto veröffentlicht — es werden erst nach dem Klick externe Inhalte geladen.">Leave a note, question or feedback below. Comments are public and are posted with your GitHub account — nothing loads from external servers until you click.</p>
+        <button type="button" id="comments-load" class="btn-primary" data-en="💬 Load comments" data-de="💬 Kommentare laden">💬 Load comments</button>
+        <div id="comments-thread"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
 <footer>
   <span class="foot-name">Lehel Balog</span>
   <span class="foot-copy">© <span id="foot-year">2026</span> · lbideas.de</span>
@@ -914,6 +937,23 @@
     }
     document.addEventListener('fullscreenchange',lbl);
     document.addEventListener('webkitfullscreenchange',lbl);
+  })();
+
+  // COMMENTS — utterances widget (GitHub issue comments), loaded only on request
+  (function setupComments(){
+    const btn = document.getElementById('comments-load');
+    if(!btn) return;
+    btn.addEventListener('click', () => {
+      const s = document.createElement('script');
+      s.src = 'https://utteranc.es/client.js';
+      s.async = true;
+      s.crossOrigin = 'anonymous';
+      s.setAttribute('repo', 'Lehel4321/lbideas.de');
+      s.setAttribute('issue-term', 'Guestbook');
+      s.setAttribute('theme', 'github-light');
+      document.getElementById('comments-thread').appendChild(s);
+      btn.remove();
+    }, { once:true });
   })();
 
   // CONTACT FORM — static site, submits via FormSubmit.co (no backend to host)
