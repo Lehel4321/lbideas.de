@@ -1,0 +1,14 @@
+/* Self-hosted fonts (latin subset) — no external font CDN, GDPR-safe.
+   Files from @fontsource/ibm-plex-mono and @fontsource/barlow-condensed (OFL licensed). */
+
+@font-face { font-family:'IBM Plex Mono'; font-style:normal; font-weight:300; font-display:swap; src:url('/assets/fonts/ibm-plex-mono-latin-300-normal.woff2') format('woff2'); }
+@font-face { font-family:'IBM Plex Mono'; font-style:normal; font-weight:400; font-display:swap; src:url('/assets/fonts/ibm-plex-mono-latin-400-normal.woff2') format('woff2'); }
+@font-face { font-family:'IBM Plex Mono'; font-style:normal; font-weight:500; font-display:swap; src:url('/assets/fonts/ibm-plex-mono-latin-500-normal.woff2') format('woff2'); }
+@font-face { font-family:'IBM Plex Mono'; font-style:normal; font-weight:600; font-display:swap; src:url('/assets/fonts/ibm-plex-mono-latin-600-normal.woff2') format('woff2'); }
+@font-face { font-family:'IBM Plex Mono'; font-style:normal; font-weight:700; font-display:swap; src:url('/assets/fonts/ibm-plex-mono-latin-700-normal.woff2') format('woff2'); }
+
+@font-face { font-family:'Barlow Condensed'; font-style:normal; font-weight:300; font-display:swap; src:url('/assets/fonts/barlow-condensed-latin-300-normal.woff2') format('woff2'); }
+@font-face { font-family:'Barlow Condensed'; font-style:normal; font-weight:400; font-display:swap; src:url('/assets/fonts/barlow-condensed-latin-400-normal.woff2') format('woff2'); }
+@font-face { font-family:'Barlow Condensed'; font-style:normal; font-weight:600; font-display:swap; src:url('/assets/fonts/barlow-condensed-latin-600-normal.woff2') format('woff2'); }
+@font-face { font-family:'Barlow Condensed'; font-style:normal; font-weight:700; font-display:swap; src:url('/assets/fonts/barlow-condensed-latin-700-normal.woff2') format('woff2'); }
+@font-face { font-family:'Barlow Condensed'; font-style:normal; font-weight:800; font-display:swap; src:url('/assets/fonts/barlow-condensed-latin-800-normal.woff2') format('woff2'); }
