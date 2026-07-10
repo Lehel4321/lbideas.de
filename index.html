@@ -296,14 +296,16 @@
   }
   .sim-poster:hover .sim-poster-btn, .sim-poster:focus-visible .sim-poster-btn { background:#18181b; border-color:#a1a1aa; }
   /* true fullscreen — the whole app fills the screen, toolbar stays on top */
-  #motion-app:fullscreen, #packline-app:fullscreen, #workflow-app:fullscreen { display:flex; flex-direction:column; width:100vw; height:100vh; height:100dvh; background:#09090b; }
-  #motion-app:-webkit-full-screen, #packline-app:-webkit-full-screen, #workflow-app:-webkit-full-screen { display:flex; flex-direction:column; width:100vw; height:100vh; background:#09090b; }
+  #motion-app:fullscreen, #packline-app:fullscreen, #workflow-app:fullscreen, #rotary-app:fullscreen { display:flex; flex-direction:column; width:100vw; height:100vh; height:100dvh; background:#09090b; }
+  #motion-app:-webkit-full-screen, #packline-app:-webkit-full-screen, #workflow-app:-webkit-full-screen, #rotary-app:-webkit-full-screen { display:flex; flex-direction:column; width:100vw; height:100vh; background:#09090b; }
   #motion-app:fullscreen .sim-frame-wrap, #motion-app:-webkit-full-screen .sim-frame-wrap,
   #packline-app:fullscreen .sim-frame-wrap, #packline-app:-webkit-full-screen .sim-frame-wrap,
-  #workflow-app:fullscreen .sim-frame-wrap, #workflow-app:-webkit-full-screen .sim-frame-wrap { flex:1 1 auto; }
+  #workflow-app:fullscreen .sim-frame-wrap, #workflow-app:-webkit-full-screen .sim-frame-wrap,
+  #rotary-app:fullscreen .sim-frame-wrap, #rotary-app:-webkit-full-screen .sim-frame-wrap { flex:1 1 auto; }
   #motion-app:fullscreen .sim-frame, #motion-app:-webkit-full-screen .sim-frame,
   #packline-app:fullscreen .sim-frame, #packline-app:-webkit-full-screen .sim-frame,
-  #workflow-app:fullscreen .sim-frame, #workflow-app:-webkit-full-screen .sim-frame { height:100%; }
+  #workflow-app:fullscreen .sim-frame, #workflow-app:-webkit-full-screen .sim-frame,
+  #rotary-app:fullscreen .sim-frame, #rotary-app:-webkit-full-screen .sim-frame { height:100%; }
 
   /* SKILLS */
   .skills-grid { display:grid; grid-template-columns:1fr 1fr; gap:2px; background:var(--GAP); }
@@ -686,7 +688,7 @@
           <span class="app-icon">⌨</span>
           <div><span class="app-badge live" data-en="Open source" data-de="Open Source">Open source</span></div>
           <div class="app-name" data-en="GitHub Profile" data-de="GitHub-Profil">GitHub Profile</div>
-          <div class="app-desc" data-en="All public projects in one place — motion solver, packaging line simulator, workflow tracker and more, with full source code." data-de="Alle öffentlichen Projekte an einem Ort — Motion Solver, Verpackungslinien-Simulator, Workflow Tracker und mehr, mit vollständigem Quellcode.">All public projects in one place — motion solver, packaging line simulator, workflow tracker and more, with full source code.</div>
+          <div class="app-desc" data-en="All public projects in one place — motion solver, packaging line simulator, rotary knife cutting simulator, workflow tracker and more, with full source code." data-de="Alle öffentlichen Projekte an einem Ort — Motion Solver, Verpackungslinien-Simulator, Rotationsmesser-Simulator, Workflow Tracker und mehr, mit vollständigem Quellcode.">All public projects in one place — motion solver, packaging line simulator, rotary knife cutting simulator, workflow tracker and more, with full source code.</div>
           <span class="app-cta" data-en="Open GitHub ↗" data-de="GitHub öffnen ↗">Open GitHub ↗</span>
         </div>
         <div class="app-card" style="cursor:pointer" onclick="document.getElementById('workflow-app').scrollIntoView({behavior:'smooth'})">
@@ -759,6 +761,25 @@
         <div class="sim-frame-wrap">
           <button type="button" class="sim-poster" data-frame-id="workflow-frame" data-src="/workflow-tracker/" data-title="Workflow Tracker">
             <img src="/assets/poster-workflow.png" alt="Workflow Tracker — app preview" loading="lazy" width="1240" height="760">
+            <span class="sim-poster-btn" data-en="▶&nbsp; Load live demo" data-de="▶&nbsp; Live-Demo laden">▶&nbsp; Load live demo</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="plate reveal" style="margin-top:2rem;">
+      <div id="rotary-app" class="sim-app open">
+        <div class="sim-app-bar">
+          <span class="sim-app-tag">RotaryKnife SYNC · <span data-en="live demo" data-de="Live-Demo">live demo</span></span>
+          <span class="sim-app-actions">
+            <a href="https://github.com/Lehel4321/rotary-knife" target="_blank" rel="noopener" class="sim-fullscreen" data-en="Source ↗" data-de="Quellcode ↗">Source ↗</a>
+            <button type="button" id="rotary-fs-btn" class="sim-fullscreen" data-en="⛶ Fullscreen" data-de="⛶ Vollbild">⛶ Fullscreen</button>
+            <a href="/rotary-knife/" target="_blank" rel="noopener" class="sim-fullscreen" data-en="New tab ↗" data-de="Neuer Tab ↗">New tab ↗</a>
+          </span>
+        </div>
+        <div class="sim-frame-wrap">
+          <button type="button" class="sim-poster" data-frame-id="rotary-frame" data-src="/rotary-knife/" data-title="RotaryKnife SYNC">
+            <img src="/assets/poster-rotary.png" alt="RotaryKnife SYNC — synchronous rotary knife cutting simulator, app preview" loading="lazy" width="1240" height="760">
             <span class="sim-poster-btn" data-en="▶&nbsp; Load live demo" data-de="▶&nbsp; Live-Demo laden">▶&nbsp; Load live demo</span>
           </button>
         </div>
@@ -907,7 +928,8 @@
     const demos=[
       {btnId:'motion-fs-btn',   targetId:'motion-app',   fallback:'/motion-solver/'},
       {btnId:'packline-fs-btn', targetId:'packline-app', fallback:'/packline/'},
-      {btnId:'workflow-fs-btn', targetId:'workflow-app', fallback:'/workflow-tracker/'}
+      {btnId:'workflow-fs-btn', targetId:'workflow-app', fallback:'/workflow-tracker/'},
+      {btnId:'rotary-fs-btn',   targetId:'rotary-app',   fallback:'/rotary-knife/'}
     ];
     const btns=[];
     demos.forEach(({btnId,targetId,fallback})=>{
