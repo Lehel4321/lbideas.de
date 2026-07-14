@@ -491,6 +491,8 @@ try {
   }
   .foot-name { font-family:var(--MONO); font-size:0.66rem; font-weight:600; color:var(--S1); letter-spacing:0.08em; }
   .foot-copy { font-family:var(--MONO); font-size:0.58rem; color:var(--S); }
+  /* owner door: the separator dot links to the stats panel — looks and behaves like punctuation */
+  .foot-dot { color:inherit; text-decoration:none; cursor:default; padding:0 0.4em; margin:0 -0.2em; }
 
   /* REVEAL */
   .reveal { opacity:0; transform:translateY(12px); transition:opacity 0.55s, transform 0.55s; }
@@ -934,7 +936,7 @@ try {
 
 <footer>
   <span class="foot-name">Lehel Balog</span>
-  <span class="foot-copy">© <span id="foot-year">2026</span> · lbideas.de</span>
+  <span class="foot-copy">© <span id="foot-year">2026</span> <a href="/panel-fc60330a/" class="foot-dot" rel="nofollow" aria-hidden="true" tabindex="-1">·</a> lbideas.de</span>
 </footer>
 
 <script>
