@@ -7,6 +7,12 @@
 <meta name="robots" content="noindex">
 <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
 <link rel="stylesheet" href="/assets/fonts/fonts.css">
+<script>
+try {
+  var t = localStorage.getItem('theme') || (window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+  if (t === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+} catch (e) {}
+</script>
 <style>
   * { margin:0; padding:0; box-sizing:border-box; }
   html, body { height:100%; }
@@ -44,6 +50,16 @@
     box-shadow:inset 0 1px 0 rgba(255,255,255,0.08);
   }
   a.btn:hover { background:#0d1518; }
+
+  html[data-theme="dark"] body { background:#0f1417; color:#d7e2e8; }
+  html[data-theme="dark"] .plate {
+    background:linear-gradient(135deg, #232c33 0%, #1b2227 55%, #161c21 100%);
+    border-left-color:rgba(255,255,255,0.06); border-right-color:#0b0f12; border-bottom-color:#05080a;
+  }
+  html[data-theme="dark"] .code { text-shadow:0 2px 3px rgba(0,0,0,0.55); }
+  html[data-theme="dark"] .tag, html[data-theme="dark"] p { color:#93a6b1; }
+  html[data-theme="dark"] a.btn { background:rgba(232,163,61,0.1); color:#e8a33d; border-color:rgba(232,163,61,0.45); }
+  html[data-theme="dark"] a.btn:hover { background:rgba(232,163,61,0.2); }
 </style>
 </head>
 <body>
