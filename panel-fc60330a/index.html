@@ -9,7 +9,7 @@
 <link rel="stylesheet" href="/assets/fonts/fonts.css">
 <script>
 try {
-  var t = localStorage.getItem('theme') || (window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+  var t = localStorage.getItem('theme') || 'dark';
   if (t === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
 } catch (e) {}
 </script>
