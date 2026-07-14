@@ -435,7 +435,11 @@
   /* COMMENTS */
   .comments-inner { padding:1.6rem 1.5rem; }
   .comments-note { font-family:var(--MONO); font-size:0.74rem; color:var(--INK2); line-height:1.75; max-width:560px; margin-bottom:1.1rem; }
-  #comments-thread .utterances { max-width:100%; margin:1.2rem 0 0; }
+  .comments-body { background:#0d1117; padding:1.2rem 1rem 1.4rem; }
+  .comments-loading { font-family:var(--MONO); font-size:0.72rem; color:#8b949e; text-align:center; padding:1.6rem 1rem; }
+  .comments-loading a { color:#b8c8d0; text-decoration:none; border-bottom:1px solid #3f4954; }
+  .comments-loading a:hover { color:#dfe7eb; border-color:#dfe7eb; }
+  #comments-thread .utterances { max-width:100%; margin:0 auto; }
 
   /* Respect visitors who prefer reduced motion: show everything immediately */
   @media (prefers-reduced-motion: reduce) {
@@ -826,7 +830,18 @@
       <div class="comments-inner">
         <p class="comments-note" data-en="Leave a note, question or feedback below. Comments are public and are posted with your GitHub account — nothing loads from external servers until you click." data-de="Hinterlassen Sie unten eine Nachricht, Frage oder Feedback. Kommentare sind öffentlich und werden mit Ihrem GitHub-Konto veröffentlicht — es werden erst nach dem Klick externe Inhalte geladen.">Leave a note, question or feedback below. Comments are public and are posted with your GitHub account — nothing loads from external servers until you click.</p>
         <button type="button" id="comments-load" class="btn-primary" data-en="💬 Load comments" data-de="💬 Kommentare laden">💬 Load comments</button>
-        <div id="comments-thread"></div>
+      </div>
+      <div id="comments-app" class="sim-app">
+        <div class="sim-app-bar">
+          <span class="sim-app-tag">Guestbook · <span data-en="public comments" data-de="öffentliche Kommentare">public comments</span></span>
+          <span class="sim-app-actions">
+            <a href="https://github.com/Lehel4321/lbideas.de/issues" target="_blank" rel="noopener" class="sim-fullscreen" data-en="GitHub ↗" data-de="GitHub ↗">GitHub ↗</a>
+          </span>
+        </div>
+        <div class="comments-body">
+          <div id="comments-loading" class="comments-loading" data-en="Loading comments…" data-de="Kommentare werden geladen…">Loading comments…</div>
+          <div id="comments-thread"></div>
+        </div>
       </div>
     </div>
   </div>
@@ -943,17 +958,39 @@
   (function setupComments(){
     const btn = document.getElementById('comments-load');
     if(!btn) return;
-    btn.addEventListener('click', () => {
+    let loaded = false;
+    function load(){
+      if(loaded) return;
+      loaded = true;
+      document.getElementById('comments-app').classList.add('open');
       const s = document.createElement('script');
       s.src = 'https://utteranc.es/client.js';
       s.async = true;
       s.crossOrigin = 'anonymous';
       s.setAttribute('repo', 'Lehel4321/lbideas.de');
       s.setAttribute('issue-term', 'Guestbook');
-      s.setAttribute('theme', 'github-light');
+      s.setAttribute('theme', 'github-dark');
       document.getElementById('comments-thread').appendChild(s);
       btn.remove();
-    }, { once:true });
+      // widget messages us when it renders — drop the loading note then
+      function onMsg(e){
+        if(e.origin !== 'https://utteranc.es') return;
+        const l = document.getElementById('comments-loading');
+        if(l) l.remove();
+        window.removeEventListener('message', onMsg);
+      }
+      window.addEventListener('message', onMsg);
+      // still nothing after 8s (blocked network etc.) — point to GitHub directly
+      setTimeout(() => {
+        const l = document.getElementById('comments-loading');
+        if(!l) return;
+        l.setAttribute('data-en', 'Comments did not load. <a href="https://github.com/Lehel4321/lbideas.de/issues" target="_blank" rel="noopener">Read &amp; post directly on GitHub ↗</a>');
+        l.setAttribute('data-de', 'Kommentare konnten nicht geladen werden. <a href="https://github.com/Lehel4321/lbideas.de/issues" target="_blank" rel="noopener">Direkt auf GitHub lesen &amp; schreiben ↗</a>');
+        l.innerHTML = l.getAttribute('data-' + (document.documentElement.lang === 'de' ? 'de' : 'en'));
+      }, 8000);
+    }
+    btn.addEventListener('click', load);
+    if(location.hash === '#comments') load();
   })();
 
   // CONTACT FORM — static site, submits via FormSubmit.co (no backend to host)
