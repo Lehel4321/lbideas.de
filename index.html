@@ -96,7 +96,7 @@ try {
     --TOPLINE: rgba(255,255,255,0.09);
     --EMBOSS:  0 2px 3px rgba(0,0,0,0.55), 0 -1px 0 rgba(255,255,255,0.05);
     --EMBOSS2: 0 2px 3px rgba(0,0,0,0.45);
-    --STAMP:   0 1px 2px rgba(0,0,0,0.6);
+    --STAMP:   none;   /* shadows blur light-on-dark text — keep it crisp */
     --ACC:  #e8a33d;   /* amber — powered-on accents */
   }
   /* dark-only component accents */
@@ -114,11 +114,14 @@ try {
   html[data-theme="dark"] .app-card { background:linear-gradient(135deg, var(--S1) 0%, var(--S) 55%, var(--SD) 100%); }
   html[data-theme="dark"] .ch-right { background:linear-gradient(135deg, var(--S) 0%, var(--SD) 100%); }
   html[data-theme="dark"] nav { box-shadow:0 4px 24px rgba(0,0,0,0.8); }
-  /* light-on-dark renders thinner — lift small mono text half a weight step */
-  html[data-theme="dark"] .exp-list li, html[data-theme="dark"] .proj-desc,
-  html[data-theme="dark"] .app-desc, html[data-theme="dark"] .contact-text,
-  html[data-theme="dark"] .hero-bio, html[data-theme="dark"] .comments-note,
-  html[data-theme="dark"] .repo-cta-line, html[data-theme="dark"] .proj-cell { font-weight:500; }
+  /* light-on-dark renders thinner — lift small mono text half a weight step
+     (only where text is actually small; on large scaled screens regular weight is crisper) */
+  @media (max-width:1599px) {
+    html[data-theme="dark"] .exp-list li, html[data-theme="dark"] .proj-desc,
+    html[data-theme="dark"] .app-desc, html[data-theme="dark"] .contact-text,
+    html[data-theme="dark"] .hero-bio, html[data-theme="dark"] .comments-note,
+    html[data-theme="dark"] .repo-cta-line, html[data-theme="dark"] .proj-cell { font-weight:500; }
+  }
 
   *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
   html { scroll-behavior:smooth; background:var(--BG); background-color:var(--BG); font-size:118%; }
@@ -137,7 +140,7 @@ try {
   /* NAV — darker steel bar welded across the top */
   nav {
     position: fixed; top:0; left:0; right:0; z-index:100;
-    height: 48px;
+    height: 2.7rem;
     background: linear-gradient(180deg, var(--S2) 0%, var(--S1) 60%, var(--S) 100%);
     border-bottom: 3px solid var(--GAP);
     display: flex; align-items: center; justify-content: space-between;
@@ -150,14 +153,14 @@ try {
   }
 
   .nav-name {
-    font-family: var(--MONO); font-size:0.7rem; font-weight:600;
+    font-family: var(--MONO); font-size:0.78rem; font-weight:600;
     letter-spacing:0.16em; text-transform:uppercase;
     color: var(--INK); text-decoration:none;
   }
 
-  .nav-links { display:flex; gap:2.5rem; list-style:none; }
+  .nav-links { display:flex; gap:1.8rem; list-style:none; }
   .nav-links a {
-    font-family: var(--MONO); font-size:0.6rem; letter-spacing:0.12em;
+    font-family: var(--MONO); font-size:0.68rem; font-weight:500; letter-spacing:0.1em;
     text-transform:uppercase; color: var(--INK2);
     text-decoration:none; transition:color 0.15s;
   }
@@ -166,7 +169,7 @@ try {
   .nav-right { display:flex; align-items:center; gap:0.6rem; }
   .lang-toggle { display:flex; gap:2px; }
   .lang-btn, .theme-btn {
-    font-family:var(--MONO); font-size:0.58rem; letter-spacing:0.1em;
+    font-family:var(--MONO); font-size:0.63rem; letter-spacing:0.1em;
     padding:0.2rem 0.5rem; border:1px solid var(--S3);
     background:rgba(0,0,0,0.12); color:var(--INK2);
     cursor:pointer; transition:all 0.12s;
@@ -197,7 +200,7 @@ try {
   .mobile-menu {
     display:none; position:fixed; inset:0; z-index:40;
     background:var(--S1); flex-direction:column;
-    padding:60px 0 2rem; opacity:0; pointer-events:none; transition:opacity 0.2s;
+    padding:3.6rem 0 2rem; opacity:0; pointer-events:none; transition:opacity 0.2s;
   }
   .mobile-menu.open { display:flex; opacity:1; pointer-events:all; }
   .mobile-menu a {
@@ -259,7 +262,7 @@ try {
 
   .hero-bio {
     font-family:var(--MONO); font-size:0.84rem; color:var(--INK2);
-    line-height:1.85; max-width:440px; margin-bottom:2rem;
+    line-height:1.85; max-width:26rem; margin-bottom:2rem;
     border-left:3px solid var(--GAP); padding-left:1rem;
     opacity:0; animation:rise 0.6s 0.25s forwards;
   }
@@ -523,23 +526,23 @@ try {
 
   /* LARGE SCREENS — scale the whole design up so 1440p/4K monitors don't get a tiny ribbon */
   @media (min-width:1600px) {
-    html { font-size:150%; }
-    .wrap, .hero { max-width:1260px; }
+    html { font-size:160%; }
+    .wrap, .hero { max-width:1320px; }
   }
   @media (min-width:2200px) {
-    html { font-size:190%; }
-    .wrap, .hero { max-width:1640px; }
-    .hero-inner { grid-template-columns:1fr 420px; }
-    .exp-grid { grid-template-columns:330px 1fr; }
-    .proj-header, .proj-row { grid-template-columns:235px 1fr 150px; }
+    html { font-size:210%; }
+    .wrap, .hero { max-width:1780px; }
+    .hero-inner { grid-template-columns:1fr 460px; }
+    .exp-grid { grid-template-columns:365px 1fr; }
+    .proj-header, .proj-row { grid-template-columns:260px 1fr 165px; }
     .sim-frame { height:960px; }
   }
   @media (min-width:3200px) {
-    html { font-size:235%; }
-    .wrap, .hero { max-width:2060px; }
-    .hero-inner { grid-template-columns:1fr 530px; }
-    .exp-grid { grid-template-columns:410px 1fr; }
-    .proj-header, .proj-row { grid-template-columns:290px 1fr 185px; }
+    html { font-size:260%; }
+    .wrap, .hero { max-width:2240px; }
+    .hero-inner { grid-template-columns:1fr 590px; }
+    .exp-grid { grid-template-columns:455px 1fr; }
+    .proj-header, .proj-row { grid-template-columns:325px 1fr 205px; }
     .sim-frame { height:1250px; }
   }
 
