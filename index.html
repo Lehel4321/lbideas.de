@@ -521,6 +521,28 @@ try {
   }
   @keyframes rise { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
 
+  /* LARGE SCREENS — scale the whole design up so 1440p/4K monitors don't get a tiny ribbon */
+  @media (min-width:1600px) {
+    html { font-size:128%; }
+    .wrap, .hero { max-width:1100px; }
+  }
+  @media (min-width:2200px) {
+    html { font-size:150%; }
+    .wrap, .hero { max-width:1320px; }
+    .hero-inner { grid-template-columns:1fr 320px; }
+    .exp-grid { grid-template-columns:250px 1fr; }
+    .proj-header, .proj-row { grid-template-columns:185px 1fr 115px; }
+    .sim-frame { height:900px; }
+  }
+  @media (min-width:3200px) {
+    html { font-size:175%; }
+    .wrap, .hero { max-width:1560px; }
+    .hero-inner { grid-template-columns:1fr 380px; }
+    .exp-grid { grid-template-columns:300px 1fr; }
+    .proj-header, .proj-row { grid-template-columns:220px 1fr 135px; }
+    .sim-frame { height:1080px; }
+  }
+
   /* collapse nav to hamburger before the links can crowd the bar */
   @media (max-width:1060px) {
     .nav-links { display:none; }
