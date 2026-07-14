@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Site Stats — lbideas.de</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+<link rel="stylesheet" href="/assets/fonts/fonts.css">
+<script>
+try {
+  var t = localStorage.getItem('theme') || (window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+  if (t === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+} catch (e) {}
+</script>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  :root {
+    --BG:#7e8d95; --S:#7e8d95; --S1:#9aaab2; --S3:#6e7e86; --SD:#748590;
+    --EDGE:#5a6870; --GAP:#1a2226; --INK:#080e10; --INK2:#152028;
+    --STAMP:0 -1px 1px rgba(0,0,0,0.35), 0 1px 0 rgba(255,255,255,0.3);
+  }
+  html[data-theme="dark"] {
+    --BG:#0f1417; --S:#1b2227; --S1:#232c33; --S3:#3c4a54; --SD:#161c21;
+    --EDGE:#0b0f12; --GAP:#05080a; --INK:#d7e2e8; --INK2:#93a6b1;
+    --STAMP:0 1px 2px rgba(0,0,0,0.6);
+    --ACC:#e8a33d;
+  }
+  body {
+    background:var(--BG); color:var(--INK);
+    font-family:'Barlow Condensed', sans-serif;
+    min-height:100vh; padding:3rem 1.2rem;
+    display:flex; justify-content:center; align-items:flex-start;
+  }
+  .panel { width:100%; max-width:560px; }
+  h1 { font-size:2.2rem; font-weight:800; text-transform:uppercase; text-shadow:var(--STAMP); }
+  .sub { font-family:'IBM Plex Mono', monospace; font-size:0.68rem; letter-spacing:0.14em; text-transform:uppercase; color:var(--INK2); margin:0.3rem 0 1.6rem; }
+  .plate {
+    background:linear-gradient(170deg, var(--S1) 0%, var(--S) 70%, var(--SD) 100%);
+    border-left:1px solid rgba(255,255,255,0.15); border-right:2px solid var(--EDGE);
+    border-bottom:4px solid var(--GAP);
+    box-shadow:2px 4px 16px rgba(0,0,0,0.35);
+  }
+  .row { display:flex; justify-content:space-between; align-items:center; padding:0.75rem 1.1rem; border-bottom:1px solid rgba(0,0,0,0.15); }
+  .row:last-child { border-bottom:none; }
+  .row .k { font-family:'IBM Plex Mono', monospace; font-size:0.72rem; color:var(--INK); }
+  .row .k small { display:block; font-size:0.58rem; color:var(--INK2); }
+  .row .v { font-family:'IBM Plex Mono', monospace; font-size:0.95rem; font-weight:700; text-shadow:var(--STAMP); }
+  .row.total { background:rgba(0,0,0,0.12); }
+  .row.total .v { font-size:1.25rem; }
+  html[data-theme="dark"] .row.total .v { color:var(--ACC); }
+  .foot { font-family:'IBM Plex Mono', monospace; font-size:0.62rem; color:var(--INK2); line-height:1.8; margin-top:1.2rem; }
+  .foot a, .setup a { color:var(--INK); border-bottom:1px solid var(--S3); text-decoration:none; }
+  .setup { display:none; font-family:'IBM Plex Mono', monospace; font-size:0.7rem; line-height:1.9; padding:1.2rem 1.1rem; color:var(--INK); }
+  .setup ol { padding-left:1.2rem; }
+  .setup code { background:rgba(0,0,0,0.18); padding:0.05rem 0.35rem; }
+</style>
+</head>
+<body>
+  <div class="panel">
+    <h1>Site Stats</h1>
+    <div class="sub">lbideas.de · private panel</div>
+    <div class="plate">
+      <div class="row total"><span class="k">TOTAL VIEWS<small>whole site, all time</small></span><span class="v" data-path="TOTAL">—</span></div>
+      <div class="row"><span class="k">/ <small>main page</small></span><span class="v" data-path="/">—</span></div>
+      <div class="row"><span class="k">/motion-solver/<small>demo opened</small></span><span class="v" data-path="/motion-solver/">—</span></div>
+      <div class="row"><span class="k">/packline/<small>demo opened</small></span><span class="v" data-path="/packline/">—</span></div>
+      <div class="row"><span class="k">/rotary-knife/<small>demo opened</small></span><span class="v" data-path="/rotary-knife/">—</span></div>
+      <div class="row"><span class="k">/workflow-tracker/<small>demo opened</small></span><span class="v" data-path="/workflow-tracker/">—</span></div>
+      <div class="setup" id="setup">
+        <strong>Counting is not active yet.</strong> One-time setup (~1 minute):
+        <ol>
+          <li>Register at <a href="https://www.goatcounter.com" target="_blank" rel="noopener">goatcounter.com</a> — as "code" enter exactly <code>lbideas</code></li>
+          <li>In GoatCounter: Settings → check <em>"Allow adding visitor counts to your website"</em> → Save</li>
+          <li>Reload this page — numbers appear as visits come in</li>
+        </ol>
+      </div>
+    </div>
+    <p class="foot">
+      Full dashboard (per day, referrers, countries): <a href="https://lbideas.goatcounter.com" target="_blank" rel="noopener">lbideas.goatcounter.com</a> — log in with your GoatCounter account.<br>
+      Counting is cookie-free and anonymous (GoatCounter). This page is unlisted and not indexed, but not password-protected.
+    </p>
+  </div>
+<script>
+  (async () => {
+    const els = document.querySelectorAll('[data-path]');
+    let anyOk = false;
+    await Promise.all([...els].map(async el => {
+      try {
+        const path = el.getAttribute('data-path');
+        const res = await fetch('https://lbideas.goatcounter.com/counter/' + encodeURIComponent(path) + '.json');
+        if (!res.ok) throw new Error(res.status);
+        const data = await res.json();
+        el.textContent = data.count;
+        anyOk = true;
+      } catch (e) { el.textContent = '·'; }
+    }));
+    if (!anyOk) document.getElementById('setup').style.display = 'block';
+  })();
+</script>
+</body>
+</html>
