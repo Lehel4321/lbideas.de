@@ -114,9 +114,14 @@ try {
   html[data-theme="dark"] .app-card { background:linear-gradient(135deg, var(--S1) 0%, var(--S) 55%, var(--SD) 100%); }
   html[data-theme="dark"] .ch-right { background:linear-gradient(135deg, var(--S) 0%, var(--SD) 100%); }
   html[data-theme="dark"] nav { box-shadow:0 4px 24px rgba(0,0,0,0.8); }
+  /* light-on-dark renders thinner — lift small mono text half a weight step */
+  html[data-theme="dark"] .exp-list li, html[data-theme="dark"] .proj-desc,
+  html[data-theme="dark"] .app-desc, html[data-theme="dark"] .contact-text,
+  html[data-theme="dark"] .hero-bio, html[data-theme="dark"] .comments-note,
+  html[data-theme="dark"] .repo-cta-line, html[data-theme="dark"] .proj-cell { font-weight:500; }
 
   *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
-  html { scroll-behavior:smooth; background:var(--BG); background-color:var(--BG); font-size:112.5%; }
+  html { scroll-behavior:smooth; background:var(--BG); background-color:var(--BG); font-size:118%; }
 
   body {
     background: var(--BG);
@@ -516,6 +521,11 @@ try {
   }
   @keyframes rise { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
 
+  /* collapse nav to hamburger before the links can crowd the bar */
+  @media (max-width:1060px) {
+    .nav-links { display:none; }
+    .hamburger { display:flex; }
+  }
   @media (max-width:768px) {
     nav { padding:0 1.2rem; }
     .nav-links { display:none; }
