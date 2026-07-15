@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Live Demos — lbideas.de</title>
+<meta name="description" content="Interactive industrial automation simulations — packaging line, motion solver, rotary knife and workflow tracker, running fully in the browser.">
+<link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+<link rel="stylesheet" href="/assets/fonts/fonts.css">
+<script>
+try {
+  var t = localStorage.getItem('theme') || 'dark';
+  if (t === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+} catch (e) {}
+</script>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  :root {
+    --BG:#7e8d95; --S:#7e8d95; --S1:#9aaab2; --S2:#b8c8d0; --S3:#6e7e86; --SD:#748590;
+    --EDGE:#5a6870; --GAP:#1a2226; --INK:#080e10; --INK2:#152028;
+    --MONO:'IBM Plex Mono', monospace; --SANS:'Barlow Condensed', sans-serif;
+  }
+  html[data-theme="dark"] {
+    --BG:#0f1417; --S:#1b2227; --S1:#232c33; --S2:#33404a; --S3:#3c4a54; --SD:#161c21;
+    --EDGE:#0b0f12; --GAP:#05080a; --INK:#d7e2e8; --INK2:#93a6b1;
+    --ACC:#e8a33d;
+  }
+  html { font-size:118%; }
+  @media (min-width:1600px) { html { font-size:160%; } }
+  @media (min-width:2200px) { html { font-size:210%; } }
+  @media (min-width:3200px) { html { font-size:260%; } }
+  body {
+    background:var(--BG); color:var(--INK);
+    font-family:var(--SANS); min-height:100vh;
+    display:flex; flex-direction:column; align-items:center;
+    padding:3.5rem 1.5rem 2rem;
+  }
+  .hub { width:100%; max-width:52rem; }
+  h1 { font-size:2.6rem; font-weight:800; text-transform:uppercase; line-height:1; }
+  .sub { font-family:var(--MONO); font-size:0.72rem; letter-spacing:0.12em; text-transform:uppercase; color:var(--INK2); margin:0.6rem 0 2rem; line-height:1.8; }
+  .grid { display:grid; grid-template-columns:1fr 1fr; gap:2px; background:var(--GAP); }
+  @media (max-width:700px){ .grid { grid-template-columns:1fr; } }
+  .card {
+    display:block; text-decoration:none; color:var(--INK);
+    background:linear-gradient(135deg, var(--S1) 0%, var(--S) 60%, var(--SD) 100%);
+    transition:filter 0.15s;
+  }
+  .card:hover { filter:brightness(1.1); }
+  .card img { width:100%; height:auto; display:block; border-bottom:2px solid var(--GAP); }
+  .card-body { padding:1rem 1.1rem 1.2rem; }
+  .card-name { font-family:var(--SANS); font-size:1.05rem; font-weight:800; text-transform:uppercase; margin-bottom:0.25rem; }
+  .card-desc { font-family:var(--MONO); font-size:0.7rem; color:var(--INK2); line-height:1.65; }
+  .card-cta { display:inline-block; margin-top:0.7rem; font-family:var(--MONO); font-size:0.62rem; font-weight:600; letter-spacing:0.12em; text-transform:uppercase; padding:0.35rem 0.8rem; border:1px solid var(--S3); color:var(--INK2); }
+  .card:hover .card-cta { color:var(--INK); border-color:var(--INK2); }
+  html[data-theme="dark"] .card:hover .card-cta { color:var(--ACC); border-color:var(--ACC); }
+  footer { margin-top:2.5rem; font-family:var(--MONO); font-size:0.6rem; color:var(--INK2); }
+  footer a { color:inherit; text-decoration:none; cursor:default; padding:0 0.4em; margin:0 -0.2em; }
+</style>
+</head>
+<body>
+  <div class="hub">
+    <h1>Live Demos</h1>
+    <div class="sub">Interactive industrial automation simulations · running fully in the browser · no installation</div>
+    <div class="grid">
+      <a class="card" href="/packline/">
+        <img src="/assets/poster-packline.png" alt="PackLine CP-6 preview" width="1240" height="760">
+        <div class="card-body">
+          <div class="card-name">PackLine CP-6</div>
+          <div class="card-desc">Carton packaging line with a virtual PLC — sensors, interlocks, fault handling and OEE, reacting in real time.</div>
+          <span class="card-cta">Open demo →</span>
+        </div>
+      </a>
+      <a class="card" href="/rotary-knife/">
+        <img src="/assets/poster-rotary.png" alt="RotaryKnife SYNC preview" width="1240" height="760">
+        <div class="card-body">
+          <div class="card-name">RotaryKnife SYNC</div>
+          <div class="card-desc">Rotary knife cutting simulation — cam synchronization and cut-length control at production speed.</div>
+          <span class="card-cta">Open demo →</span>
+        </div>
+      </a>
+      <a class="card" href="/motion-solver/">
+        <img src="/assets/poster-motion.png" alt="Precision Motion Solver preview" width="1240" height="760">
+        <div class="card-body">
+          <div class="card-name">Precision Motion Solver</div>
+          <div class="card-desc">Multi-axis S-curve trajectory planner — velocity, acceleration and jerk profiles with live charts.</div>
+          <span class="card-cta">Open demo →</span>
+        </div>
+      </a>
+      <a class="card" href="/workflow-tracker/">
+        <img src="/assets/poster-workflow.png" alt="Workflow Tracker preview" width="1240" height="760">
+        <div class="card-body">
+          <div class="card-name">Workflow Tracker</div>
+          <div class="card-desc">Automation workflow blueprint tracker — task hierarchy, timers, problem log and progress dashboards.</div>
+          <span class="card-cta">Open demo →</span>
+        </div>
+      </a>
+    </div>
+    <footer>© <span id="fy">2026</span> <a href="/panel-fc60330a/" rel="nofollow" aria-hidden="true" tabindex="-1">·</a> lbideas.de</footer>
+  </div>
+<script>document.getElementById('fy').textContent = new Date().getFullYear();</script>
+<!-- GoatCounter — privacy-friendly, cookie-free visit counting -->
+<script data-goatcounter="https://lbideas.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script>
+</body>
+</html>
