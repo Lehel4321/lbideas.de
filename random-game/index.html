@@ -1,0 +1,2673 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RandomGame v1 — Multiplayer Race</title>
+<meta name="description" content="RandomGame v1, a browser survival race with peer-to-peer multiplayer rooms.">
+<link rel="canonical" href="https://lbideas.de/random-game/">
+<link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+
+<style>
+  :root {
+    --ground: #05050a;
+    --panel: #0b0b12;
+    --edge: #1e1e2e;
+    --ink: #eceaf4;
+    --muted: #7c7a95;
+    --hot: #ff2e4d;
+    --safe: #3dff88;
+    --gold: #ffc53d;
+    --display: "Arial Black", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    --mono: ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  }
+
+  html, body { height: 100%; background: var(--ground); color: var(--ink); font-family: var(--mono); overflow: hidden; }
+
+  #stage { height: 100dvh; display: flex; align-items: center; justify-content: center; padding: 12px; }
+  #wrap { display: flex; gap: 14px; align-items: stretch; }
+  #frame { position: relative; line-height: 0; }
+  canvas { display: block; }
+
+  /* The HUD is DOM, not canvas. Canvas text was hand-positioned with a running y-cursor,
+     which is precisely how labels end up on top of each other. Let the browser lay it out. */
+  #hud {
+    width: 200px; flex: none;
+    display: flex; flex-direction: column; gap: 14px;
+    padding: 16px; background: var(--panel); border: 1px solid var(--edge);
+    line-height: 1.2;
+  }
+  #hud[hidden] { display: none; }
+
+  #multiplayer {
+    position: fixed; z-index: 5; top: 12px; left: 12px; width: min(330px, calc(100vw - 24px));
+    padding: 12px; background: rgba(11, 11, 18, 0.96); border: 1px solid var(--edge);
+    line-height: 1.2; box-shadow: 0 8px 30px rgba(0,0,0,.35);
+    transition: opacity .25s;
+  }
+  /* mid-run the panel sits over the board's corner — ghost it unless the player is using it
+     or an opponent is connected (then it IS the scoreboard) */
+  body.playing #multiplayer:not(.linked):not(:hover):not(:focus-within) { opacity: .18; }
+  #multiplayer.linked > p:not(#roomStatus), #multiplayer.linked #roomCode, #multiplayer.linked .room-actions { display: none; }
+  #multiplayer h1 { font: 900 16px/1 var(--display); letter-spacing: .04em; margin-bottom: 10px; }
+  #multiplayer p { color: var(--muted); font-size: 10px; margin: 8px 0; }
+  #roomCode { width: 100%; padding: 8px; border: 1px solid var(--edge); background: var(--ground); color: var(--ink); font: 12px var(--mono); }
+  .room-actions { display: flex; gap: 6px; margin-top: 7px; }
+  .room-actions button { flex: 1; padding: 8px 6px; border: 1px solid var(--gold); background: transparent; color: var(--gold); cursor: pointer; font: 10px var(--mono); text-transform: uppercase; }
+  .room-actions button:hover { background: var(--gold); color: var(--ground); }
+  #roomStatus { color: var(--safe); min-height: 13px; }
+  #opponent { display: none; margin-top: 10px; padding-top: 9px; border-top: 1px solid var(--edge); font-size: 11px; }
+  #opponent strong { color: var(--gold); }
+  @media (max-width: 700px) { #multiplayer { top: 8px; left: 8px; } }
+  .stat { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+  .stat span { font-size: 9.5px; letter-spacing: 0.14em; color: var(--muted); }
+  .stat b {
+    font-family: var(--display); font-weight: 900; font-size: 20px;
+    font-variant-numeric: tabular-nums; color: var(--ink);
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .stat.big b { font-size: 34px; letter-spacing: -0.01em; }
+  #hScore.record { color: var(--gold); }
+  #hMult.hot { color: var(--gold); }
+  #hWall.near, #hBack.near, #hSpeed.hot { color: var(--hot); }
+  #hStars { color: var(--gold); }
+  .row2 { display: flex; gap: 14px; }
+  .row2 .stat { flex: 1; }
+
+  /* progress toward your own best — the thing you are actually chasing */
+  .bar { height: 4px; background: #1a1a26; position: relative; overflow: hidden; }
+  .bar i { position: absolute; inset: 0 100% 0 0; background: var(--gold); transition: right 0.2s linear; }
+  .bar.done i { background: var(--safe); }
+  .bar.boss { margin-top: 6px; height: 6px; }
+  .bar.boss i { background: var(--hot); }
+  #hBossHp { color: var(--hot); }
+
+  .pips { display: flex; gap: 5px; }
+  .pips u { width: 11px; height: 11px; border-radius: 50%; background: var(--hot); text-decoration: none; }
+  .pips u.off { background: #23232f; }
+  .pips.steps u { background: var(--safe); border-radius: 2px; width: 13px; }
+  .pips.steps u.off { background: #23232f; }
+  .kills { display: flex; gap: 6px; }
+  .kills u { width: 22px; height: 22px; text-decoration: none; position: relative; }
+  .kills u.off { opacity: 0.16; }
+  .kills u.on::after {
+    content: ""; position: absolute; inset: 4px;
+    background:
+      linear-gradient(45deg, transparent 44%, #fff 44%, #fff 56%, transparent 56%),
+      linear-gradient(-45deg, transparent 44%, #fff 44%, #fff 56%, transparent 56%);
+  }
+
+  /* narrow / portrait: HUD becomes a bar above the board */
+  body.narrow #wrap { flex-direction: column; gap: 10px; }
+  body.narrow #hud { width: auto; flex-direction: row; flex-wrap: wrap; align-items: flex-end; gap: 10px 18px; padding: 10px 12px; }
+  body.narrow #hud .bar { display: none; }
+  body.narrow .row2 { gap: 18px; }
+  body.narrow .stat.big b { font-size: 24px; }
+  body.narrow .stat b { font-size: 15px; }
+
+  #scan {
+    position: absolute; inset: 0; pointer-events: none;
+    background: repeating-linear-gradient(to bottom, rgba(0,0,0,0.05) 0 1px, transparent 1px 4px);
+  }
+
+  /* Overlays cover the board only — the HUD stays readable beside it.
+     They SCROLL: centring content in a flexbox that overflows clips it at the top with no
+     way to reach it, which is exactly what was hiding half the rules on a short window. */
+  .screen {
+    position: absolute; inset: 0;
+    overflow-y: auto; overscroll-behavior: contain;
+    background: rgba(5, 5, 10, 0.92);
+  }
+  .screen[hidden] { display: none; }
+  .sheet {
+    min-height: 100%; box-sizing: border-box;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 16px; text-align: center; padding: 22px;
+    line-height: 1.5;
+  }
+  #overScreen { cursor: pointer; }
+
+  /* the controls, as a legend rather than prose */
+  .keys-grid {
+    display: grid; grid-template-columns: auto 1fr; gap: 7px 14px;
+    align-items: center; text-align: left;
+    font-size: 12px; color: var(--muted);
+  }
+  .keys-grid kbd { justify-self: end; white-space: nowrap; }
+  .keys-grid b { color: var(--ink); font-weight: 700; }
+
+  details.more {
+    max-width: 44ch; text-align: left; font-size: 12px; color: var(--muted);
+    border-top: 1px solid var(--edge); padding-top: 12px; width: 100%;
+  }
+  details.more summary {
+    cursor: pointer; color: var(--ink); font-size: 10.5px;
+    letter-spacing: 0.16em; text-transform: uppercase; list-style: none;
+  }
+  details.more summary::-webkit-details-marker { display: none; }
+  details.more summary::before { content: "+ "; color: var(--muted); }
+  details.more[open] summary::before { content: "− "; }
+  details.more p { margin-top: 10px; }
+  details.more b { color: var(--ink); }
+
+  h1 {
+    font-family: var(--display); font-weight: 900; margin: 0;
+    font-size: clamp(2rem, 5.5vw, 3.8rem); line-height: 0.9;
+    letter-spacing: -0.02em; text-transform: uppercase; text-wrap: balance;
+  }
+  h1 em { font-style: normal; color: var(--hot); }
+  h2 {
+    font-family: var(--display); font-weight: 900; margin: 0;
+    font-size: clamp(1.8rem, 4.5vw, 3rem); text-transform: uppercase;
+    letter-spacing: 0.02em; color: var(--hot);
+  }
+
+  .x { color: #fff; font-weight: 700; }
+  .g { color: var(--gold); font-weight: 700; }
+  .h { color: var(--hot); font-weight: 700; }
+
+  button {
+    font-family: var(--display); font-weight: 900; text-transform: uppercase;
+    letter-spacing: 0.14em; font-size: 14px;
+    color: var(--ground); background: #fff; border: 0; padding: 13px 32px; cursor: pointer;
+    transition: background 0.12s ease, color 0.12s ease;
+  }
+  button:hover { background: var(--hot); color: #fff; }
+  button:focus-visible { outline: 3px solid var(--safe); outline-offset: 3px; }
+
+  .final { font-family: var(--display); font-weight: 900; font-size: clamp(2.6rem, 8vw, 4.6rem); font-variant-numeric: tabular-nums; line-height: 1; }
+  .final.record { color: var(--gold); }
+  .delta { font-size: 13px; letter-spacing: 0.06em; color: var(--muted); }
+  .delta b { color: var(--ink); font-variant-numeric: tabular-nums; }
+  .delta.record { color: var(--gold); }
+  .delta.record b { color: var(--gold); }
+  .runstats { display: flex; gap: 26px; font-size: 10px; letter-spacing: 0.12em; color: var(--muted); text-transform: uppercase; }
+  .runstats b { display: block; margin-top: 5px; font-family: var(--display); font-size: 1.15rem; color: var(--ink); font-variant-numeric: tabular-nums; }
+  @keyframes pulse { 0%,100% { opacity: 0.45; } 50% { opacity: 1; } }
+  /* fades in when the key lockout releases — [hidden] display:none restarts the animation on unhide */
+  .anykey { font-size: 11px; letter-spacing: 0.2em; color: var(--ink); text-transform: uppercase; opacity: 0; animation: pulse 1.4s ease-in-out 0.6s infinite; }
+  @media (prefers-reduced-motion: reduce) { .anykey { animation: none; opacity: 1; } }
+
+  .hint { font-size: 11px; letter-spacing: 0.12em; color: var(--muted); text-transform: uppercase; }
+  .hint.gold { color: var(--gold); }
+  kbd { font-family: var(--mono); border: 1px solid var(--edge); padding: 2px 6px; color: var(--ink); }
+
+  #pad { position: absolute; left: 50%; bottom: 16px; transform: translateX(-50%); display: none; flex-direction: column; align-items: center; gap: 10px; }
+  #padMove, #padFire { display: flex; gap: 10px; }
+  #pad button { padding: 16px 26px; font-size: 20px; background: rgba(12,12,20,0.85); color: var(--ink); border: 1px solid var(--edge); letter-spacing: 0; }
+  #pad button:hover { background: rgba(12,12,20,0.85); color: var(--ink); }
+  body.touch.playing #pad { display: flex; }
+  /* the arena: the colour swatches ARE the trigger — one tap selects and fires */
+  #padFire { display: none; }
+  body.arena #padFire { display: flex; }
+  body.arena #padMove [data-dir="paint"] { display: none; }   /* the burn is a run-mode verb */
+  #padFire .swatch { width: 120px; height: 56px; padding: 0; font: 900 18px var(--display); color: #08080e; border: 2px solid rgba(255,255,255,0.6); }
+  @media (orientation: landscape) and (max-height: 480px) {
+    #pad { flex-direction: row; }
+    #padFire .swatch { width: 90px; height: 46px; }
+  }
+</style>
+</head>
+<body>
+
+<section id="multiplayer" aria-label="Multiplayer race">
+  <h1>RandomGame v1 / Race Room</h1>
+  <p>Create a room and share its code, or enter a friend's code to race side by side.</p>
+  <input id="roomCode" maxlength="8" autocomplete="off" placeholder="ROOM CODE">
+  <div class="room-actions">
+    <button id="createRoom" type="button">Create room</button>
+    <button id="joinRoom" type="button">Join room</button>
+  </div>
+  <p id="roomStatus" role="status">Solo run</p>
+  <div id="opponent"><strong>Opponent</strong> · <span id="opponentScore">0</span> score · <span id="opponentDepth">0</span> depth</div>
+</section>
+
+<div id="stage">
+ <div id="wrap">
+  <div id="frame">
+    <canvas id="board"></canvas>
+    <div id="scan"></div>
+
+    <div class="screen" id="startScreen">
+     <div class="sheet">
+      <h1>Get the <em>Color</em></h1>
+      <p class="hint">Don't get caught — never land on an <span class="x">✕</span>.</p>
+
+      <div class="keys-grid">
+        <kbd>← →</kbd><span>move (you bank <b>3 steps</b>, +1 every row)</span>
+        <kbd>↑</kbd><span>pull the next row in — <b>you set the pace</b></span>
+        <kbd>↓</kbd><span>drop back a row (3 max)</span>
+      </div>
+
+      <button id="startBtn">Start</button>
+
+      <details class="more">
+        <summary>How it works</summary>
+        <p>Every row you survive is <b>a point</b>. The board speeds up as you go; a
+        <b>new colour</b> joins the hunt twice along the way, and the speed resets each time.</p>
+        <p>Grab <span class="g">★</span> for <b>+100</b> and <span class="h">♥</span> for a life
+        back. They never sit on a deadly cell, and there is <b>always</b> a way through.</p>
+      </details>
+
+      <p class="hint"><kbd>P</kbd> pause &nbsp;·&nbsp; <kbd>M</kbd> mute</p>
+     </div>
+    </div>
+
+    <div class="screen" id="overScreen" hidden>
+     <div class="sheet">
+      <h2 id="oTitle">Game Over</h2>
+      <div class="final" id="oScore">0</div>
+      <p class="delta" id="oDelta">&nbsp;</p>
+      <div class="runstats">
+        <div>Depth<b id="oDepth">0</b></div>
+        <div>★ Taken<b id="oStars">0</b></div>
+      </div>
+      <p class="hint gold" id="oPost">&nbsp;</p>
+      <p class="anykey">Press any key to go again</p>
+     </div>
+    </div>
+
+    <div id="pad">
+      <div id="padMove">
+        <button data-dir="-1" aria-label="Left">←</button>
+        <button data-dir="hold" aria-label="Back">↓</button>
+        <button data-dir="hop" aria-label="Pull">↑</button>
+        <button data-dir="1" aria-label="Right">→</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="hud" hidden>
+    <div class="stat big"><span>SCORE</span><b id="hScore">0</b></div>
+    <div class="bar" id="hBarWrap"><i id="hBar"></i></div>
+    <div class="stat"><span>BEST</span><b id="hBest">0</b></div>
+    <div class="row2">
+      <div class="stat"><span>DEPTH</span><b id="hDepth">0</b></div>
+      <div class="stat"><span>SPEED</span><b id="hSpeed">1.40</b></div>
+    </div>
+    <div class="row2">
+      <div class="stat"><span>★ TAKEN</span><b id="hStars">0</b></div>
+      <div class="stat"><span>BACK ↓</span><b id="hBack">3</b></div>
+    </div>
+    <div class="stat"><span>STEPS ← →</span><b class="pips steps" id="hSteps"></b></div>
+    <div class="stat"><span>LIVES</span><b class="pips" id="hLives"></b></div>
+    <div class="stat"><span>YOUR COLORS</span><b class="kills" id="hKills"></b></div>
+  </div>
+ </div>
+</div>
+
+<script>
+"use strict";
+
+// ---------------------------------------------------------------- config
+const COLS = 17, ROWS = 20, DOT_ROW = 15;   // the dot's neutral screen row
+const BACK_MAX = 3;                         // you may fall at most 3 rows behind the front
+const MAX_STEPS = 3;                        // sideways steps you can bank; you regain one every row
+const PICK_STAR = 1, PICK_LIFE = 2;
+const P_STAR = 0.11, P_LIFE = 0.022;        // per row, always on a cell that is safe to stand on
+const DAS_MS = 220, ARR_MS = 75;            // hold-to-dash: delay before repeat, then repeat rate
+const START_LANE = 8;
+const WALL_EVERY = 15;
+const V_MAX = 4.0, V_MIN = 1.4, TAU_ROWS = 120;   // asymptotic: 714ms/row at start, never below 250ms
+const CACHE_N = 32;
+
+const COLORS = ["#e0334a", "#f07818", "#f2c230", "#35c05a", "#23b0c4", "#4a7bf0", "#b45bd8"];
+const WALL_BG = "#0a0a10", HAZARD = "#ff2e4d";    // the wall is the darkest thing on the board, always
+const GAP_MID = "#ffffff", GAP_EDGE = "#ffc53d";
+const ROW_BG = "#05050a";
+
+const ESC_2 = 60, ESC_3 = 165;              // rows where a new kill colour goes live
+const BOSS_EVERY = 75;                      // 75, 150, 225 … where the board stops and the ✕ come for you
+const BOSS_ROW = BOSS_EVERY;
+const killCount = (r) => (r < ESC_2 ? 1 : r < ESC_3 ? 2 : 3);
+const isBossRow = () => false;                    // BASIC: no boss fights, ever
+
+const BOSS_Y0 = 1;                          // starting screen row of its top
+
+// A new colour is a jump in danger — from 1/7 of the board to 2/7 to 3/7 — so the speed ramp
+// RESETS when one arrives and climbs again from the bottom. You are paid for the extra danger
+// in the only currency that matters: time to read the board.
+const rampCurve = (x) => V_MAX - (V_MAX - V_MIN) * Math.exp(-Math.max(0, x) / TAU_ROWS);
+const rampFrom = (d) => (d >= ESC_3 ? ESC_3 : d >= ESC_2 ? ESC_2 : 0);
+const rowsPerSec = (d) => rampCurve(d - rampFrom(d));
+
+// The live speed reads a moving ANCHOR, not a fixed table. Recurring bosses would otherwise
+// pin the ramp forever: if every boss row reset it fully, the board could never climb past
+// what 75 rows of ramp reaches (2.60 rows/s) and would never speed up again for the rest of
+// the run. So each boss kill still buys reading time — just LESS of it than the last one.
+const speedNow = () => rampCurve(G.maxRow - G.rampAnchor);
+
+// ---------------------------------------------------------------- the arena
+const AY_MIN = 7.0, AY_MAX = 18.4, AY_HOME = 15.5;   // the dot's vertical range, in cells. The roof sits
+                                                    // INSIDE the creature's descended footprint, so a
+                                                    // column you have eaten is a tunnel you can climb.
+const AY_SPD = 9.0;                                  // cells per second
+const BOSS_DESCEND = 0.17, BOSS_OY_MAX = 4;          // it closes a little, then stops. It can never reach you.
+const SHOOT_CD = 190, BULLET_SPD = 15, SHELL_SPD = 6.5;
+const HIT_R = 0.24;
+const MONO_CELL = "#161622";                              // the one colour the whole board becomes
+
+// Three creatures, every 75 rows, cycling. The axis is STATIC -> YOUR OWN CHANGES -> TIME:
+// one verb (match the colour) gains a dimension each fight. None of it is extra HP.
+// Per-def offense: shellSpd MUST stay strictly below AY_SPD (9.0) — the guaranteed escape from a
+// ceiling-hug is the dive, and the dive only works if you outrun the shell.
+const BOSSES = [
+  {
+    name: "SLAB", x: 3, rake: 3, slice: 0, gimmick: null, bulletSpd: 15,
+    shellSpd: 7.5, aimP: 0.70, volley: 2, volleyGap: 2,
+    atk0: 0.55, atk1: 0.95, laser0: 4.5, laser1: 2.5, descend: 0.30,
+    shape: [
+      ".111111111.",
+      "11111111111",
+      "111.111.111",
+      ".11.111.11.",
+      "..1.....1..",
+    ],
+  },
+  {
+    name: "CAIRN", x: 3, rake: 3, slice: 2, gimmick: "gravity", bulletSpd: 15,
+    shellSpd: 8.5, aimP: 0.70, volley: 3, volleyGap: 3,
+    atk0: 0.70, atk1: 1.00, laser0: 4.0, laser1: 2.2, descend: 0.30,
+    shape: [
+      "....1.1....",
+      "...11.11...",
+      "..111.111..",
+      ".1111.1111.",
+      ".111111111.",
+      "11111111111",
+    ],
+  },
+  {
+    name: "PRISM", x: 2, rake: 3, slice: 2, gimmick: "rotate", cross: true, bulletSpd: 8,
+    shellSpd: 6.5, aimP: 0.55, volley: 1, volleyGap: 2,
+    atk0: 0.75, atk1: 1.05, laser0: 5.5, laser1: 3.0, descend: 0.17,
+    shape: [
+      "...1111111...",
+      ".11111111111.",
+      "1111111111111",
+      "11.........11",
+      "11.........11",
+      "1.....1.....1",
+    ],
+  },
+];
+
+// The shop. Nothing here adds score, so a flawless no-buy clear always outscores a flawless
+// kitted one — the top of the board is always a no-buy run. What you are buying is a
+// difficulty slider, and the price is the number you walk away with.
+const SHOP_ITEMS = [
+  { id: "sight",  name: "SIGHT",      tag: "READ",  blurb: "dots under the boss show each column's colour",        base: 1200 },
+  { id: "quick",  name: "RAPID FIRE", tag: "GUN",   blurb: "shoot twice as fast — jams clear sooner",              base: 1800 },
+  { id: "chisel", name: "CHISEL",     tag: "GUN",   blurb: "one shot breaks up to 3 stacked cells of its color",   base: 2600 },
+  { id: "plate",  name: "SHIELD",     tag: "ARMOR", blurb: "blocks 2 boss hits this fight — your combo survives a block", base: 3600 },
+];
+const TAG_HUE = { READ: "#3dff88", GUN: "#ffffff", ARMOR: "#8fd8ff" };
+const CALLOUT_HUE = {
+  "HIT YOUR COLOR": HAZARD, "WRONG COLOR — GUN JAMMED": "#eceaf4",
+  "ENRAGED": HAZARD, "BOSS DOWN": GAP_EDGE, "NEW BEST": GAP_EDGE,
+  "FRESH RUN": "#eceaf4",
+};
+const OVER_LOCK_MS = 600;                                 // death screen: keys wake up after the score lands
+
+// The paint mechanic. VOID is a colors[] sentinel for a burnt cell — the kill pool (indices
+// 0-6) and safeColor's randInt(7) can never mint it, so it is unambiguous by construction.
+const VOID = 7;
+const POP_MAX = 24;
+const ITEM_NAME = { sight: "SIGHT", quick: "RAPID", chisel: "CHISEL", plate: "SHIELD" };
+const JAM_MS = 700, JAM_MS_QUICK = 500;                   // the price of a wrong-colour hit, paid in fight-time
+const itemCost = (item, n) => Math.round((item.base * (1 + 2.4 * n)) / 100) * 100;
+const isWall = () => false;                       // BASIC: no walls, ever
+const clamp = (v, a, b) => (v < a ? a : v > b ? b : v);
+const randInt = (n) => (Math.random() * n) | 0;
+
+const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+// ---------------------------------------------------------------- canvas
+const canvas = document.getElementById("board");
+const ctx = canvas.getContext("2d");
+const $ = (id) => document.getElementById(id);
+const el = {
+  start: $("startScreen"), over: $("overScreen"),
+  oTitle: $("oTitle"), oScore: $("oScore"), oDelta: $("oDelta"),
+  oWalls: $("oWalls"), oStars: $("oStars"), oCombo: $("oCombo"), oDepth: $("oDepth"), oPost: $("oPost"),
+  oBoss: $("oBoss"), oSpent: $("oSpent"),
+  hud: $("hud"), hScore: $("hScore"), hBest: $("hBest"), hBar: $("hBar"), hBarWrap: $("hBarWrap"),
+  hMult: $("hMult"), hStreak: $("hStreak"), hWall: $("hWall"), hDepth: $("hDepth"),
+  hBack: $("hBack"), hStars: $("hStars"), hSteps: $("hSteps"),
+  hSpeed: $("hSpeed"), hLevel: $("hLevel"),
+  hBossWrap: $("hBossWrap"), hBossHp: $("hBossHp"), hBossBar: $("hBossBar"),
+  hLives: $("hLives"), hKills: $("hKills"),
+};
+
+let CELL = 40, DPR = 1;
+let cache = [];      // ring of 32 offscreen row canvases, keyed r & 31
+const DISPLAY = '900 $px "Arial Black", "Helvetica Neue", Helvetica, Arial, sans-serif';
+const MONO = '600 $px ui-monospace, Menlo, Consolas, monospace';
+const fDisp = (px) => DISPLAY.replace("$", Math.round(px));
+const fMono = (px) => MONO.replace("$", Math.round(px));
+
+function layout() {
+  // The HUD sits beside the board on a wide screen and above it on a narrow one;
+  // reserve its footprint before sizing the cells so nothing ever gets clipped.
+  const narrow = window.innerWidth < 760 || window.innerWidth < window.innerHeight;
+  document.body.classList.toggle("narrow", narrow);
+  const hudW = narrow ? 0 : 216;
+  const hudH = narrow ? 108 : 0;
+
+  const availW = window.innerWidth - 32 - hudW;
+  const availH = window.innerHeight - 32 - hudH;
+  CELL = clamp(Math.floor(Math.min(availW / COLS, availH / ROWS)), 14, 62);
+  DPR = Math.min(window.devicePixelRatio || 1, 2);
+
+  const w = COLS * CELL, h = ROWS * CELL;
+  canvas.width = w * DPR;
+  canvas.height = h * DPR;
+  canvas.style.width = w + "px";
+  canvas.style.height = h + "px";
+
+  cache = [];
+  for (let i = 0; i < CACHE_N; i++) {
+    const c = document.createElement("canvas");
+    c.width = COLS * CELL * DPR;
+    c.height = CELL * DPR;
+    cache.push(c);
+  }
+  if (G) {
+    for (const [r, row] of G.rows) bake(r, row);        // rebuild every live row at the new size
+    G.dotXVis = G.tweenFrom = G.tweenTo = G.lane * CELL + CELL / 2;   // px state is CELL-relative — resnap it
+    G.tweenT = 1;
+    G.trail.length = 0;
+    G.parts.length = 0;
+    G.pops.length = 0;
+    G.rings.length = 0;
+  }
+}
+
+// ---------------------------------------------------------------- audio
+const A = { ctx: null, muted: false, drone: null, droneGain: null };
+
+function audioOn() {
+  if (!A.ctx) {
+    const C = window.AudioContext || window.webkitAudioContext;
+    if (!C) return;
+    A.ctx = new C();
+  }
+  A.ctx.resume();   // must happen inside a user gesture or the context stays suspended forever
+}
+function tone(f0, f1, dur, type, gain) {
+  if (!A.ctx || A.muted) return;
+  const t = A.ctx.currentTime;
+  const o = A.ctx.createOscillator(), g = A.ctx.createGain();
+  o.type = type;
+  o.frequency.setValueAtTime(f0, t);
+  if (f1 !== f0) o.frequency.exponentialRampToValueAtTime(Math.max(20, f1), t + dur);
+  g.gain.setValueAtTime(gain, t);
+  g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+  o.connect(g).connect(A.ctx.destination);
+  o.start(t);
+  o.stop(t + dur + 0.02);
+}
+function droneSet(on, mul) {
+  if (!A.ctx || A.muted) return;
+  if (on && !A.drone) {
+    const g = A.ctx.createGain();
+    g.gain.setValueAtTime(0.0001, A.ctx.currentTime);
+    g.gain.linearRampToValueAtTime(0.045, A.ctx.currentTime + 0.08);
+    const a = A.ctx.createOscillator(), b = A.ctx.createOscillator();
+    a.type = b.type = "sawtooth";
+    a.frequency.value = 110; b.frequency.value = 110.8;
+    a.connect(g); b.connect(g); g.connect(A.ctx.destination);
+    a.start(); b.start();
+    A.drone = [a, b]; A.droneGain = g;
+  } else if (on && A.drone) {
+    A.drone[0].frequency.value = 110 * mul;
+    A.drone[1].frequency.value = 110.8 * mul;
+  } else if (!on && A.drone) {
+    const g = A.droneGain, d = A.drone;
+    g.gain.cancelScheduledValues(A.ctx.currentTime);
+    g.gain.setValueAtTime(g.gain.value, A.ctx.currentTime);
+    g.gain.linearRampToValueAtTime(0.0001, A.ctx.currentTime + 0.08);
+    d.forEach((o) => o.stop(A.ctx.currentTime + 0.12));
+    A.drone = null; A.droneGain = null;
+  }
+}
+
+// ---------------------------------------------------------------- state
+let G = null;
+let best = 0;
+try { best = parseInt(localStorage.getItem("gtc.best") || "0", 10) || 0; } catch (e) {}
+
+function newGame() {
+  const pool = [0, 1, 2, 3, 4, 5, 6];
+  for (let i = pool.length - 1; i > 0; i--) { const j = randInt(i + 1); [pool[i], pool[j]] = [pool[j], pool[i]]; }
+  return {
+    rows: new Map(),
+    minted: -7,
+    killColors: pool.slice(0, 3),      // all three rolled up front; only how many are ACTIVE changes
+    scroll: 0, lastRow: 0,
+    dotRow: 0, maxRow: 0, vOff: 0, stars: 0, pulls: 0,
+    vVis: 0, vFrom: 0, vTo: 0, vT: 1,
+    lastStepT: -1e9,
+    prevLane: START_LANE, prevDot: 0,
+    lane: START_LANE, steps: MAX_STEPS,
+    dotXVis: START_LANE * CELL + CELL / 2,
+    tweenFrom: 0, tweenTo: START_LANE * CELL + CELL / 2, tweenT: 1,
+    laneAt: new Map([[0, START_LANE]]),
+    penaltyMul: 1,
+    hitstop: 0, trauma: 0, iframes: 0, resumeT: -1e9,
+    score: 0, streak: 0, lives: 3, level: 1,
+    walls: 0, maxStreak: 0, recordBroken: false,
+    flash: 0, flashColor: HAZARD,
+    callout: null, calloutT: 0,
+    parts: [], pops: [], rings: [], trail: [],
+    over: false, paused: false, overAt: 0,
+    postPath: null,
+    mode: "run",                             // run | shop | intro | boss | win
+    boss: null, bullets: [], shells: [], laser: null, ammo: 0, shootT: -1e9, modeT: 0,
+    bossesDown: 0, bossRow: 0, bossIdx: 0, rampAnchor: 0, spentTotal: 0, firstShop: true,
+    shop: null, plate: 0,
+    jamT: 0, jamPulse: 0, jamTaught: false, jamMark: null,
+    taughtFire: false, chipFlash: {}, undoHintT: -1e9, undoHinted: false,
+    ay: AY_HOME, vy: 0, ayHeld: 0,
+  };
+}
+
+const killSet = () => new Set(G.killColors.slice(0, killCount(G.minted)));
+const activeKills = (r) => new Set(G.killColors.slice(0, killCount(r)));
+const comboMult = () => 1 + 0.05 * Math.min(G.streak, 40);
+
+// ---------------------------------------------------------------- generation
+function safeColor(kill) {
+  let c = randInt(7);
+  while (kill.has(c)) c = randInt(7);
+  return c;
+}
+
+function mintUpTo(target) {
+  while (G.minted < target) {
+    G.minted++;
+    mintRow(G.minted);
+  }
+}
+
+function mintRow(r) {
+  const row = { colors: new Uint8Array(COLS), danger: new Uint8Array(COLS), pickup: new Uint8Array(COLS), wall: false, gaps: null, gapCols: null };
+
+  if (r <= 0) {                                  // runway below the dot — always safe
+    for (let c = 0; c < COLS; c++) row.colors[c] = randInt(7);
+  } else if (isWall(r)) {
+    mintWall(r, row);
+  } else {
+    mintNormal(r, row);
+  }
+
+  G.rows.set(r, row);
+  bake(r, row);
+}
+
+function mintNormal(r, row) {
+  const kill = activeKills(r);                   // baked from r, never from the live count — so the cache never needs rebaking
+  for (let c = 0; c < COLS; c++) {
+    row.colors[c] = randInt(7);
+    row.danger[c] = kill.has(row.colors[c]) ? 1 : 0;
+  }
+
+  // THERE IS ALWAYS A WAY OUT. From EVERY column on the board — not just the ones the
+  // generator thinks you could have reached — at least one of the three cells you can
+  // step to here must be survivable. It holds no matter where you are or how you got
+  // there, which is what lets danger climb to 43% without ever minting a dead end.
+  for (let p = 0; p < COLS; p++) {
+    let ok = false;
+    for (let d = -1; d <= 1 && !ok; d++) {
+      const c = p + d;
+      if (c >= 0 && c < COLS && !row.danger[c]) ok = true;
+    }
+    if (!ok) {
+      row.colors[p] = safeColor(kill);
+      row.danger[p] = 0;
+    }
+  }
+
+  // A pickup never sits on a cell that would kill you: taking it is a routing decision,
+  // never a trap. Reaching it still costs banked steps you might have wanted for the wall.
+  const roll = Math.random();
+  const kind = roll < P_LIFE ? PICK_LIFE : roll < P_LIFE + P_STAR ? PICK_STAR : 0;
+  if (kind && r > 4) {
+    const safe = [];
+    for (let c = 0; c < COLS; c++) if (!row.danger[c]) safe.push(c);
+    if (safe.length) row.pickup[safe[randInt(safe.length)]] = kind;
+  }
+}
+
+function advance(from, passable) {
+  const next = new Set();
+  for (const p of from) {
+    for (let d = -1; d <= 1; d++) {
+      const c = p + d;
+      if (c >= 0 && c < COLS && passable(c)) next.add(c);
+    }
+  }
+  return next;
+}
+
+function mintWall(r, row) {
+  row.wall = true;
+
+  // The wall is minted exactly 16 rows out, and every row between here and there
+  // already exists. So walk them forward from where the player ACTUALLY is and
+  // place the near gap somewhere they can genuinely reach.
+  let av = new Set([G.lane]);
+  for (let rr = G.dotRow + 1; rr <= r - 1; rr++) {
+    const prev = G.rows.get(rr);
+    if (!prev) break;
+    av = advance(av, (c) => !prev.danger[c]);
+    if (av.size === 0) break;
+  }
+  if (av.size === 0) { av = new Set(); for (let c = 0; c < COLS; c++) av.add(c); }
+
+  const pool = [...av].filter((c) => c >= 2 && c <= COLS - 3);
+  const target = clamp(G.lane + randInt(17) - 8, 2, COLS - 3);
+  let gapA = pool.length ? pool[0] : START_LANE, bd = Infinity;
+  for (const c of pool) {
+    const d = Math.abs(c - target);
+    if (d < bd) { bd = d; gapA = c; }
+  }
+
+  const far = [];
+  for (let c = 2; c <= COLS - 3; c++) if (Math.abs(c - gapA) >= 6) far.push(c);
+  const gapB = far.length ? far[randInt(far.length)] : null;
+
+  row.gapCols = new Set();
+  row.gaps = [];
+  for (const g of [gapA, gapB]) {
+    if (g === null) continue;
+    row.gaps.push(g);
+    for (let d = -1; d <= 1; d++) row.gapCols.add(g + d);
+  }
+  for (let c = 0; c < COLS; c++) {
+    row.danger[c] = row.gapCols.has(c) ? 0 : 1;
+    row.colors[c] = randInt(7);
+  }
+
+}
+
+const isGapEdge = (row, c) => row.wall && row.gapCols.has(c) && !row.gaps.includes(c);
+
+// ---------------------------------------------------------------- row cache
+function bake(r, row) {
+  const cv = cache[((r % CACHE_N) + CACHE_N) % CACHE_N];
+  if (!cv) return;
+  const c = cv.getContext("2d");
+  c.setTransform(DPR, 0, 0, DPR, 0, 0);
+  c.clearRect(0, 0, COLS * CELL, CELL);
+  c.fillStyle = ROW_BG;
+  c.fillRect(0, 0, COLS * CELL, CELL);
+
+  const S = 1;   // 1px seam, drawn as an inset fill — no strokeRect, so seams can never stack or shimmer
+
+  for (let col = 0; col < COLS; col++) {
+    const x = col * CELL;
+    if (row.wall) {
+      if (row.gapCols.has(col)) {
+        c.fillStyle = isGapEdge(row, col) ? GAP_EDGE : GAP_MID;
+        c.fillRect(x + S, S, CELL - S * 2, CELL - S * 2);
+      } else {
+        c.fillStyle = WALL_BG;
+        c.fillRect(x, 0, CELL, CELL);
+        c.save();
+        c.beginPath();
+        c.rect(x, 0, CELL, CELL);
+        c.clip();
+        c.strokeStyle = "rgba(255,46,77,0.30)";
+        c.lineWidth = 2;
+        for (let i = -CELL; i < CELL * 2; i += 9) {
+          c.beginPath();
+          c.moveTo(x + i, 0);
+          c.lineTo(x + i + CELL, CELL);
+          c.stroke();
+        }
+        c.restore();
+        c.fillStyle = HAZARD;
+        c.fillRect(x, 0, CELL, 3);
+      }
+    } else if (row.colors[col] === VOID) {
+      // a burnt cell: near-black scorched ground — but always lighter than WALL_BG,
+      // because the wall stays the darkest thing on the board
+      c.fillStyle = "#0d0d14";
+      c.fillRect(x + S, S, CELL - S * 2, CELL - S * 2);
+      c.strokeStyle = "rgba(255,197,61,0.10)";   // the faintest gold rim: something burned here
+      c.lineWidth = 1;
+      c.strokeRect(x + S + 2.5, S + 2.5, CELL - S * 2 - 5, CELL - S * 2 - 5);
+    } else {
+      c.fillStyle = COLORS[row.colors[col]];
+      c.fillRect(x + S, S, CELL - S * 2, CELL - S * 2);
+
+      if (row.pickup[col] === PICK_STAR) drawStar(c, x + CELL / 2, CELL / 2, CELL * 0.30);
+      else if (row.pickup[col] === PICK_LIFE) drawHeart(c, x + CELL / 2, CELL / 2, CELL * 0.30);
+
+      if (row.danger[col]) {
+        // The kill-set lives on the SHAPE channel, not the colour channel:
+        // no hue discrimination is ever required, and it is colourblind-safe by construction.
+        const i = CELL * 0.27;
+        c.lineCap = "round";
+        c.strokeStyle = "#08080e";
+        c.lineWidth = Math.max(4, CELL * 0.11);
+        strokeX(c, x, i);
+        c.strokeStyle = "#ffffff";
+        c.lineWidth = Math.max(2, CELL * 0.07);
+        strokeX(c, x, i);
+        c.strokeStyle = HAZARD;
+        c.lineWidth = 2;
+        c.strokeRect(x + S + 1, S + 1, CELL - S * 2 - 2, CELL - S * 2 - 2);
+      }
+    }
+  }
+}
+// Pickups are a third shape channel, distinct from the ✕ of danger and the bar of a wall.
+function drawStar(c, cx, cy, R) {
+  c.beginPath();
+  for (let i = 0; i < 10; i++) {
+    const a = -Math.PI / 2 + (i * Math.PI) / 5;
+    const rr = i % 2 ? R * 0.44 : R;
+    i ? c.lineTo(cx + Math.cos(a) * rr, cy + Math.sin(a) * rr)
+      : c.moveTo(cx + Math.cos(a) * rr, cy + Math.sin(a) * rr);
+  }
+  c.closePath();
+  c.fillStyle = GAP_EDGE;
+  c.fill();
+  c.lineWidth = Math.max(2, R * 0.18);
+  c.strokeStyle = "#08080e";
+  c.stroke();
+}
+function drawHeart(c, cx, cy, R) {
+  c.beginPath();
+  c.moveTo(cx, cy + R * 0.85);
+  c.bezierCurveTo(cx - R * 1.5, cy - R * 0.2, cx - R * 0.5, cy - R * 1.15, cx, cy - R * 0.35);
+  c.bezierCurveTo(cx + R * 0.5, cy - R * 1.15, cx + R * 1.5, cy - R * 0.2, cx, cy + R * 0.85);
+  c.closePath();
+  c.fillStyle = HAZARD;
+  c.fill();
+  c.lineWidth = Math.max(2, R * 0.18);
+  c.strokeStyle = "#08080e";
+  c.stroke();
+}
+
+function strokeX(c, x, i) {
+  c.beginPath();
+  c.moveTo(x + i, i);
+  c.lineTo(x + CELL - i, CELL - i);
+  c.moveTo(x + CELL - i, i);
+  c.lineTo(x + i, CELL - i);
+  c.stroke();
+}
+
+// ---------------------------------------------------------------- fx pools
+function spark(x, y, vx, vy, color, life, size) {
+  if (reduced || G.parts.length > 240) return;
+  G.parts.push({ x, y, vx, vy, color, life, max: life, size });
+}
+function pop(x, y, text, color) {
+  G.pops.push({ x, y, text, color, t: 0 });
+}
+function ring(x, y, color, max) {
+  if (reduced) return;
+  G.rings.push({ x, y, color, t: 0, max });
+}
+
+// ---------------------------------------------------------------- input
+let heldDir = 0, buffer = null, T = 0, spaceHeld = false;
+let heldSince = -1e9;
+
+// Sideways movement is a BANK, not a per-row clamp. You hold up to MAX_STEPS and regain one
+// every row, so the long-run rate is still one column per row — distance still costs rows — but
+// you can spend the bank in a burst and actually dash when you need to. Being unable to move
+// fast was the old rule's real cost, and it was paid entirely by the player's patience.
+function tryStep(d) {
+  if (G.hitstop > 0) { buffer = { d, t: T }; return; }   // steering during hitstop is buffered, not lost
+  const arena = G.mode === "boss";                                      // no step bank in the arena: it exists
+  if (!arena && G.steps <= 0) return;                                   // to price distance against a moving board
+  const t = clamp(G.lane + d, 0, COLS - 1);
+  if (t === G.lane) return;                                             // at the wall: costs nothing
+  // you cannot walk sideways THROUGH the creature. Burrow into a column you have eaten and the
+  // tunnel walls are its own body — the only way out is back down.
+  if (arena && G.ay < ceilingAt(t)) { tone(160, 140, 0.05, "square", 0.03); return; }
+  G.lane = t;
+  if (!arena) G.steps--;
+  G.lastStepT = T;
+  G.tweenFrom = G.dotXVis;
+  G.tweenTo = t * CELL + CELL / 2;
+  G.tweenT = 0;
+  tone(1600, 1400, 0.025, "triangle", 0.03);
+}
+
+addEventListener("keydown", (e) => {
+  if (e.target && e.target.tagName === "INPUT") return;   // typing a room code must never start or steer a run
+  const k = e.key.toLowerCase();
+  if (k === "m") { A.muted = !A.muted; if (A.muted) droneSet(false); return; }
+  if (!G || G.over) {
+    if (k === "p" || e.metaKey || e.ctrlKey || e.altKey) return;
+    e.preventDefault();
+    if (G && G.over) {
+      // A key still held from the death frame would restart via OS auto-repeat ~30ms later —
+      // the repeat guard, not the timer, is what actually stops a mid-fight mash.
+      if (e.repeat) return;
+      const deliberate = k === "enter" || k === "r";
+      if (!deliberate && T - G.overAt < OVER_LOCK_MS) return;
+    }
+    start(!!(G && G.over));
+    return;
+  }
+  if (k === "p") { G.paused = !G.paused; if (G.paused) droneSet(false); return; }
+  if (e.repeat) return;                       // never let the OS key-repeat rate become a game mechanic
+
+  if (G.mode === "shop") {                    // 1-4 buy, backspace undoes, space fights
+    if (k >= "1" && k <= "4") { e.preventDefault(); buyItem(+k - 1); }
+    else if (k === "backspace") { e.preventDefault(); undoBuy(); }
+    else if (k === " " || k === "spacebar" || k === "enter") { e.preventDefault(); startFight(); }
+    return;
+  }
+  if (G.mode !== "run") {                     // in the arena: ← → strafe, ↑ ↓ FLY, 1-3 FIRE that colour
+    if (k === "arrowleft" || k === "a") { e.preventDefault(); heldDir = -1; heldSince = performance.now(); tryStep(-1); }
+    else if (k === "arrowright" || k === "d") { e.preventDefault(); heldDir = 1; heldSince = performance.now(); tryStep(1); }
+    else if (k === "arrowup" || k === "w") { e.preventDefault(); G.ayHeld = -1; }
+    else if (k === "arrowdown" || k === "s") { e.preventDefault(); G.ayHeld = 1; }
+    else if (k === " " || k === "spacebar") { e.preventDefault(); spaceHeld = true; shoot(); }
+    return;
+  }
+
+  if (k === "arrowleft" || k === "a") { e.preventDefault(); heldDir = -1; heldSince = performance.now(); tryStep(-1); }
+  else if (k === "arrowright" || k === "d") { e.preventDefault(); heldDir = 1; heldSince = performance.now(); tryStep(1); }
+  else if (k === "arrowup" || k === "w") { e.preventDefault(); pull(); }          // pull a new row in, now
+  else if (k === "arrowdown" || k === "s") { e.preventDefault(); dropBack(); }    // drop back a row, now
+});
+addEventListener("keyup", (e) => {
+  if (e.target && e.target.tagName === "INPUT") return;
+  const k = e.key.toLowerCase();
+  if (!G) return;
+  if ((k === "arrowleft" || k === "a") && heldDir === -1) heldDir = 0;
+  if ((k === "arrowright" || k === "d") && heldDir === 1) heldDir = 0;
+  if ((k === "arrowup" || k === "w") && G.ayHeld === -1) G.ayHeld = 0;
+  if ((k === "arrowdown" || k === "s") && G.ayHeld === 1) G.ayHeld = 0;
+  if (k === " " || k === "spacebar") { spaceHeld = false; droneSet(false); }
+});
+
+const fireBtns = [...document.querySelectorAll("#padFire button")];
+for (const b of document.querySelectorAll("#pad button")) {
+  const dir = b.dataset.dir;
+  if (b.dataset.fire !== undefined) {
+    // the button wears the chamber's colour; tap fires it, hold keeps firing
+    b.addEventListener("pointerdown", (e) => {
+      e.preventDefault();
+      if (!G || G.over) return;
+      spaceHeld = true;
+      shoot();
+    });
+    const off = () => { spaceHeld = false; };
+    b.addEventListener("pointerup", off);
+    b.addEventListener("pointerleave", off);
+    b.addEventListener("pointercancel", off);
+    continue;
+  }
+  if (dir === "hop" || dir === "hold") {
+    b.addEventListener("pointerdown", (e) => {
+      e.preventDefault();
+      if (!G || G.over) return;
+      if (G.mode === "shop") { startFight(); return; }
+      if (G.mode !== "run") { G.ayHeld = dir === "hop" ? -1 : 1; return; }
+      if (dir === "hop") pull();
+      else dropBack();
+    });
+    b.addEventListener("pointerup", () => { if (G && G.mode !== "run") G.ayHeld = 0; });
+    b.addEventListener("pointerleave", () => { if (G && G.mode !== "run") G.ayHeld = 0; });
+  } else {
+    b.addEventListener("pointerdown", (e) => { e.preventDefault(); if (G && !G.over) tryStep(+dir); });
+  }
+}
+
+const dotScreenY = () => (G.mode === "run" ? (DOT_ROW - G.vVis) * CELL + CELL / 2 : G.ay * CELL);
+
+function setVOff(v) {
+  const nv = clamp(v, -BACK_MAX, 0);
+  if (nv === G.vOff) return false;
+  G.vOff = nv;
+  G.vFrom = G.vVis; G.vTo = nv; G.vT = 0;
+  return true;
+}
+
+const nextLanding = () => G.dotRow + 1;
+
+// ↑ PULL: advance the dot one row, right now. If you have fallen behind, you spend the
+// deficit catching up. If you are already at the front, the only way forward is to drag the
+// board with you — a new row is pulled in and the game genuinely runs faster. Mash it and you
+// outrun your own reading of the board, which is the whole cost.
+function pull() {
+  if (!G || G.over || G.paused || G.hitstop > 0) return;
+  G.pulls++;
+  if (G.vOff < 0) {
+    setVOff(G.vOff + 1);
+    landOn(G.dotRow + 1);              // caught up under our own power; the board did not move
+  } else {
+    G.scroll += 1;                     // drag a new frame in; the beat loop lands it
+  }
+  tone(540, 820, 0.06, "triangle", 0.05);
+}
+
+// ---------------------------------------------------------------- the beat
+function commit(r) {
+  G.steps = Math.min(MAX_STEPS, G.steps + 1);   // one step back in the bank, every row
+  landOn(r + G.vOff);
+}
+
+// ↓ DROP BACK: one press, one row, immediately — the mirror of a pull. It does NOT wait for the
+// next beat (which is what made it feel mushy and imprecise) and it does NOT auto-repeat, so a
+// held key is still exactly one row. You land back on a row you have already crossed, so it
+// scores nothing — but the cell under you may not be the one you left, if you have since
+// stepped sideways, and that cell can still bite.
+function dropBack() {
+  if (!G || G.over || G.paused || G.hitstop > 0) return;
+  // fight-hands protection: a down-tap moments after the arena closes must not self-execute
+  // onto a row whose lanes you crossed with a different mind
+  if (T - G.resumeT < 600) { tone(160, 140, 0.05, "square", 0.03); return; }
+  if (G.vOff <= -BACK_MAX) { tone(160, 140, 0.05, "square", 0.03); return; }   // against the limit
+  setVOff(G.vOff - 1);
+  landOn(G.dotRow - 1);
+  tone(360, 240, 0.07, "triangle", 0.05);
+}
+
+// Everything that happens when the dot arrives on a cell. Reached from the beat, and from a
+// PULL when the dot catches itself up under its own power.
+function landOn(d) {
+  const prevDot = G.dotRow, prevLane = G.prevLane;
+  G.dotRow = d;
+  G.laneAt.set(d, G.lane);
+  G.level = Math.floor(Math.max(0, d) / WALL_EVERY) + 1;
+
+  const lane = G.lane;
+  const row = G.rows.get(d);
+  const samecell = d === prevDot && lane === prevLane;   // dropped back and did not steer: nothing new to hit
+  const fresh = d > G.maxRow;                            // rows you have already stood on pay nothing again
+  if (fresh) G.maxRow = d;
+
+  if (row && !samecell) {
+    const deadly = row.danger[lane] === 1;
+    const y = (DOT_ROW - G.vOff) * CELL + CELL / 2;
+    const x = lane * CELL + CELL / 2;
+
+    if (row.wall) {
+      if (deadly) {
+        wallHit(d, lane);
+      } else {
+        // walls feed the COMBO, not the wallet: the wallet is fed by burns alone
+        const edge = isGapEdge(row, lane);
+        G.streak += edge ? 8 : 5;
+        G.walls += 1;
+        G.trauma += 0.12;
+        G.flash = 0.12; G.flashColor = "#ffffff";
+        ring(x, y, edge ? GAP_EDGE : "#ffffff", CELL * 3);
+        for (let i = 0; i < (edge ? 26 : 14); i++) {
+          const a2 = Math.random() * Math.PI * 2, sp = 60 + Math.random() * 140;
+          spark(x, y, Math.cos(a2) * sp, Math.sin(a2) * sp, edge ? GAP_EDGE : "#ffffff", 0.5, 3);
+        }
+        pop(x, y - CELL * 0.8, (edge ? "+8" : "+5") + " COMBO", edge ? GAP_EDGE : "#ffffff");
+        tone(edge ? 1760 : 1200, edge ? 2200 : 1500, 0.16, "triangle", 0.08);
+      }
+    } else if (deadly && G.iframes <= 0) {
+      colorHit(d, lane);
+    } else if (fresh) {
+      G.score += 1;                              // BASIC: every row survived is a point
+      G.streak += 1;
+    }
+
+    // the special shape: route to it, land on it, take it
+    if (row.pickup && row.pickup[lane] && !G.over) collect(d, lane, row);
+  }
+
+  G.prevLane = lane;
+  G.prevDot = d;
+  if (G.streak > G.maxStreak) G.maxStreak = G.streak;
+
+  // The moment you pass your own best, mid-run. This is the hook: the number you were chasing
+  // is now behind you, and every row after it is pure profit you can still throw away.
+  if (!G.recordBroken && best > 0 && G.score > best) {
+    G.recordBroken = true;
+    G.callout = "NEW BEST";
+    G.calloutT = 0;
+    G.trauma += 0.25;
+    G.flash = 0.14; G.flashColor = GAP_EDGE;
+    tone(880, 1760, 0.5, "triangle", 0.09);
+  }
+
+  if (G.hitstop <= 0 && buffer && T - buffer.t < 120) {
+    const dd = buffer.d; buffer = null; tryStep(dd);
+  }
+
+  // the streak you can hear: the beat tick climbs with your combo and collapses when you're hit
+  tone(440 * Math.pow(2, Math.min(G.streak, 24) / 24), 440 * Math.pow(2, Math.min(G.streak, 24) / 24), 0.04, "triangle", 0.05);
+
+
+  if (fresh && isBossRow(d) && G.mode === "run") startShop(d);
+
+  // `fresh` gates this: dropping back onto row 60 must not fire the escalation twice.
+  if (fresh && (d === ESC_2 || d === ESC_3)) {
+    G.rampAnchor = d;                         // a new colour resets the speed to the row-0 crawl
+    G.trauma += 0.2;
+    G.callout = (d === ESC_2 ? "SECOND COLOR" : "THIRD COLOR") + " — SPEED RESET";
+    G.calloutT = 0;
+    G.flash = 0.16; G.flashColor = COLORS[G.killColors[d === ESC_2 ? 1 : 2]];
+    tone(300, 150, 0.7, "sine", 0.1);         // the board audibly drops back to a crawl
+  }
+
+  const keep = Math.min(G.lastRow, d) - 20;
+  for (const rr of G.rows.keys()) if (rr < keep) { G.rows.delete(rr); G.laneAt.delete(rr); }
+}
+
+function collect(d, lane, row) {
+  const kind = row.pickup[lane];
+  row.pickup[lane] = 0;
+  bake(d, row);                                 // it is gone from the board the instant you take it
+  const y = (DOT_ROW - G.vOff) * CELL + CELL / 2, x = lane * CELL + CELL / 2;
+
+  if (kind === PICK_LIFE && G.lives < 3) {
+    G.lives++;
+    pop(x, y - CELL * 0.9, "+1 LIFE", HAZARD);
+    ring(x, y, HAZARD, CELL * 3.4);
+    tone(520, 1040, 0.35, "triangle", 0.1);
+  } else {
+    G.stars++;
+    G.score += 100;                              // BASIC: a star is a plain hundred
+    pop(x, y - CELL * 0.9, "+100", GAP_EDGE);
+    ring(x, y, GAP_EDGE, CELL * 3.4);
+    tone(1046, 1568, 0.28, "triangle", 0.1);
+  }
+  G.flash = 0.1; G.flashColor = GAP_EDGE;
+  G.trauma += 0.12;
+  for (let i = 0; i < 22; i++) {
+    const a2 = Math.random() * Math.PI * 2, sp = 70 + Math.random() * 160;
+    spark(x, y, Math.cos(a2) * sp, Math.sin(a2) * sp, kind === PICK_LIFE ? HAZARD : GAP_EDGE, 0.6, 3);
+  }
+}
+
+const nextWall = (r) => Math.ceil((r + 1) / WALL_EVERY) * WALL_EVERY;
+
+function colorHit(r, lane) {
+  G.lives--;
+  G.streak = 0;
+  G.hitstop = 0.14;
+  G.trauma += 0.35;
+  G.iframes = 0.9;
+  G.penaltyMul = 0.55;
+  G.flash = 0.18; G.flashColor = HAZARD;
+  const x = lane * CELL + CELL / 2, y = DOT_ROW * CELL + CELL / 2;
+  for (let i = 0; i < 18; i++) {
+    const a = Math.random() * Math.PI * 2, s = 50 + Math.random() * 160;
+    spark(x, y, Math.cos(a) * s, Math.sin(a) * s, HAZARD, 0.5, 3);
+  }
+  tone(220, 70, 0.24, "square", 0.1);
+  if (G.lives <= 0) gameOver(r);
+}
+
+function wallHit(r, lane) {
+  G.lives--;
+  G.streak = 0;
+  G.hitstop = 0.26;
+  G.trauma += 1.0;
+  G.iframes = 0.9;
+  G.penaltyMul = 0.55;
+  G.flash = 0.22; G.flashColor = HAZARD;
+  const x = lane * CELL + CELL / 2, y = DOT_ROW * CELL + CELL / 2;
+  for (let i = 0; i < 24; i++) {
+    const a = Math.random() * Math.PI * 2, s = 70 + Math.random() * 200;
+    spark(x, y, Math.cos(a) * s, Math.sin(a) * s, HAZARD, 0.7, 4);
+  }
+  ring(x, y, HAZARD, CELL * 4);
+  tone(180, 45, 0.9, "sawtooth", 0.12);
+  if (G.lives <= 0) gameOver(r);
+}
+
+// The single best answer to "that felt random": show the line they missed.
+function postMortem(dr) {
+  // hops skip rows, so the lane history is sparse — start from the earliest row we
+  // actually stood on within the last ten
+  let from = dr - 10;
+  while (from < dr && !G.laneAt.has(from)) from++;
+  if (from >= dr) return null;
+  const startLane = G.laneAt.get(from);
+  if (startLane === undefined) return null;
+
+  let layer = [{ c: startLane, path: [startLane] }];
+  for (let r = from + 1; r <= dr; r++) {
+    const row = G.rows.get(r);
+    if (!row) return null;
+    const seen = new Map();
+    for (const s of layer) {
+      for (let d = -1; d <= 1; d++) {
+        const c = s.c + d;
+        if (c < 0 || c >= COLS || row.danger[c]) continue;
+        if (!seen.has(c)) seen.set(c, { c, path: s.path.concat(c) });
+      }
+    }
+    layer = [...seen.values()];
+    if (!layer.length) return null;
+  }
+  return { from, path: layer[0].path };
+}
+
+function gameOver(r) {
+  G.over = true;
+  G.overAt = T;                                // the death screen owns the next 600ms of keys
+  document.body.classList.remove("arena");     // syncHud stops running once over — drop the pad here
+  droneSet(false);
+  G.postPath = postMortem(r);
+
+  const prevBest = best;
+  const beat = G.score > prevBest;
+  if (beat) {
+    best = G.score;
+    try { localStorage.setItem("gtc.best", String(best)); } catch (e) {}
+  }
+
+  el.oTitle.textContent = beat ? "New Best" : "Game Over";
+  el.oTitle.style.color = beat ? GAP_EDGE : HAZARD;
+  // truth first, then the show: the count-up lands exactly when the key lockout releases,
+  // so the pause reads as "the screen is busy", never "the game is stuck"
+  el.oScore.textContent = G.score;
+  if (!reduced && G.score > 0) {
+    const t0 = performance.now(), target = G.score;
+    const step = (now) => {
+      if (!G || !G.over) return;
+      const p = Math.min(1, (now - t0) / OVER_LOCK_MS);
+      el.oScore.textContent = Math.round(target * (1 - Math.pow(1 - p, 3)));
+      if (p < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  }
+  el.oScore.classList.toggle("record", beat);
+
+  // "you were 40 short" is the single most effective reason a person presses restart
+  if (beat && prevBest > 0) el.oDelta.innerHTML = "beat your record by <b>" + (G.score - prevBest) + "</b>";
+  else if (beat) el.oDelta.textContent = "your first record";
+  else el.oDelta.innerHTML = "<b>" + (prevBest - G.score) + "</b> short of your best";
+  el.oDelta.classList.toggle("record", beat);
+
+  el.oStars.textContent = G.stars;
+  el.oDepth.textContent = Math.max(0, G.maxRow);
+  el.oPost.textContent = G.postPath ? "the gold line was open" : "";
+  el.over.hidden = false;
+  el.hud.hidden = false;
+  document.body.classList.remove("playing");
+  syncHud();
+}
+
+
+// ================================================================ THE ARENA
+// The ✕ squares stop being scenery. Every 75 rows they tear off the board, assemble into one
+// creature, and the map becomes the arena — a single flat colour, so the only hues on screen are
+// the ones that matter: the boss's cells, your loaded round, and the lasers.
+//
+// The fight is a colour puzzle. A shot only destroys a cell when your round MATCHES that cell.
+// Everything else — the 2D movement, the lasers, the shop — exists to pressure that read.
+
+const roundsN = () => Math.max(2, killCount(G.bossRow));
+const ammoColor = () => COLORS[G.killColors[G.ammo]];
+const owns = (id) => !!(G.shop && G.shop.owned.has(id));
+
+// A cell's LIVE colour. The Prism rotates its palette on a clock, so what a cell IS and what it
+// WILL BE when your bullet arrives are different questions. Everything reads through here.
+function cellColor(base) {
+  const B = G.boss;
+  if (!B || B.gimmick !== "rotate") return base;
+  const i = G.killColors.indexOf(base);
+  return G.killColors[(i + B.tick) % roundsN()];
+}
+function bossBottomOf(col) {                 // lowest surviving cell in a column, or null
+  const B = G.boss;
+  if (!B) return null;
+  for (let r = B.h - 1; r >= 0; r--) if (B.cells.has(col + "," + r)) return r;
+  return null;
+}
+// How high you may fly in a column. Eat a column and its ceiling lifts — you can climb into the
+// wound you carved. Up there the bullet flight is almost nothing, but the tunnel walls are the
+// boss's own body and your only way out is straight back down.
+function ceilingAt(col) {
+  const r = bossBottomOf(col);
+  if (r === null) return AY_MIN;
+  // clamp to the arena's roof: while the creature is still high its underside sits ABOVE the roof,
+  // and without this a column WITH cells would let you fly higher than one you had emptied.
+  return Math.max(AY_MIN, G.boss.oy + r + 1 + 0.6);
+}
+const burrowed = () => G.boss && G.ay < G.boss.oy + G.boss.h;
+
+function startShop(row) {
+  G.bossRow = row;
+  G.bossIdx = Math.round(row / BOSS_EVERY);
+  G.mode = "shop";
+  G.modeT = 0;
+  droneSet(false);
+  // No timer, ever. It is a menu; the user's complaint was that he could not READ it. SPACE
+  // still starts the fight the instant it is pressed, so the expert path costs nothing.
+  G.shop = { owned: new Set(), stack: [], spent: 0 };
+  buildBoss();                                // it assembles above the shelf while you choose
+  G.trauma = 0.8;
+  G.flash = 0.3; G.flashColor = HAZARD;
+  tone(90, 55, 1.4, "sawtooth", 0.14);
+}
+
+function buildBoss() {
+  const def = BOSSES[(G.bossIdx - 1) % BOSSES.length];
+  const loop = Math.floor((G.bossIdx - 1) / BOSSES.length);
+  const R = roundsN();
+  const cells = new Map();
+  const h = def.shape.length, w = def.shape[0].length;
+  for (let r = 0; r < h; r++) {
+    for (let c = 0; c < w; c++) {
+      if (def.shape[r][c] !== "1") continue;
+      // Only colours that are actually deadly on YOUR board. Boss 1 sits at row 75 where just
+      // two kill colours are live — painting it from all three put a hue on the creature that
+      // had never killed anything, and handed you a round that meant nothing.
+      cells.set((def.x + c) + "," + r, G.killColors[randInt(R)]);
+    }
+  }
+  G.boss = {
+    def, cells, h, w, x: def.x,
+    hp: cells.size, maxHp: cells.size,
+    oy: BOSS_Y0, atkT: 1.8, laserT: 4.5, hurt: 0, enraged: false,
+    gimmick: def.gimmick, tick: 0, tickT: 3.0,
+    loop, mul: Math.pow(0.92, loop),
+  };
+  G.bullets = []; G.shells = []; G.laser = null;
+  G.ammo = randInt(R); G.plate = 0;            // the first round is dealt like every other
+  G.jamT = 0; G.jamPulse = 0; G.jamMark = null; G.chipFlash = {};
+  G.ay = AY_HOME; G.vy = 0; G.ayHeld = 0;
+  G.vOff = 0; G.vVis = 0; G.vFrom = 0; G.vTo = 0;   // the run's vertical state must not leak in here
+}
+
+function startFight() {
+  if (G.mode !== "shop") return;
+  G.firstShop = false;
+  if (owns("plate")) G.plate = 2;
+  G.mode = "intro";
+  G.modeT = 0;
+  G.callout = "HIT YOUR COLOR";
+  G.calloutT = 0;
+  // the ✕ still on the board tear loose and fly into the thing
+  const cx = (G.boss.x + G.boss.w / 2) * CELL, cy = (BOSS_Y0 + G.boss.h / 2) * CELL;
+  for (let r = G.lastRow - 5; r <= G.lastRow + 16; r++) {
+    const row = G.rows.get(r);
+    if (!row || row.wall) continue;
+    for (let c = 0; c < COLS; c++) {
+      if (!row.danger[c]) continue;
+      const x = c * CELL + CELL / 2, y = screenY(r) + CELL / 2;
+      if (y < -CELL || y > ROWS * CELL + CELL) continue;
+      const a = Math.atan2(cy - y, cx - x), d = Math.hypot(cx - x, cy - y);
+      spark(x, y, Math.cos(a) * d * 1.1, Math.sin(a) * d * 1.1, "#fff", 0.95, 3);
+    }
+  }
+}
+
+function buyItem(i) {
+  const it = SHOP_ITEMS[i];
+  if (!it || G.mode !== "shop" || G.shop.owned.has(it.id)) return;
+  const c = itemCost(it, G.bossesDown);
+  if (G.score < c) { tone(150, 110, 0.06, "square", 0.05); return; }
+  G.score -= c;
+  G.shop.spent += c;
+  G.spentTotal += c;
+  G.shop.owned.add(it.id);
+  G.shop.stack.push({ id: it.id, cost: c });
+  if (!G.undoHinted) { G.undoHinted = true; G.undoHintT = T; }   // teach the refund exactly once
+  if (it.id === "plate") ring(G.lane * CELL + CELL / 2, ROWS * CELL * 0.6 - CELL * 0.55, "#8fd8ff", CELL * 1.2);
+  tone(700, 1200, 0.1, "triangle", 0.07);
+}
+function undoBuy() {                          // one fat-fingered key should not cost 2,800 points
+  if (G.mode !== "shop" || !G.shop.stack.length) return;
+  const last = G.shop.stack.pop();
+  G.shop.owned.delete(last.id);
+  G.score += last.cost;
+  G.shop.spent -= last.cost;
+  G.spentTotal -= last.cost;
+  tone(500, 300, 0.08, "triangle", 0.06);
+}
+
+// ---------------------------------------------------------------- shooting
+// The gun loads itself: every shot that leaves rechambers a RANDOM live colour. There is no
+// colour key — SPACE is the whole gun. Your control is POSITION: route to a column whose
+// bottom cell matches what the barrel shows, then fire. A wrong hit still jams.
+function shoot() {
+  if (G.mode !== "boss") return;
+  if (T < G.jamT) return;                      // SILENT: the spaceHeld autofire calls this every frame
+  const cd = owns("quick") ? 95 : SHOOT_CD;
+  if (T - G.shootT < cd) return;
+  if (G.bullets.some((b) => b.col === G.lane)) return;   // one bullet in flight per column
+  G.shootT = T;
+  G.bullets.push({ col: G.lane, x: G.lane * CELL + CELL / 2, y: G.ay * CELL - CELL * 0.3, color: G.killColors[G.ammo] });
+  G.ammo = randInt(roundsN());                 // the next round is dealt, not chosen
+  tone(880, 1320, 0.05, "square", 0.045);
+}
+
+// The Cairn's gravity: kill a cell and the column above it falls. A column stops being a target
+// and becomes a magazine — you never re-aim, you re-load, and you must re-read the colour on
+// every trigger pull because you are the one who changed it.
+function settleColumn(col) {
+  const B = G.boss;
+  if (B.gimmick !== "gravity") return;
+  const alive = [];
+  for (let r = 0; r < B.h; r++) {
+    const k = col + "," + r;
+    if (B.cells.has(k)) { alive.push(B.cells.get(k)); B.cells.delete(k); }
+  }
+  for (let i = 0; i < alive.length; i++) B.cells.set(col + "," + (B.h - alive.length + i), alive[i]);
+}
+
+function killCell(col, r) {
+  const B = G.boss;
+  B.cells.delete(col + "," + r);
+  B.hp--;
+  B.hurt = 0.12;
+  // The boss pays at the multiplier your RUN earned. It used to grant streak per cell, so it
+  // inflated its own combo while you stripped it and then paid its bonus at the inflated rate.
+  G.score += Math.round(40 * comboMult());
+  const x = col * CELL + CELL / 2, y = (B.oy + r + 0.5) * CELL;
+  for (let i = 0; i < 8; i++) {
+    const a = Math.random() * Math.PI * 2, sp = 60 + Math.random() * 160;
+    spark(x, y, Math.cos(a) * sp, Math.sin(a) * sp, "#fff", 0.4, 3);
+  }
+  tone(500, 900, 0.06, "square", 0.05);
+}
+
+function hitBoss(col, r, bullet) {
+  const B = G.boss;
+  const live = cellColor(B.cells.get(col + "," + r));
+  if (live !== bullet.color) {                 // wrong round: it soaks it, and your gun JAMS.
+    // The chamber is random but the TARGET is chosen: firing into a cell that doesn't match
+    // what the barrel showed is an aiming error, and 0.7s of enforced not-shooting is exactly
+    // the pause a player needs to route to a matching column instead.
+    // max(), not assignment: shots already in flight can EXTEND a jam (they were your shots),
+    // but pulls of a jammed trigger can never re-trigger it — you cannot fire while jammed.
+    G.jamT = Math.max(G.jamT, T + (owns("quick") ? JAM_MS_QUICK : JAM_MS));
+    G.jamMark = { col, r, hue: COLORS[live], t: 0.4 };      // "this is what it actually was"
+    if (!G.jamTaught) { G.jamTaught = true; G.callout = "WRONG COLOR — GUN JAMMED"; G.calloutT = 0; }
+    B.hurt = 0.06;
+    const x = col * CELL + CELL / 2, y = (B.oy + r + 1) * CELL - CELL / 2;
+    for (let j = 0; j < 5; j++) {
+      const a = Math.random() * Math.PI * 2;
+      spark(x, y, Math.cos(a) * 50, Math.sin(a) * 50, "#5a5a70", 0.25, 2);
+    }
+    tone(180, 120, 0.07, "square", 0.05);
+    return;
+  }
+  G.taughtFire = true;                         // a matching hit: the intro lesson is over
+
+  // CHISEL keeps going up through cells of the SAME colour — it can still only ever destroy what
+  // your round matches, so the rule is amplified, not diluted. It promotes the read from "what
+  // colour is the bottom cell" to "which column has the deepest same-colour stack".
+  const targets = [[col, r]];
+  if (owns("chisel")) {
+    for (let rr = r - 1; rr >= 0 && targets.length < 3; rr--) {
+      const k = col + "," + rr;
+      if (!B.cells.has(k)) break;
+      if (cellColor(B.cells.get(k)) !== bullet.color) break;
+      targets.push([col, rr]);
+    }
+  }
+  if (targets.length > 1) {
+    G.chipFlash.chisel = T;
+    pop(col * CELL + CELL / 2, Math.max(24, (G.boss.oy + r) * CELL - 6), "CHISEL x" + targets.length, "#ffffff");
+  }
+  for (const [c, rr] of targets) killCell(c, rr);   // resolve every hit, THEN settle once
+  settleColumn(col);
+
+  if (B.hp <= 0) winFight();
+}
+
+function winFight() {
+  G.mode = "win";
+  G.modeT = 0;
+  G.bossesDown++;
+  G.score += Math.round(2000 * comboMult());
+  // unused charges end WITH the fight, visibly and paid — never silently vanish at the flip.
+  // 400 a charge, max 800 against a 3600+ price: buy-and-dodge stays a heavy net loss.
+  if (G.plate > 0) {
+    const b = G.plate * 400;
+    G.score += b;
+    pop(G.dotXVis, G.ay * CELL - 30, "SHIELD UNUSED +" + b, "#8fd8ff");
+    G.plate = 0;
+  }
+  if (G.lives < 2) G.lives = 2;                // attrition has to survive a run of bosses
+  // each kill still buys reading time, just less of it than the last one
+  G.rampAnchor = Math.max(G.rampAnchor, G.bossRow - 20 * (G.bossesDown - 1));
+  G.callout = "BOSS DOWN";
+  G.calloutT = 0;
+  G.trauma = 1.0;
+  G.flash = 0.3; G.flashColor = GAP_EDGE;
+  tone(220, 1760, 1.1, "triangle", 0.13);
+}
+
+function bossHurtsYou() {
+  if (G.iframes > 0) return;
+  if (G.plate > 0) {                           // SHIELD eats the hit. Full 1.1s of grace — an enraged
+    G.plate--;                                 // volley must not strip both charges for one mistake;
+    G.iframes = 1.1;                           // the 2-charge cap is the anti-farm limit, not the timer
+    G.hitstop = 0.06;
+    G.flash = 0.14; G.flashColor = "#8fd8ff";
+    G.trauma += 0.25;
+    G.chipFlash.plate = T;
+    ring(G.dotXVis, G.ay * CELL, "#8fd8ff", CELL * 2.4);   // a ring visibly SHATTERS off the body —
+    for (let i = 0; i < 10; i++) {                          // nothing like the red flash of a life
+      const a = Math.random() * Math.PI * 2, sp = 80 + Math.random() * 160;
+      spark(G.dotXVis, G.ay * CELL, Math.cos(a) * sp, Math.sin(a) * sp, "#8fd8ff", 0.45, 3);
+    }
+    pop(G.dotXVis, Math.max(24, G.ay * CELL - 20), "BLOCKED", "#8fd8ff");
+    if (G.streak >= 5) pop(G.dotXVis, Math.max(24, G.ay * CELL - 38), "COMBO SAFE", "#ffc53d");
+    tone(700, 300, 0.16, "triangle", 0.08);
+    return;
+  }
+  G.lives--;
+  G.streak = 0;                                // an unblocked hit always costs the combo
+  G.iframes = 1.1;
+  G.hitstop = 0.16;
+  G.trauma += 0.6;
+  G.flash = 0.24; G.flashColor = HAZARD;
+  const x = G.dotXVis, y = G.ay * CELL;
+  for (let i = 0; i < 20; i++) {
+    const a = Math.random() * Math.PI * 2, sp = 60 + Math.random() * 180;
+    spark(x, y, Math.cos(a) * sp, Math.sin(a) * sp, HAZARD, 0.55, 3);
+  }
+  tone(220, 60, 0.35, "square", 0.11);
+  if (G.lives <= 0) gameOver(G.dotRow);
+}
+
+// ---------------------------------------------------------------- lasers
+// One at a time, ever. You are never asked to solve two beams at once. Shells stop spawning while
+// one is up. Every beam is telegraphed, and every telegraph is provably escapable.
+function armLaser() {
+  const B = G.boss;
+  const def = B.def;
+  const first = G.bossesDown === 0 && !B.firedOnce;
+  B.firedOnce = true;
+
+  const wantSlice = def.slice > 0 && Math.random() < 0.45;
+  const cross = def.cross && Math.random() < 0.35;
+  const kind = cross ? "cross" : wantSlice ? "slice" : "rake";
+
+  const L = { kind, t: 0, tel: (first ? 1.2 : 0.9) * (kind === "cross" ? 1.11 : 1), fire: 0.28, cols: [], y: 0 };
+
+  if (kind !== "slice") {
+    // RAKE: pick columns, then REPAIR the pick until it is survivable — the same construct-then-
+    // repair idiom the board generator uses to guarantee a way out.
+    const live = [];
+    for (let c = 0; c < COLS; c++) if (bossBottomOf(c) !== null && c !== (burrowed() ? G.lane : -1)) live.push(c);
+    const want = Math.min(def.rake + (B.hp / B.maxHp < 0.35 ? 1 : 0), 6);
+    const picked = [];
+    for (const c of live.sort(() => Math.random() - 0.5)) {
+      if (picked.length >= want) break;
+      if (picked.some((p) => Math.abs(p - c) < 2)) continue;   // never two adjacent: a clear column always exists
+      picked.push(c);
+    }
+    // and a clear column must lie within reach of where you are standing
+    let guard = 0;
+    while (guard++ < 8) {
+      let near = null, bd = Infinity;
+      for (let c = 0; c < COLS; c++) {
+        if (picked.includes(c)) continue;
+        const d = Math.abs(c - G.lane);
+        if (d < bd) { bd = d; near = c; }
+      }
+      if (near !== null && bd <= 3) break;
+      // nothing safe within 3 columns: drop the beam nearest to the player
+      let worst = 0, wd = Infinity;
+      picked.forEach((c, i) => { const d = Math.abs(c - G.lane); if (d < wd) { wd = d; worst = i; } });
+      picked.splice(worst, 1);
+      if (!picked.length) break;
+    }
+    L.cols = picked;
+  }
+  if (kind !== "rake") {
+    // SLICE: the horizontal beam — the first thing in the game you cannot dodge without the Y axis
+    L.y = AY_MIN + 0.8 + Math.random() * (AY_MAX - AY_MIN - 1.6);
+  }
+  if (!L.cols.length && kind === "rake") return;   // nothing survivable to fire: skip this one
+  G.laser = L;
+  tone(1200, 900, 0.18, "sine", 0.05);
+}
+
+function updateLaser(dt) {
+  const L = G.laser;
+  L.t += dt;
+  if (L.t < L.tel) return;                     // telegraphing
+  if (L.t < L.tel + L.fire) {                  // firing
+    if (!L.hit) {
+      const inCol = L.cols.includes(G.lane);
+      const inRow = L.kind !== "rake" && Math.abs(G.ay - L.y) < 0.4 + HIT_R;
+      if (inCol || inRow) { L.hit = true; bossHurtsYou(); }
+    }
+    return;
+  }
+  G.laser = null;
+}
+
+// ---------------------------------------------------------------- arena tick
+function updateBoss(dt) {
+  G.modeT += dt;
+
+  if (G.mode === "shop") return;               // untimed: only SPACE leaves
+  if (G.mode === "intro") {
+    if (G.modeT > 1.1) { G.mode = "boss"; G.modeT = 0; }
+    return;
+  }
+  if (G.mode === "win") {
+    if (G.modeT > 1.8) {
+      G.mode = "run";
+      G.boss = null; G.bullets = []; G.shells = []; G.laser = null; G.shop = null;
+      // The beat lands where the dot actually STANDS. buildBoss zeroed vOff at shop entry, so
+      // without this the first commit could skip 1-3 rows past a player who entered the shop
+      // behind the front — and the fairness repair only ever covers one row ahead.
+      G.scroll = G.dotRow;
+      G.lastRow = G.dotRow;
+      // glide home from arena height through the existing vVis tween — never teleport 8 cells
+      G.vFrom = DOT_ROW + 0.5 - G.ay; G.vTo = 0; G.vT = 0;
+      G.ay = AY_HOME; G.vy = 0;
+      // backstop: doing NOTHING on beat one must be survivable, whatever lane the fight ended on
+      const nr = G.rows.get(G.dotRow + 1);
+      if (nr && !nr.wall && nr.danger[G.lane]) {
+        nr.colors[G.lane] = safeColor(activeKills(G.dotRow + 1));
+        nr.danger[G.lane] = 0;
+        bake(G.dotRow + 1, nr);
+      }
+      G.steps = MAX_STEPS;                     // you strafed 17 columns in there; come back with a full bank
+      // no countdown, no loading: the board is back INSTANTLY, it just accelerates from a
+      // crawl — the reading time is inside the motion, not in front of it
+      G.penaltyMul = 0.1;
+      G.resumeT = T;
+    }
+    return;
+  }
+
+  const B = G.boss;
+  B.hurt = Math.max(0, B.hurt - dt);
+  B.oy = Math.min(B.oy + B.def.descend * dt, BOSS_OY_MAX);   // it closes a little, then stops forever
+
+  // Enrage is an escalation of patterns you already know — announced once, never a new rule.
+  if (!B.enraged && B.hp / B.maxHp < 0.35) {
+    B.enraged = true;
+    G.callout = "ENRAGED"; G.calloutT = 0;
+    tone(160, 320, 0.5, "sawtooth", 0.1);
+  }
+
+  // vertical movement: free, analog, and blocked by the creature's own body
+  const tgt = G.ayHeld * AY_SPD;
+  G.vy += (tgt - G.vy) * (1 - Math.exp(-dt / 0.055));
+  G.ay += G.vy * dt;
+  const ceil = ceilingAt(G.lane);
+  if (G.ay < ceil) { G.ay = ceil; G.vy = Math.max(0, G.vy); }   // the descending body shoves, never hurts
+  if (G.ay > AY_MAX) { G.ay = AY_MAX; G.vy = Math.min(0, G.vy); }
+
+  // the Prism's clock
+  if (B.gimmick === "rotate") {
+    const period = (1.8 + 1.2 * (B.hp / B.maxHp)) * B.mul;
+    B.tickT -= dt;
+    if (B.tickT <= 0) { B.tick = (B.tick + 1) % roundsN(); B.tickT = period; }
+    B.period = period;
+  }
+
+  // our shots
+  const spd = B.def.bulletSpd;
+  for (let i = G.bullets.length - 1; i >= 0; i--) {
+    const b = G.bullets[i];
+    b.y -= spd * CELL * dt;
+    if (b.y < -CELL) { G.bullets.splice(i, 1); continue; }
+    const r = bossBottomOf(b.col);
+    if (r === null) continue;
+    if (b.y > (B.oy + r + 1) * CELL) continue;
+    G.bullets.splice(i, 1);
+    hitBoss(b.col, r, b);
+    if (G.mode !== "boss") return;
+  }
+
+  // lasers, then shells — never both spawning at once
+  const hpFrac = B.hp / B.maxHp;
+  if (G.laser) {
+    updateLaser(dt);
+  } else {
+    B.laserT -= dt;
+    if (B.laserT <= 0) {
+      armLaser();
+      B.laserT = (B.def.laser0 + B.def.laser1 * hpFrac) * B.mul;
+    }
+    B.atkT -= dt;
+    if (B.atkT <= 0) {
+      const cols = [];
+      for (let c = 0; c < COLS; c++) if (bossBottomOf(c) !== null) cols.push(c);
+      if (cols.length) {
+        // enraged, it hunts YOU specifically — a spike of a probability you already live with
+        const aimP = hpFrac < 0.35 ? 0.90 : B.def.aimP;
+        const base = Math.random() < aimP && bossBottomOf(G.lane) !== null ? G.lane : cols[randInt(cols.length)];
+        let picks;
+        if (B.def.cross) {
+          // the Prism fans its fire in three ADJACENT columns — its whole threat is the clock,
+          // so its spread stays readable as one object. Verbatim v2 behaviour.
+          picks = [];
+          for (let k = 0; k < 3; k++) picks.push(clamp(base + k - 1, 0, COLS - 1));
+        } else {
+          // Volleys. HARD RULE: every column in a volley is pairwise >= 2 apart, so both
+          // columns adjacent to any shell are always shell-free — the same separation rule
+          // the rake beams obey. A lattice that closes on the player cannot be built here.
+          picks = [base];
+          // SLAB's first-ever encounter teaches one lesson at a time: single shells until
+          // its health bar shows the fight is half learned.
+          const vol = G.bossIdx === 1 && hpFrac > 0.65 ? 1 : B.def.volley;
+          if (vol >= 2) {
+            const s = Math.random() < 0.5 ? 1 : -1;
+            for (const sg of [s, -s]) {
+              const c = base + sg * B.def.volleyGap;
+              if (c >= 0 && c < COLS && bossBottomOf(c) !== null && Math.abs(c - base) >= 2) { picks.push(c); break; }
+            }
+          }
+          if (vol >= 3) {
+            for (let t = 0; t < 8; t++) {
+              const c = cols[randInt(cols.length)];
+              if (picks.every((p) => Math.abs(p - c) >= 2)) { picks.push(c); break; }
+            }
+          }
+        }
+        for (const col of picks) {
+          const r = bossBottomOf(col);
+          if (r === null) continue;
+          const raw = B.cells.get(col + "," + r);
+          // the Prism's shells are painted in the NEXT colour — its own fire announces the clock
+          const shown = B.gimmick === "rotate"
+            ? G.killColors[(G.killColors.indexOf(raw) + B.tick + 1) % roundsN()]
+            : cellColor(raw);
+          G.shells.push({ col, x: col * CELL + CELL / 2, y: (B.oy + r + 1) * CELL, color: shown, warn: 0.35 });
+        }
+        tone(300, 160, 0.12, "sawtooth", 0.06);
+      }
+      B.atkT = (B.def.atk0 + B.def.atk1 * hpFrac) * B.mul;
+    }
+  }
+
+  // its shells
+  const px = G.dotXVis, py = G.ay * CELL, r = HIT_R * CELL;
+  for (let i = G.shells.length - 1; i >= 0; i--) {
+    const sh = G.shells[i];
+    if (sh.warn > 0) { sh.warn -= dt; continue; }           // a muzzle flare before it moves
+    sh.y += B.def.shellSpd * CELL * dt;
+    if (circleHitsBox(px, py, r, sh.x, sh.y, CELL * 0.26)) {
+      G.shells.splice(i, 1);
+      if (G.iframes > 0) {
+        ring(sh.x, sh.y, "#8fd8ff", CELL * 0.9);   // an absorbed shell FIZZES — never silently vanishes
+      } else {
+        bossHurtsYou();
+        if (G.mode !== "boss") return;
+      }
+      continue;
+    }
+    if (sh.y > ROWS * CELL + CELL) G.shells.splice(i, 1);
+  }
+}
+
+// SIGHT: what a shot in each column would actually hit, painted right under the creature's
+// underside so the read sits where your eyes already are. With a dealt chamber, the play it
+// buys is a glance: find your loaded colour on the strip, fly there, fire.
+function drawSightStrip() {
+  if (!owns("sight") || !G.boss) return;
+  const B = G.boss;
+  const blink = G.mode === "boss" && G.modeT < 0.6 && Math.floor(T / 100) % 2 === 1;
+  ctx.globalAlpha = blink ? 0.25 : 1;                       // it announces that it carried over
+  for (let c = 0; c < COLS; c++) {
+    const r = bossBottomOf(c);
+    if (r === null) continue;
+    const live = cellColor(B.cells.get(c + "," + r));
+    const y = (B.oy + r + 1) * CELL + 6;
+    ctx.fillStyle = COLORS[live];
+    ctx.fillRect(c * CELL + CELL * 0.2, y, CELL * 0.6, CELL * 0.14);
+  }
+  ctx.globalAlpha = 1;
+}
+
+// tiny glyphs shared by the shop cards and the in-fight chips — one drawing, one meaning
+function drawItemIcon(id, x, y, s) {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.lineWidth = Math.max(1, s * 0.08);
+  if (id === "sight") {
+    for (let i = 0; i < 3; i++) {
+      ctx.fillStyle = COLORS[G.killColors[i]];
+      ctx.fillRect(i * s * 0.38, s * 0.4, s * 0.28, s * 0.2);
+    }
+  } else if (id === "quick") {
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(s * 0.05, s * 0.15, s * 0.14, s * 0.55);
+    ctx.fillRect(s * 0.3, s * 0.15, s * 0.14, s * 0.55);
+    ctx.font = fMono(s * 0.5);
+    ctx.textAlign = "left";
+    ctx.textBaseline = "alphabetic";
+    ctx.fillText("x2", s * 0.55, s * 0.65);
+  } else if (id === "chisel") {
+    ctx.fillStyle = "#ffffff";
+    for (let i = 0; i < 3; i++) ctx.fillRect(s * 0.3, i * s * 0.2, s * 0.34, s * 0.14);
+    ctx.fillRect(s * 0.4, s * 0.66, s * 0.14, s * 0.3);     // the shot drilling up the stack
+  } else if (id === "plate") {
+    ctx.strokeStyle = "#8fd8ff";
+    ctx.beginPath(); ctx.arc(s * 0.35, s * 0.5, s * 0.3, 0, Math.PI * 2); ctx.stroke();
+    ctx.fillStyle = "#ffffff";
+    ctx.beginPath(); ctx.arc(s * 0.35, s * 0.5, s * 0.12, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = "#8fd8ff";
+    ctx.fillRect(s * 0.78, s * 0.28, s * 0.14, s * 0.14);
+    ctx.fillRect(s * 0.78, s * 0.55, s * 0.14, s * 0.14);
+  }
+  ctx.restore();
+}
+
+// nearest-point circle/AABB overlap: they touch, or they do not
+function circleHitsBox(cx, cy, r, bx, by, bh) {
+  const nx = clamp(cx, bx - bh, bx + bh);
+  const ny = clamp(cy, by - bh, by + bh);
+  const dx = cx - nx, dy = cy - ny;
+  return dx * dx + dy * dy < r * r;
+}
+
+
+// ---------------------------------------------------------------- arena render
+function renderArena() {
+  // THE BOARD BECOMES ONE THING. Every cell goes to a single flat colour, so the only hues left
+  // on screen are the ones the fight is about: the creature, your loaded round, and the beams.
+  const fade = G.mode === "shop" ? Math.min(1, G.modeT / 0.55)
+             : G.mode === "intro" ? 1 : 1;
+  ctx.globalAlpha = fade;
+  ctx.fillStyle = MONO_CELL;
+  ctx.fillRect(0, 0, COLS * CELL, ROWS * CELL);
+  ctx.globalAlpha = 1;
+  if (!G.boss) return;
+
+  const B = G.boss;
+  const appear = G.mode === "shop" ? Math.min(1, G.modeT / 0.9)
+               : G.mode === "intro" ? Math.max(0.35, (G.modeT - 0.5) / 0.5) : 1;
+
+  // laser telegraph, under everything: you must be able to see it through the fight
+  if (G.laser) drawLaser();
+
+  ctx.globalAlpha = Math.min(1, appear);
+  for (const [key, base] of B.cells) {
+    const i = key.indexOf(",");
+    const c = +key.slice(0, i), r = +key.slice(i + 1);
+    const x = c * CELL, y = (B.oy + r) * CELL;
+    const shimmer = B.gimmick === "rotate" && B.tickT < 0.4 && Math.floor(T / 80) % 2 === 0;
+    ctx.fillStyle = B.hurt > 0 || shimmer ? "#ffffff" : COLORS[cellColor(base)];
+    ctx.fillRect(x + 1, y + 1, CELL - 2, CELL - 2);
+    const ins = CELL * 0.28;
+    ctx.lineCap = "round";
+    ctx.strokeStyle = "#08080e";
+    ctx.lineWidth = Math.max(3, CELL * 0.09);
+    strokeX(ctx, x, ins);
+    // enraged, the creature's own markings pulse at 2Hz — escalation you can SEE
+    const xa = B.enraged ? 0.55 + 0.3 * Math.sin(T / 80) : 0.85;
+    ctx.strokeStyle = "rgba(255,255,255," + xa.toFixed(2) + ")";
+    ctx.lineWidth = Math.max(1.5, CELL * 0.05);
+    strokeX(ctx, x, ins);
+  }
+  ctx.globalAlpha = 1;
+
+  // the cell you misread flashes its TRUE colour — the read you missed, shown, not told
+  if (G.jamMark) {
+    const m = G.jamMark;
+    ctx.globalAlpha = (m.t / 0.4) * (0.5 + 0.5 * Math.abs(Math.sin(T / 60)));
+    ctx.strokeStyle = m.hue;
+    ctx.lineWidth = 3;
+    ctx.strokeRect(m.col * CELL + 1.5, (B.oy + m.r) * CELL + 1.5, CELL - 3, CELL - 3);
+    ctx.globalAlpha = 1;
+  }
+
+  drawSightStrip();
+  if (G.mode === "shop") { renderShop(); return; }
+
+  for (const sh of G.shells) {
+    const h = CELL * 0.26;
+    if (sh.warn > 0) {                       // muzzle flare: a shell never appears without warning
+      ctx.globalAlpha = 0.35 + 0.5 * Math.abs(Math.sin(T / 40));
+      ctx.strokeStyle = COLORS[sh.color];
+      ctx.lineWidth = 3;
+      ctx.strokeRect(sh.x - h, sh.y - h, h * 2, h * 2);
+      ctx.globalAlpha = 1;
+      continue;
+    }
+    ctx.fillStyle = COLORS[sh.color];
+    ctx.fillRect(sh.x - h, sh.y - h, h * 2, h * 2);
+    ctx.strokeStyle = "#08080e";
+    ctx.lineWidth = 2;
+    ctx.strokeRect(sh.x - h, sh.y - h, h * 2, h * 2);
+  }
+  for (const b of G.bullets) {
+    ctx.fillStyle = COLORS[b.color];
+    ctx.fillRect(b.x - CELL * 0.11, b.y - CELL * 0.3, CELL * 0.22, CELL * 0.6);
+  }
+
+  if (G.mode !== "win") drawArenaHud();
+}
+
+function drawLaser() {
+  const L = G.laser;
+  const firing = L.t >= L.tel;
+  const p = Math.min(1, L.t / L.tel);
+  const w = CELL * 0.8;
+
+  if (!firing) {
+    const strobe = p > 0.72 && Math.floor(T / 80) % 2 === 0;
+    ctx.globalAlpha = 0.18 + 0.6 * p * (strobe ? 1 : 0.55);
+    ctx.fillStyle = HAZARD;
+    for (const c of L.cols) ctx.fillRect(c * CELL + (CELL - 4) / 2, 0, 4, ROWS * CELL);
+    if (L.kind !== "rake") ctx.fillRect(0, L.y * CELL - 2, COLS * CELL, 4);
+    ctx.globalAlpha = 1;
+    return;
+  }
+  const k = 1 - (L.t - L.tel) / L.fire;
+  ctx.globalAlpha = 0.35 + 0.65 * k;
+  ctx.fillStyle = "#ffffff";
+  for (const c of L.cols) ctx.fillRect(c * CELL + (CELL - w) / 2, 0, w, ROWS * CELL);
+  if (L.kind !== "rake") ctx.fillRect(0, L.y * CELL - w / 2, COLS * CELL, w);
+  ctx.globalAlpha = 0.5 * k;
+  ctx.fillStyle = HAZARD;
+  for (const c of L.cols) ctx.fillRect(c * CELL + (CELL - w * 1.6) / 2, 0, w * 1.6, ROWS * CELL);
+  if (L.kind !== "rake") ctx.fillRect(0, L.y * CELL - w * 0.8, COLS * CELL, w * 1.6);
+  ctx.globalAlpha = 1;
+}
+
+function drawArenaHud() {
+  const B = G.boss;
+  const frac = B.hp / B.maxHp;
+  ctx.fillStyle = "rgba(10,10,16,0.9)";
+  ctx.fillRect(0, 0, COLS * CELL, 12);
+  ctx.fillStyle = frac > 0.35 ? HAZARD : GAP_EDGE;
+  ctx.fillRect(0, 0, COLS * CELL * frac, 12);
+  ctx.fillStyle = "rgba(255,255,255,0.8)";
+  ctx.font = fMono(9);
+  ctx.textAlign = "left";
+  ctx.textBaseline = "alphabetic";
+  ctx.fillText(B.def.name, 6, 22);
+
+  const R = roundsN();
+  const sw = CELL * 0.6, pad = 8;
+  const y0 = ROWS * CELL - sw - pad - 16;
+  const touch = document.body.classList.contains("touch");
+
+  if (!touch) {                               // the FIRE pad is self-labelling; text is for keyboards
+    ctx.font = fMono(Math.max(9, CELL * 0.2));
+    ctx.fillStyle = "rgba(255,255,255,0.55)";
+    ctx.fillText("SPACE  FIRE — HIT ITS MATCH    ↑ ↓  FLY", pad, y0 - 7);
+  }
+
+  // the loaded round, big, plus the other colours the gun can deal — dealt, never chosen
+  for (let i = 0; i < R; i++) {
+    const x0 = pad + i * (sw + 8);
+    ctx.fillStyle = COLORS[G.killColors[i]];
+    ctx.fillRect(x0, y0, sw, sw);
+    const live = i === G.ammo;
+    ctx.lineWidth = live ? 3 : 1;
+    ctx.strokeStyle = live ? "#ffffff" : "rgba(255,255,255,0.25)";
+    ctx.strokeRect(x0, y0, sw, sw);
+    if (live) {
+      ctx.font = fMono(Math.max(8, CELL * 0.19));
+      ctx.fillStyle = "#ffffff";
+      ctx.fillText("LOADED", x0, y0 + sw + 12);
+    }
+  }
+
+  // the Prism's clock, drawn so it can never read as randomness
+  if (B.gimmick === "rotate") {
+    const bx = pad + R * (sw + 8) + 6;
+    const w = CELL * 1.6;
+    ctx.fillStyle = "rgba(255,255,255,0.15)";
+    ctx.fillRect(bx, y0 + sw * 0.4, w, 5);
+    ctx.fillStyle = B.tickT < 0.4 ? HAZARD : "#ffffff";
+    ctx.fillRect(bx, y0 + sw * 0.4, w * (1 - B.tickT / (B.period || 3)), 5);
+    ctx.fillStyle = "rgba(255,255,255,0.5)";
+    ctx.font = fMono(8);
+    ctx.fillText("SHIFT", bx, y0 + sw * 0.4 - 4);
+  }
+
+  // what you own, worn on the fight: chips under the hp bar; a proc flashes its chip white
+  ctx.textAlign = "left";
+  ctx.textBaseline = "alphabetic";
+  let right = COLS * CELL - 8;
+  for (const id of ["plate", "chisel", "quick", "sight"]) {
+    if (!owns(id)) continue;
+    const flash = T - (G.chipFlash[id] || -1e9) < 250;
+    if (CELL < 18) {                          // no room for words: the shop-card glyph stands in
+      const bx = right - 14;
+      ctx.strokeStyle = "rgba(255,255,255,0.3)";
+      ctx.lineWidth = 1;
+      ctx.strokeRect(bx, 16, 14, 14);
+      drawItemIcon(id, bx + 2, 18, 10);
+      right = bx - 6;
+    } else {
+      ctx.font = fMono(9);
+      const label = ITEM_NAME[id];
+      const lw = ctx.measureText(label).width;
+      const w = lw + 8 + (id === "plate" ? 14 : 0);
+      const bx = right - w;
+      if (flash) { ctx.fillStyle = "#ffffff"; ctx.fillRect(bx, 16, w, 14); }
+      ctx.strokeStyle = "rgba(255,255,255,0.3)";
+      ctx.lineWidth = 1;
+      ctx.strokeRect(bx, 16, w, 14);
+      ctx.fillStyle = flash ? "#05050a" : "rgba(255,255,255,0.75)";
+      ctx.fillText(label, bx + 4, 26);
+      if (id === "plate") {                   // charges: filled while live, hollow once spent
+        for (let p = 0; p < 2; p++) {
+          const px2 = bx + 4 + lw + 3 + p * 7;
+          if (G.plate > p) { ctx.fillStyle = "#8fd8ff"; ctx.fillRect(px2, 20, 5, 5); }
+          else { ctx.strokeStyle = "#8fd8ff"; ctx.strokeRect(px2 + 0.5, 20.5, 5, 5); }
+        }
+      }
+      right = bx - 6;
+    }
+  }
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+}
+
+// ---------------------------------------------------------------- the shop
+// It is not a screen. It occupies the assembly time that already existed: press SPACE the instant
+// it appears and the fight starts exactly when it used to. Skipping costs you nothing.
+function renderShop() {
+  const S = G.shop;
+  const W = COLS * CELL, H = ROWS * CELL;
+  const top = H * 0.60;
+  ctx.fillStyle = "rgba(5,5,10,0.90)";
+  ctx.fillRect(0, top, W, H - top);
+  ctx.fillStyle = "#1e1e2e";
+  ctx.fillRect(0, top, W, 1);
+
+  // a ghost of you above the shelf, so what you buy has a body to hang on
+  if (S.owned.size) {
+    const gx = G.lane * CELL + CELL / 2, gy = top - CELL * 0.55;
+    ctx.globalAlpha = 0.45;
+    ctx.fillStyle = "#ffffff";
+    ctx.beginPath(); ctx.ellipse(gx, gy, CELL * 0.3, CELL * 0.3, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.globalAlpha = 1;
+    if (S.owned.has("plate")) {
+      ctx.strokeStyle = "#8fd8ff";
+      ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.arc(gx, gy, CELL * 0.3 + 4, 0, Math.PI * 2); ctx.stroke();
+      ctx.beginPath(); ctx.arc(gx, gy, CELL * 0.3 + 8, 0, Math.PI * 2); ctx.stroke();
+      ctx.fillStyle = "#8fd8ff";
+      ctx.font = fMono(10);
+      ctx.textAlign = "left";
+      ctx.textBaseline = "middle";
+      ctx.fillText("2", gx + CELL * 0.3 + 14, gy);
+    }
+  }
+
+  ctx.textAlign = "left";
+  ctx.textBaseline = "alphabetic";
+  ctx.font = fMono(10);
+  ctx.fillStyle = "#7c7a95";
+  const broke = !SHOP_ITEMS.some((it) => G.score >= itemCost(it, G.bossesDown)) && !S.stack.length;
+  ctx.fillText(
+    broke ? "NOTHING YOU CAN AFFORD YET — SPACE TO FIGHT"
+      : G.firstShop ? "SPEND SCORE ON GEAR — THIS FIGHT ONLY. UNSPENT SCORE STAYS YOURS."
+      : "GEAR — THIS FIGHT ONLY", 10, top + 20);
+
+  ctx.textAlign = "right";
+  ctx.font = fMono(10);
+  ctx.fillStyle = "#7c7a95";
+  ctx.fillText("SCORE LEFT", W - 10, top + 14);
+  ctx.font = fDisp(22);
+  ctx.fillStyle = GAP_EDGE;
+  ctx.fillText(String(G.score), W - 10, top + 36);   // it only ever ticks DOWN. Never a red minus.
+  ctx.textAlign = "left";
+
+  const n = SHOP_ITEMS.length;
+  const gap = 6, cw = (W - 20 - gap * (n - 1)) / n;
+  const cy = top + 48, ch = H - top - 48 - 26;
+  const tiny = CELL < 18;
+  for (let i = 0; i < n; i++) {
+    const it = SHOP_ITEMS[i];
+    const cost = itemCost(it, G.bossesDown);
+    const own = S.owned.has(it.id);
+    const can = G.score >= cost;
+    const x = 10 + i * (cw + gap);
+
+    ctx.globalAlpha = own ? 1 : can ? 1 : 0.28;
+    ctx.fillStyle = own ? "#12241a" : "#0e0e18";
+    ctx.fillRect(x, cy, cw, ch);
+    ctx.lineWidth = own ? 2 : can ? 2 : 1;
+    ctx.strokeStyle = own ? "#3dff88" : can ? "#ffffff" : "#2a2a3a";
+    ctx.strokeRect(x, cy, cw, ch);
+
+    // the key that buys it, drawn AS a key
+    ctx.strokeStyle = "#7c7a95";
+    ctx.lineWidth = 1;
+    ctx.strokeRect(x + 6.5, cy + 6.5, 14, 14);
+    ctx.font = fMono(9);
+    ctx.fillStyle = "#eceaf4";
+    ctx.textAlign = "center";
+    ctx.fillText(String(i + 1), x + 13, cy + 16);
+    ctx.textAlign = "left";
+
+    ctx.font = fMono(8);
+    ctx.fillStyle = TAG_HUE[it.tag];
+    ctx.textAlign = "right";
+    ctx.fillText(it.tag, x + cw - 6, cy + 16);
+    ctx.textAlign = "left";
+
+    ctx.font = fDisp(Math.min(13, cw * 0.15));
+    ctx.fillStyle = "#eceaf4";
+    ctx.fillText(it.name, x + 6, cy + 34);
+
+    if (!tiny) {
+      drawItemIcon(it.id, x + 6, cy + 40, 22);
+      ctx.font = fMono(9);
+      ctx.fillStyle = "#a7a5c0";              // the how-it-works line is the whole point — keep it bright
+      wrapText(it.blurb, x + 6, cy + 74, cw - 12, 11);
+    }
+
+    ctx.font = fDisp(13);
+    ctx.fillStyle = own ? "#3dff88" : can ? GAP_EDGE : HAZARD;
+    ctx.fillText(own ? "OWNED ✓" : "COST " + cost.toLocaleString(), x + 6, cy + ch - 10);
+    ctx.globalAlpha = 1;
+  }
+
+  // teach the refund exactly once, right after the first buy of the run
+  if (T - G.undoHintT < 1500) {
+    ctx.font = fMono(10);
+    ctx.fillStyle = "#eceaf4";
+    ctx.textAlign = "center";
+    ctx.fillText("⌫ UNDO — FULL REFUND", W / 2, cy - 8);
+    ctx.textAlign = "left";
+  }
+
+  // no timer, ever — after a quiet while the exit hint just breathes
+  ctx.font = fMono(9);
+  ctx.fillStyle = "#7c7a95";
+  ctx.globalAlpha = G.modeT > 6 ? 0.45 + 0.55 * (0.5 + 0.5 * Math.sin((G.modeT / 1.4) * Math.PI * 2)) : 1;
+  ctx.textAlign = "center";
+  ctx.fillText(S.stack.length ? "1-4 BUY   ⌫ UNDO   SPACE FIGHT" : "1-4 BUY   SPACE FIGHT", W / 2, H - 6);
+  ctx.globalAlpha = 1;
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+}
+
+function wrapText(text, x, y, maxW, lh) {
+  const words = text.split(" ");
+  let line = "", yy = y;
+  for (const w of words) {
+    const t = line ? line + " " + w : w;
+    if (ctx.measureText(t).width > maxW && line) {
+      ctx.fillText(line, x, yy);
+      line = w;
+      yy += lh;
+    } else line = t;
+  }
+  if (line) ctx.fillText(line, x, yy);
+}
+
+// ---------------------------------------------------------------- update
+function update(dt) {
+  if (G.hitstop > 0) {
+    G.hitstop -= dt;                            // freezes the board; particles and shake still run
+    // Steering during hitstop is buffered, not dropped: the moment the board unfreezes, it applies.
+    // Without this the steer you make while reeling from a hit is silently swallowed, because the
+    // 120ms buffer expires long before the next beat arrives.
+    if (G.hitstop <= 0 && buffer) { const d = buffer.d; buffer = null; tryStep(d); }
+  } else if (G.mode !== "run" && !G.over && !G.paused) {
+    updateBoss(dt);                             // the board holds still; the fight is the game
+  } else if (!G.over && !G.paused) {
+    G.penaltyMul += (1 - G.penaltyMul) * (1 - Math.exp(-dt / 0.25));
+    G.scroll += speedNow() * G.penaltyMul * dt;
+
+    // THE 50% RULE: you stand on whichever square is under MOST of the dot. The board slides
+    // continuously, so committing only at full overlap made the game count you one square
+    // behind your own eyes for half of every beat.
+    const cur = Math.floor(G.scroll + 0.5);
+    while (G.lastRow < cur) {                   // WHILE, not IF: a GC hitch can never tunnel you through a wall
+      G.lastRow++;
+      mintUpTo(G.lastRow + 16);
+      commit(G.lastRow);
+      if (G.over) break;
+    }
+  }
+
+  // Hold a direction to dash: one step immediately on the keypress, then — only after DAS_MS,
+  // so a tap can never become two — a repeat every ARR_MS for as long as the bank holds out.
+  if (heldDir && G.hitstop <= 0 && !G.over && !G.paused) {
+    const boss = G.mode === "boss";
+    const das = boss ? 130 : DAS_MS, arr = boss ? 55 : ARR_MS;
+    if (G.mode === "shop" || G.mode === "intro") heldDir = 0;
+    if (T - heldSince >= das && T - G.lastStepT >= arr) tryStep(heldDir);
+  }
+
+  if (G.mode === "boss" && spaceHeld) shoot();   // hold to keep firing; shoot() rate-limits itself
+
+  if (G.iframes > 0) G.iframes -= dt;
+  G.trauma = Math.max(0, G.trauma - dt * 1.8);
+  G.flash = Math.max(0, G.flash - dt);
+  if (G.callout) { G.calloutT += dt; if (G.calloutT > 1.4) G.callout = null; }
+  G.jamPulse = Math.max(0, G.jamPulse - dt);
+  if (G.jamMark) { G.jamMark.t -= dt; if (G.jamMark.t <= 0) G.jamMark = null; }
+
+  G.tweenT += dt;
+  // 50ms in the arena: the dash repeat is 55ms, so an 80ms glide could never catch up and the
+  // drawn dot trailed its real position by most of a column.
+  const p = Math.min(G.tweenT / (G.mode === "boss" ? 0.05 : 0.08), 1);
+  const e = 1 - Math.pow(1 - p, 5);             // bounded easeOutQuint — reads instant, but the eye gets 4 frames to track
+  G.dotXVis = G.tweenFrom + (G.tweenTo - G.tweenFrom) * e;
+
+  G.vT += dt;                                   // the vertical hop/hold, a touch slower so the eye can follow it
+  const pv = Math.min(G.vT / 0.13, 1);
+  G.vVis = G.vFrom + (G.vTo - G.vFrom) * (1 - Math.pow(1 - pv, 5));
+
+  if (!reduced) {
+    G.trail.unshift(G.dotXVis);
+    if (G.trail.length > 6) G.trail.pop();
+  }
+
+  for (let i = G.parts.length - 1; i >= 0; i--) {
+    const q = G.parts[i];
+    q.life -= dt;
+    if (q.life <= 0) { G.parts.splice(i, 1); continue; }
+    q.x += q.vx * dt; q.y += q.vy * dt; q.vy += 180 * dt;
+  }
+  for (let i = G.pops.length - 1; i >= 0; i--) { G.pops[i].t += dt; if (G.pops[i].t > 0.7) G.pops.splice(i, 1); }
+  for (let i = G.rings.length - 1; i >= 0; i--) { G.rings[i].t += dt; if (G.rings[i].t > 0.26) G.rings.splice(i, 1); }
+}
+
+// ---------------------------------------------------------------- render
+const screenY = (r) => (DOT_ROW - r + G.scroll) * CELL;
+const BW = () => COLS * CELL;
+
+function render() {
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  ctx.fillStyle = "#05050a";
+  ctx.fillRect(0, 0, BW(), ROWS * CELL);
+
+  if (!G) return;
+
+  ctx.save();
+  if (!reduced && G.trauma > 0) {
+    const s = G.trauma * G.trauma * 10;
+    ctx.translate((Math.random() * 2 - 1) * s, (Math.random() * 2 - 1) * s);
+  }
+
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(0, 0, BW(), ROWS * CELL);
+  ctx.clip();
+
+  const lo = G.lastRow - 5, hi = G.lastRow + 16;
+
+  // lane beam — "what is coming at me", in one glance
+  ctx.fillStyle = "rgba(255,255,255,0.05)";
+  ctx.fillRect(G.lane * CELL, 0, CELL, ROWS * CELL);
+
+  // the front, and the line you cannot fall further back than
+  const front = DOT_ROW * CELL, limit = (DOT_ROW + BACK_MAX + 1) * CELL;
+  ctx.lineWidth = 1;
+  ctx.strokeStyle = "rgba(255,255,255,0.10)";
+  ctx.beginPath();
+  ctx.moveTo(0, front); ctx.lineTo(COLS * CELL, front);
+  ctx.stroke();
+  ctx.strokeStyle = G.vOff <= -BACK_MAX ? "rgba(255,46,77,0.5)" : "rgba(255,255,255,0.06)";
+  ctx.beginPath();
+  ctx.moveTo(0, limit); ctx.lineTo(COLS * CELL, limit);
+  ctx.stroke();
+
+  for (let r = lo; r <= hi; r++) {
+    const cv = cache[((r % CACHE_N) + CACHE_N) % CACHE_N];
+    if (!cv || !G.rows.has(r)) continue;
+    ctx.drawImage(cv, 0, screenY(r), BW(), CELL);
+  }
+
+  // gap beams: turns "find the white square in the dark bar" into "get into the lit corridor"
+  const wr = nextWall(G.dotRow);
+  const wrow = G.rows.get(wr);
+  if (G.mode === "run" && wrow && wrow.wall && wr <= hi) {
+    const wy = screenY(wr) + CELL;
+    const dy = dotScreenY() + CELL / 2;
+    const near = wr - G.dotRow;
+    const pulse = near <= 3 ? 0.09 + 0.07 * Math.abs(Math.sin(T / 1000 * Math.PI * 4)) : 0.09;
+    for (const g of wrow.gaps) {
+      const x = (g - 1) * CELL;
+      ctx.fillStyle = `rgba(255,255,255,${pulse})`;
+      ctx.fillRect(x, wy, CELL * 3, dy - wy);
+      ctx.fillStyle = "rgba(255,255,255,0.35)";
+      ctx.fillRect(x, wy, 1, dy - wy);
+      ctx.fillRect(x + CELL * 3 - 1, wy, 1, dy - wy);
+    }
+    // the commitment arithmetic, drawn where the eye already is
+    const gn = wrow.gaps.reduce((a, b) => (Math.abs(b - G.lane) < Math.abs(a - G.lane) ? b : a));
+    ctx.font = fDisp(CELL * 0.9);
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillStyle = near <= 3 ? HAZARD : "rgba(255,255,255,0.85)";
+    ctx.fillText(String(near), gn * CELL + CELL / 2, screenY(wr) + CELL / 2);
+  }
+
+  if (G.mode === "run") drawReticles();
+  else renderArena();
+  if (G.mode !== "shop") drawDot();
+
+  for (const q of G.parts) {
+    ctx.globalAlpha = Math.max(0, q.life / q.max);
+    ctx.fillStyle = q.color;
+    ctx.fillRect(q.x - q.size / 2, q.y - q.size / 2, q.size, q.size);
+  }
+  ctx.globalAlpha = 1;
+
+  for (const q of G.rings) {
+    const p = q.t / 0.26;
+    ctx.globalAlpha = 1 - p;
+    ctx.strokeStyle = q.color;
+    ctx.lineWidth = 6 * (1 - p);
+    ctx.beginPath();
+    ctx.arc(q.x, q.y, q.max * p, 0, Math.PI * 2);
+    ctx.stroke();
+  }
+  ctx.globalAlpha = 1;
+
+  ctx.font = fDisp(CELL * 0.36);
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  for (const q of G.pops) {
+    const p = q.t / 0.7;
+    ctx.globalAlpha = 1 - p * p;
+    ctx.fillStyle = q.color;
+    ctx.fillText(q.text, q.x, q.y - p * 40);
+  }
+  ctx.globalAlpha = 1;
+
+  if (G.over && G.postPath) drawPostMortem();
+
+  if (G.flash > 0) {
+    ctx.globalAlpha = Math.min(1, G.flash * 1.6);
+    ctx.fillStyle = G.flashColor;
+    ctx.globalAlpha *= 0.28;
+    ctx.fillRect(0, 0, BW(), ROWS * CELL);
+    ctx.globalAlpha = 1;
+  }
+
+  // no excuse for dying to a wall — which is exactly what makes it feel like your fault
+  const alarmRow = G.rows.get(nextLanding());
+  if (G.mode === "run" && alarmRow && alarmRow.wall && !alarmRow.gapCols.has(G.lane)) {
+    ctx.strokeStyle = HAZARD;
+    ctx.lineWidth = 6;
+    ctx.globalAlpha = 0.5 + 0.5 * Math.abs(Math.sin(T / 1000 * Math.PI * 8));
+    ctx.strokeRect(3, 3, BW() - 6, ROWS * CELL - 6);
+    ctx.globalAlpha = 1;
+  }
+
+  if (G.callout) {
+    const a = G.calloutT < 0.15 ? G.calloutT / 0.15 : G.calloutT > 1.1 ? (1.4 - G.calloutT) / 0.3 : 1;
+    ctx.globalAlpha = Math.max(0, Math.min(1, a));
+    ctx.fillStyle = "rgba(5,5,10,0.75)";
+    ctx.fillRect(0, ROWS * CELL * 0.38, BW(), CELL * 2.2);
+    ctx.fillStyle = CALLOUT_HUE[G.callout] || COLORS[G.killColors[G.callout.startsWith("SECOND") ? 1 : 2]];
+    ctx.font = fDisp(CELL * 0.75);
+    ctx.fillText(G.callout, BW() / 2, ROWS * CELL * 0.38 + CELL * 1.1);
+    ctx.globalAlpha = 1;
+  }
+
+  // the fire lesson: under the callout while it lives, and through the whole FIRST fight —
+  // it leaves the moment you land a matching hit, because that is the moment you know
+  const firstLesson = (G.mode === "intro" || G.mode === "boss")
+    && G.bossesDown === 0 && !G.taughtFire && !(G.mode === "boss" && G.modeT > 5);
+  if (G.callout === "HIT YOUR COLOR" || firstLesson) {
+    const line = document.body.classList.contains("touch")
+      ? "THE GUN LOADS ITSELF — TAP FIRE ON A MATCHING CELL"
+      : "THE GUN LOADS A RANDOM COLOR — SPACE FIRES IT AT A MATCHING CELL";
+    const yy = ROWS * CELL * 0.38 + CELL * 1.75;
+    if (!G.callout) {
+      ctx.fillStyle = "rgba(5,5,10,0.6)";
+      ctx.fillRect(0, yy - CELL * 0.35, BW(), CELL * 0.7);
+    }
+    ctx.font = fMono(CELL * 0.34);
+    ctx.fillStyle = "rgba(255,255,255,0.85)";
+    ctx.fillText(line, BW() / 2, yy);
+  }
+
+
+  ctx.restore();
+  ctx.restore();
+
+  if (G.paused) {
+    ctx.fillStyle = "rgba(5,5,10,0.8)";
+    ctx.fillRect(0, 0, BW(), ROWS * CELL);
+    ctx.fillStyle = "#fff";
+    ctx.font = fDisp(CELL);
+    ctx.textAlign = "center";
+    ctx.fillText("PAUSED", BW() / 2, ROWS * CELL / 2);
+  }
+}
+
+function drawReticles() {
+  // YOU ARE HERE: the cell the game counts you on, outlined bright — it slides with the board
+  // and snaps forward on the beat, so the rhythm of "which square am I on" becomes visible
+  const hereY = screenY(G.dotRow);
+  ctx.strokeStyle = "rgba(255,255,255,0.7)";
+  ctx.lineWidth = 2.5;
+  ctx.strokeRect(G.lane * CELL + 2, hereY + 2, CELL - 4, CELL - 4);
+
+  const r = nextLanding();                      // hop / hold shift which row this is
+  const row = G.rows.get(r);
+  if (!row) return;
+  const y = screenY(r);
+  const phase = (G.scroll + 0.5) % 1;           // peaks exactly on the 50%-rule beat
+
+  // every cell your banked steps can actually reach, with its graze value —
+  // this is the decision surface, and it is why grazing is learnable on run one
+  const span = Math.max(1, G.steps);
+  for (let d = -span; d <= span; d++) {
+    const c = G.lane + d;
+    if (c < 0 || c >= COLS) continue;
+    const isLane = c === G.lane;
+    const deadly = row.danger[c] === 1;
+    const x = c * CELL;
+
+    if (isLane) {
+      ctx.strokeStyle = deadly ? "#ff3b4d" : "#3dff88";
+      ctx.lineWidth = 3;
+      ctx.globalAlpha = 0.3 + 0.5 * phase;      // a metronome you can see
+      const L = CELL * 0.3, o = 3;
+      ctx.beginPath();
+      ctx.moveTo(x + o, y + o + L); ctx.lineTo(x + o, y + o); ctx.lineTo(x + o + L, y + o);
+      ctx.moveTo(x + CELL - o - L, y + o); ctx.lineTo(x + CELL - o, y + o); ctx.lineTo(x + CELL - o, y + o + L);
+      ctx.moveTo(x + o, y + CELL - o - L); ctx.lineTo(x + o, y + CELL - o); ctx.lineTo(x + o + L, y + CELL - o);
+      ctx.moveTo(x + CELL - o - L, y + CELL - o); ctx.lineTo(x + CELL - o, y + CELL - o); ctx.lineTo(x + CELL - o, y + CELL - o - L);
+      ctx.stroke();
+      ctx.globalAlpha = 1;
+    }
+
+  }
+
+}
+
+function drawDot() {
+  const y = dotScreenY();
+  const R = CELL * 0.3;
+
+  if (!reduced) {
+    for (let i = G.trail.length - 1; i >= 1; i--) {
+      ctx.globalAlpha = 0.08 + 0.22 * (1 - i / G.trail.length);
+      ctx.fillStyle = "#fff";
+      ctx.beginPath();
+      ctx.arc(G.trail[i], y, R * (1 - i * 0.09), 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  const tilt = clamp((G.tweenTo - G.dotXVis) / CELL, -1, 1);
+  const rx = R * (1 + 0.3 * Math.abs(tilt)), ry = R * (1 - 0.22 * Math.abs(tilt));
+
+  const jammed = G.mode === "boss" && T < G.jamT;
+  if (G.iframes > 0 && Math.floor(G.iframes * 12) % 2 === 0) ctx.globalAlpha = 0.35;
+  ctx.beginPath();
+  ctx.ellipse(G.dotXVis, y, rx, ry, 0, 0, Math.PI * 2);
+  ctx.fillStyle = G.mode === "boss" ? ammoColor() : "#ffffff";
+  ctx.fill();
+  ctx.lineWidth = 3;
+  ctx.strokeStyle = G.mode === "boss" ? (jammed ? "#5a5a70" : "#ffffff") : "#05050a";
+  ctx.stroke();
+
+  // the jam, worn on the gun itself: a bar draining above the dot, thudding on wasted pulls
+  if (jammed) {
+    const total = owns("quick") ? JAM_MS_QUICK : JAM_MS;
+    const k = clamp((G.jamT - T) / total, 0, 1);
+    const scale = 1 + G.jamPulse * 2;
+    const w = CELL * scale, h = 3 * scale;
+    const bx = G.dotXVis - w / 2, by = y - R - 14;
+    ctx.fillStyle = "rgba(90,90,112,0.35)";
+    ctx.fillRect(bx, by, w, h);
+    ctx.fillStyle = "#5a5a70";
+    ctx.fillRect(bx, by, w * k, h);
+    ctx.font = fMono(9);
+    ctx.textAlign = "center";
+    ctx.textBaseline = "alphabetic";
+    ctx.fillStyle = "#8a8aa0";
+    ctx.fillText("JAMMED", G.dotXVis, by - 3);
+    ctx.textBaseline = "middle";
+  }
+
+  // wear the shield: one ring per charge, the same idiom the shop ghost preview promised
+  if (G.plate > 0 && (G.mode === "boss" || G.mode === "intro")) {
+    ctx.strokeStyle = "#8fd8ff";
+    ctx.lineWidth = 2;
+    for (let p = 0; p < G.plate; p++) {
+      ctx.beginPath();
+      ctx.arc(G.dotXVis, y, R + 5 + p * 4, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+  }
+
+  // In the arena, draw the hitbox. It is smaller than the dot, and you should be able to see
+  // exactly how much smaller — guessing where your own hurtbox is is not a skill.
+  if (G.mode === "boss") {
+    ctx.beginPath();
+    ctx.arc(G.dotXVis, y, HIT_R * CELL, 0, Math.PI * 2);
+    ctx.fillStyle = "#05050a";
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(G.dotXVis, y, HIT_R * CELL * 0.55, 0, Math.PI * 2);
+    ctx.fillStyle = "#ffffff";
+    ctx.fill();
+  }
+  ctx.globalAlpha = 1;
+}
+
+function drawPostMortem() {
+  const { from, path } = G.postPath;
+  ctx.globalAlpha = 0.35;
+  ctx.fillStyle = GAP_EDGE;
+  for (let i = 0; i < path.length; i++) {
+    const r = from + i;
+    ctx.fillRect(path[i] * CELL, screenY(r), CELL, CELL);
+  }
+  ctx.globalAlpha = 1;
+  ctx.strokeStyle = GAP_EDGE;
+  ctx.lineWidth = 4;
+  ctx.lineJoin = "round";
+  ctx.beginPath();
+  for (let i = 0; i < path.length; i++) {
+    const r = from + i;
+    const x = path[i] * CELL + CELL / 2, y = screenY(r) + CELL / 2;
+    i ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
+  }
+  ctx.stroke();
+}
+
+// The HUD is DOM and only written when a value actually changes — no style recalc per frame.
+const shown = {};
+function syncHud() {
+  const set = (node, key, val, cls, on) => {
+    if (shown[key] !== val) { shown[key] = val; node.textContent = val; }
+    if (cls) node.classList.toggle(cls, !!on);
+  };
+  set(el.hScore, "score", String(G.score), "record", G.recordBroken);
+  set(el.hBest, "best", String(best));
+  set(el.hDepth, "depth", String(Math.max(0, G.maxRow)));
+  set(el.hBack, "back", String(BACK_MAX + G.vOff), "near", BACK_MAX + G.vOff === 0);
+  set(el.hStars, "stars", String(G.stars));
+  const sp = speedNow() * G.penaltyMul;
+  set(el.hSpeed, "speed", sp.toFixed(2), "hot", sp > 3.4);
+
+  // chase bar: how far into your own best you are
+  const pct = best > 0 ? Math.min(1, G.score / best) : 0;
+  const key = "bar" + Math.round(pct * 200);
+  if (shown.barKey !== key) {
+    shown.barKey = key;
+    el.hBar.style.right = (100 - pct * 100) + "%";
+    el.hBarWrap.classList.toggle("done", G.recordBroken);
+  }
+
+  if (shown.steps !== G.steps) {
+    shown.steps = G.steps;
+    el.hSteps.innerHTML = "";
+    for (let i = 0; i < MAX_STEPS; i++) {
+      const u = document.createElement("u");
+      if (i >= G.steps) u.className = "off";
+      el.hSteps.appendChild(u);
+    }
+  }
+
+  if (shown.lives !== G.lives) {
+    shown.lives = G.lives;
+    el.hLives.innerHTML = "";
+    for (let i = 0; i < 3; i++) {
+      const u = document.createElement("u");
+      if (i >= G.lives) u.className = "off";
+      el.hLives.appendChild(u);
+    }
+  }
+  const kc = killCount(G.dotRow);
+  const kkey = kc + ":" + G.killColors.join(",");
+  if (shown.kills !== kkey) {
+    shown.kills = kkey;
+    el.hKills.innerHTML = "";
+    for (let i = 0; i < 3; i++) {
+      const u = document.createElement("u");
+      u.className = i < kc ? "on" : "off";
+      u.style.background = COLORS[G.killColors[i]];
+      el.hKills.appendChild(u);
+    }
+  }
+
+  // the touch pad reshapes itself for the arena: colour swatches appear, the burn key hides
+  const arena = G.mode !== "run" && !G.over;
+  if (shown.arena !== arena) { shown.arena = arena; document.body.classList.toggle("arena", arena); }
+  if (arena && fireBtns.length) {
+    const fk = G.killColors.join(",") + ":" + G.ammo;
+    if (shown.fire !== fk) {
+      shown.fire = fk;
+      fireBtns[0].style.background = COLORS[G.killColors[G.ammo]];   // the button IS the chamber
+    }
+  }
+}
+
+// ---------------------------------------------------------------- loop
+let prev = performance.now();
+function frame(now) {
+  requestAnimationFrame(frame);
+  T = now;
+  const dt = Math.min((now - prev) / 1000, 0.05);   // a GC hitch must never teleport the board
+  prev = now;
+  if (G && !G.over && !G.paused) { update(dt); syncHud(); }
+  else if (G) update(0);
+  render();
+}
+
+function start(fromDeath) {
+  audioOn();
+  G = newGame();
+  G.dotXVis = G.tweenFrom = G.tweenTo = START_LANE * CELL + CELL / 2;
+  mintUpTo(16);
+  heldDir = 0;
+  buffer = null;
+  spaceHeld = false;
+  heldSince = -1e9;
+  G.rampAnchor = 0;
+  for (const k in shown) delete shown[k];
+  if (fromDeath) {                             // the restart must read as a CUT, not a continuation
+    G.callout = "FRESH RUN";
+    G.calloutT = 0;
+    G.flash = 0.12; G.flashColor = "#eceaf4";
+  }
+  el.start.hidden = true;
+  el.over.hidden = true;
+  el.hud.hidden = false;
+  document.body.classList.add("playing");
+  syncHud();
+}
+
+// the bare `start` reference would receive the MouseEvent as fromDeath (truthy) — wrap both
+document.getElementById("startBtn").addEventListener("click", () => start(false));
+el.over.addEventListener("click", () => { if (G && G.over && T - G.overAt >= OVER_LOCK_MS) start(true); });
+if (matchMedia("(hover: none)").matches) document.body.classList.add("touch");
+addEventListener("resize", layout);
+
+layout();
+requestAnimationFrame(frame);
+</script>
+<script>
+// Multiplayer is a competitive race layer: each browser keeps its own game state,
+// while PeerJS shares progress and finish state directly between the two players.
+(function () {
+  const panel = document.getElementById("multiplayer");
+  const codeInput = document.getElementById("roomCode");
+  const createBtn = document.getElementById("createRoom");
+  const joinBtn = document.getElementById("joinRoom");
+  const status = document.getElementById("roomStatus");
+  const opponent = document.getElementById("opponent");
+  const opponentScore = document.getElementById("opponentScore");
+  const opponentDepth = document.getElementById("opponentDepth");
+  let peer = null;
+  let connection = null;
+  let lastSent = "";
+
+  function setStatus(message, error) {
+    status.textContent = message;
+    status.style.color = error ? "var(--hot)" : "var(--safe)";
+  }
+
+  function bindConnection(nextConnection) {
+    connection = nextConnection;
+    connection.on("open", function () {
+      opponent.style.display = "block";
+      panel.classList.add("linked");
+      setStatus("Connected · race live");
+      sendProgress(true);
+    });
+    connection.on("data", function (message) {
+      if (!message || message.type !== "progress") return;
+      opponent.style.display = "block";
+      opponentScore.textContent = message.score || 0;
+      opponentDepth.textContent = message.depth || 0;
+      if (message.over) setStatus("Opponent finished · keep pushing");
+    });
+    connection.on("close", function () {
+      connection = null;
+      panel.classList.remove("linked");
+      setStatus("Opponent disconnected", true);
+    });
+    connection.on("error", function () { setStatus("Connection error", true); });
+  }
+
+  function sendProgress(force) {
+    if (!connection || !connection.open || typeof G === "undefined" || !G) return;
+    const message = { type: "progress", score: G.score || 0, depth: G.maxRow || G.dotRow || 0, over: !!G.over };
+    const serialized = JSON.stringify(message);
+    if (force || serialized !== lastSent) {
+      connection.send(message);
+      lastSent = serialized;
+    }
+  }
+
+  createBtn.addEventListener("click", function () {
+    if (typeof Peer === "undefined") { setStatus("Room service unavailable", true); return; }
+    createBtn.disabled = true;
+    createBtn.blur();
+    peer = new Peer("rg-" + Math.random().toString(36).slice(2, 8));
+    peer.on("open", function (id) {
+      const room = id.slice(3).toUpperCase();
+      codeInput.value = room;
+      setStatus("Room ready · share the code");
+    });
+    peer.on("connection", bindConnection);
+    peer.on("error", function () { setStatus("Could not create room", true); createBtn.disabled = false; });
+  });
+
+  joinBtn.addEventListener("click", function () {
+    if (typeof Peer === "undefined") { setStatus("Room service unavailable", true); return; }
+    const room = codeInput.value.trim().toLowerCase();
+    if (!room) { setStatus("Enter a room code", true); return; }
+    joinBtn.disabled = true;
+    joinBtn.blur();
+    codeInput.blur();
+    peer = new Peer();
+    peer.on("open", function () { bindConnection(peer.connect("rg-" + room)); });
+    peer.on("error", function () { setStatus("Could not join room", true); joinBtn.disabled = false; });
+  });
+
+  window.setInterval(function () { sendProgress(false); }, 250);
+}());
+</script>
+</body>
+</html>
