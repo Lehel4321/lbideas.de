@@ -285,6 +285,8 @@ const LEGEND = ["", "One coin. You will come back.", "Two coins. A new romance."
 
 /* ---------- state ---------- */
 const KEY = "cointose.fountain.v1";
+// In the Steam/desktop build the app exposes this bridge: saves go to a file and achievements go to Steam.
+const DESKTOP = window.cointoseDesktop || null;
 const today = () => new Date().toLocaleDateString("en-CA");
 const state = {
   coins: { copper: FREE_MAX, silver: 0, gold: 0 }, copperAt: 0, selected: "copper",
@@ -295,7 +297,7 @@ const state = {
 function loadState() {
   let s = {};
   try {
-    s = JSON.parse(localStorage.getItem(KEY) || "{}") || {};
+    s = JSON.parse((DESKTOP ? DESKTOP.load() : localStorage.getItem(KEY)) || "{}") || {};
     Object.assign(state, s);
     state.coins = { copper: 0, silver: 0, gold: 0, ...(s.coins || { copper: FREE_MAX }) };
   } catch (e) {}
@@ -307,7 +309,20 @@ function loadState() {
   state.inFountain = Math.max(state.inFountain || 0, state.floor.length + state.bowl.length);
 }
 loadState();
-function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} }
+function save() { try { const j = JSON.stringify(state); if (DESKTOP) DESKTOP.save(j); else localStorage.setItem(KEY, j); } catch (e) {} }
+// Steam achievements. The ids must match the API names set up in Steamworks (see STEAM.md).
+function achieve(id) { if (DESKTOP) try { DESKTOP.achieve(id); } catch (e) {} }
+function checkAchievements() {
+  if (!DESKTOP) return;
+  if (state.wishCount >= 1) achieve("FIRST_WISH");
+  if (state.wishCount >= 10) achieve("WISHES_10");
+  if (state.wishCount >= 100) achieve("WISHES_100");
+  if (state.wishCount >= 500) achieve("WISHES_500");
+  if (state.lucky >= 1) achieve("TOP_BOWL");
+  if (state.lucky >= 10) achieve("TOP_BOWL_10");
+  if (state.inFountain >= 250) achieve("FULL_FOUNTAIN");
+  if (state.bestDay >= 25) achieve("BUSY_DAY");
+}
 // Bookkeeping for a coin that reached the water or the top bowl.
 function recordLanding(t, wish, lucky) {
   if (state.dayKey !== today()) { state.dayKey = today(); state.dayCount = 0; }
@@ -1205,7 +1220,18 @@ function endFlight(kind, x, y) {
   }
   const lucky = kind === "bowl";
   sessionThrows++;
-  if (mine) recordLanding(f.type, f.wish, lucky);
+  if (mine) {
+    recordLanding(f.type, f.wish, lucky);
+    if (DESKTOP) {
+      // on Steam there is no shop: silver and gold are earned by playing
+      if (lucky) { state.coins.gold++; toast("Lucky coin! You earned a gold coin."); }
+      else if (state.wishCount % 10 === 0) { state.coins.silver++; toast(`Wish number ${state.wishCount}! You earned a silver coin.`); }
+      if (f.wish) achieve("SPOKEN_WISH");
+      if (f.type === "gold") achieve("GOLDEN_WISH");
+      if (sessionThrows >= 3) achieve("THREE_COINS");
+      checkAchievements();
+    }
+  }
   state.fact = (state.fact + 1) % FACTS.length;
   save();
   const legend = LEGEND[sessionThrows] || "";
@@ -1252,6 +1278,7 @@ function noCoins() {
     showMsg("Out of copper", refill + (sale.length === 2 ? " Silver and gold are below." : sale.length ? ` ${sale[0]} coins are below.` : ""));
     return;
   }
+  if (DESKTOP) { showMsg(`No ${name.toLowerCase()} coins`, (t === "gold" ? "Land a coin in the top bowl to earn one. " : "Every 10th wish earns one. ") + refill); return; }
   showMsg(`No ${name.toLowerCase()} coins`, onSale(t) ? `Get some below. ${refill}` : `${name} coins are coming soon. ${refill}`);
 }
 function untilNext() {
@@ -1394,6 +1421,7 @@ function toast(text) {
 const myCredits = new Map();
 /* Coins bought through Stripe arrive here: the payment link redirects back to ?paid=<pack id> (or #paid-<pack id>). */
 function creditPurchase() {
+  if (DESKTOP) return;
   let id = null;
   try { id = new URLSearchParams(location.search).get("paid"); } catch (e) {}
   const m = location.hash.match(/^#paid-([\w-]+)$/);
@@ -1504,6 +1532,20 @@ document.addEventListener("visibilitychange", () => { if (actx) { if (document.h
 setInterval(() => { refillFree(); renderCoins(); }, 1000);
 
 /* ---------- boot ---------- */
+if (DESKTOP) {
+  document.documentElement.classList.add("desktop");
+  $("#coins").hidden = true;
+  document.querySelector('nav a[href="#coins"]').hidden = true;
+  const fs = document.createElement("button");
+  fs.className = "icon-btn"; fs.textContent = "Fullscreen"; fs.title = "Fullscreen (F11)";
+  fs.addEventListener("click", () => DESKTOP.toggleFullscreen());
+  $("#soundBtn").before(fs);
+  document.querySelector('.pick[data-type="silver"] small').textContent = "Every 10th wish";
+  document.querySelector('.pick[data-type="gold"] small').textContent = "Top-bowl reward";
+  document.querySelector("#wishes .lede").textContent = "Every wish that reached the water. They are saved only on this computer.";
+  document.querySelector('label[for="wish"]').textContent = "Your wish, kept on this computer only";
+  checkAchievements();
+}
 creditPurchase();
 resize();
 renderAll();
