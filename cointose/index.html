@@ -1,0 +1,1081 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>CoinTose</title>
+<meta name="description" content="Make a wish and throw a coin into the fountain.">
+<link rel="canonical" href="https://lehelbalog.de/cointose/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="CoinTose">
+<meta property="og:description" content="Make a wish and throw a coin into the fountain.">
+<meta property="og:url" content="https://lehelbalog.de/cointose/">
+<meta property="og:image" content="https://lehelbalog.de/assets/poster-cointose.png">
+<meta name="theme-color" content="#0f1623">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='30' fill='%23e2b23f'/%3E%3Ccircle cx='32' cy='32' r='21' fill='none' stroke='%237d540c' stroke-width='4'/%3E%3Ccircle cx='24' cy='22' r='6' fill='%23fff2b8' opacity='.7'/%3E%3C/svg%3E">
+<style>
+/* Fonts are bundled in fonts/ (SIL Open Font License), so no request goes to a third-party font host. */
+@font-face { font-family: "Cinzel"; font-style: normal; font-weight: 500; font-display: swap; src: url("fonts/cinzel-latin-500-normal.woff2") format("woff2"); }
+@font-face { font-family: "Cinzel"; font-style: normal; font-weight: 700; font-display: swap; src: url("fonts/cinzel-latin-700-normal.woff2") format("woff2"); }
+@font-face { font-family: "Cinzel"; font-style: normal; font-weight: 900; font-display: swap; src: url("fonts/cinzel-latin-900-normal.woff2") format("woff2"); }
+@font-face { font-family: "Karla"; font-style: normal; font-weight: 400; font-display: swap; src: url("fonts/karla-latin-400-normal.woff2") format("woff2"); }
+@font-face { font-family: "Karla"; font-style: normal; font-weight: 500; font-display: swap; src: url("fonts/karla-latin-500-normal.woff2") format("woff2"); }
+@font-face { font-family: "Karla"; font-style: normal; font-weight: 700; font-display: swap; src: url("fonts/karla-latin-700-normal.woff2") format("woff2"); }
+@font-face { font-family: "DM Mono"; font-style: normal; font-weight: 400; font-display: swap; src: url("fonts/dm-mono-latin-400-normal.woff2") format("woff2"); }
+@font-face { font-family: "DM Mono"; font-style: normal; font-weight: 500; font-display: swap; src: url("fonts/dm-mono-latin-500-normal.woff2") format("woff2"); }
+/* Layout: one dusk piazza scene with the fountain as the stage, the throw controls under it, then the wish journal and the coin shop. Single dusk look on purpose. */
+:root {
+  --bg: #0f1623;
+  --surface: #172133;
+  --surface-2: #1d2a40;
+  --ink: #eef1f5;
+  --muted: #9ba7b9;
+  --line: #2a3850;
+  --water: #5fd3c8;
+  --gold: #e8bf52;
+  --on-gold: #1d1505;
+  --display: "Cinzel", "Trajan Pro", Georgia, serif;
+  --body: "Karla", "Segoe UI", system-ui, sans-serif;
+  --mono: "DM Mono", ui-monospace, Menlo, monospace;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; scroll-padding-top: calc(var(--hdr, 64px) + env(safe-area-inset-top, 0px) + 12px); }
+body {
+  margin: 0; background: var(--bg); color: var(--ink);
+  font: 16px/1.5 var(--body);
+  padding-inline: 16px; padding-block: 0 48px;
+  -webkit-tap-highlight-color: transparent;
+}
+.wrap { max-width: 1000px; margin: 0 auto; display: flex; flex-direction: column; gap: 56px; }
+button, input { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; }
+
+header {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20;
+  display: flex; align-items: center; gap: 12px 16px; flex-wrap: wrap;
+  padding-block: 12px; background: var(--bg); border-bottom: 1px solid var(--line);
+}
+.brand { font-family: var(--display); font-weight: 900; font-size: 22px; letter-spacing: 0.06em; color: var(--ink); text-decoration: none; }
+.brand b { color: var(--gold); }
+nav { display: flex; gap: 2px; margin-left: auto; flex-wrap: wrap; }
+nav a, .icon-btn {
+  font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 700;
+  color: var(--muted); text-decoration: none; padding: 8px 10px; border-radius: 8px; background: none; border: 0;
+}
+nav a:hover, .icon-btn:hover { color: var(--ink); background: var(--surface); }
+.icon-btn[aria-pressed="false"] { text-decoration: line-through; }
+@media (max-width: 480px) { nav a[href="#fountain"], .hud .legend { display: none; } nav a, .icon-btn { padding-inline: 6px; letter-spacing: 0.06em; } .brand { font-size: 20px; } }
+header + main { margin-top: -36px; }
+
+/* stage */
+.stage { position: relative; border-radius: 20px; overflow: hidden; background: #0b1220; box-shadow: 0 20px 50px rgba(0,0,0,0.35); }
+#scene { display: block; width: 100%; height: clamp(400px, 64vw, 580px); height: min(clamp(400px, 64vw, 580px), max(280px, 100svh - 90px)); touch-action: pan-y; cursor: grab; }
+#scene.dragging { cursor: grabbing; }
+.hud { position: absolute; left: 14px; top: 12px; right: 14px; display: flex; justify-content: space-between; gap: 12px; pointer-events: none;
+  font: 500 11px/1.4 var(--mono); letter-spacing: 0.12em; text-transform: uppercase; color: rgba(255, 240, 214, 0.8); text-shadow: 0 1px 6px rgba(0,0,0,0.85); }
+.hud b { font-size: 14px; color: #fff3d6; font-weight: 500; }
+.msg { position: absolute; left: 50%; top: 36px; transform: translateX(-50%); width: min(92%, 560px); display: flex; flex-direction: column; align-items: center; gap: 2px;
+  text-align: center; pointer-events: none; padding: 8px 16px 12px; border-radius: 40px;
+  background: radial-gradient(closest-side, rgba(12, 16, 28, 0.6), rgba(12, 16, 28, 0)); }
+.msg .big { font-family: var(--display); font-weight: 900; font-size: clamp(22px, 4.6vw, 34px); letter-spacing: 0.1em; color: #fff0cc;
+  text-shadow: 0 2px 16px rgba(0,0,0,0.7); text-wrap: balance; line-height: 1.15; }
+.msg .sub { font-size: 15px; color: rgba(255, 245, 225, 0.88); text-shadow: 0 1px 8px rgba(0,0,0,0.85); max-width: 46ch; text-wrap: balance; }
+.msg.show .big, .msg.show .sub { animation: rise-in 0.5s ease both; }
+.msg.show .sub { animation-delay: 0.08s; }
+.msg { transition: opacity 0.25s; }
+.msg.away { opacity: 0; }
+@keyframes rise-in { from { opacity: 0; transform: translateY(8px); } }
+.wishfloat {
+  position: absolute; transform: translate(-50%, -50%); pointer-events: none; white-space: nowrap; max-width: 80%;
+  overflow: hidden; text-overflow: ellipsis;
+  font-family: var(--display); font-weight: 700; font-size: 18px; letter-spacing: 0.06em; color: #e9fffb;
+  text-shadow: 0 0 12px rgba(95, 211, 200, 0.9); animation: wish-up 3.2s ease-out forwards;
+}
+.wishfloat.gold { color: #fff3c4; text-shadow: 0 0 14px rgba(232, 191, 82, 0.95); }
+@keyframes wish-up { 0% { opacity: 0; margin-top: 0; filter: blur(2px); } 15% { opacity: 1; filter: blur(0); } 100% { opacity: 0; margin-top: var(--rise, -150px); letter-spacing: 0.3em; filter: blur(3px); } }
+.hint-line { position: absolute; left: 0; right: 0; bottom: 12px; text-align: center; pointer-events: none;
+  font: 500 12px var(--mono); letter-spacing: 0.06em; color: rgba(255, 245, 225, 0.7); padding-inline: 16px; }
+
+/* controls */
+.controls { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 16px; margin-top: 16px; align-items: end; }
+@media (max-width: 760px) { .controls { grid-template-columns: minmax(0, 1fr); } }
+.eyebrow { font: 500 11px/1.4 var(--mono); letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted); margin: 0 0 8px; }
+.picks { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.pick { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; padding: 10px 12px; border-radius: 12px;
+  border: 1.5px solid var(--line); background: var(--surface); text-align: left; min-width: 0; }
+.pick .top { display: flex; align-items: center; gap: 8px; width: 100%; }
+.pick b { font-family: var(--display); letter-spacing: 0.06em; font-size: 14px; }
+.pick .n { margin-left: auto; font: 500 18px var(--mono); font-variant-numeric: tabular-nums; }
+.pick small { font-size: 12px; color: var(--muted); line-height: 1.3; }
+.pick[aria-pressed="true"] { border-color: var(--gold); background: var(--surface-2); }
+.pick.empty .n { color: var(--muted); }
+@media (max-width: 420px) { .pick { padding: 8px; } .pick b { font-size: 12px; } .pick small { font-size: 11px; } .pick .top { gap: 5px; } }
+.ico { width: 22px; height: 22px; border-radius: 50%; flex: none; display: inline-block; box-shadow: inset 0 0 0 2px rgba(0,0,0,0.25); }
+.ico.copper { background: radial-gradient(circle at 35% 30%, #f5c29a, #c4743f 55%, #5e2c12); }
+.ico.silver { background: radial-gradient(circle at 35% 30%, #ffffff, #c3cad4 55%, #5f6773); }
+.ico.gold { background: radial-gradient(circle at 35% 30%, #fff2b8, #e2b23f 55%, #7d540c); }
+.wish-row { display: flex; gap: 8px; }
+.wish-row input { flex: 1; min-width: 0; border: 1.5px solid var(--line); background: var(--surface); border-radius: 12px; padding: 12px 14px; font-size: 16px; }
+.wish-row input::placeholder { color: var(--muted); }
+.throw { border: 0; border-radius: 12px; padding: 12px 18px; font-family: var(--display); font-weight: 900; letter-spacing: 0.14em;
+  background: linear-gradient(180deg, #f1cf74, #b88a2c); color: var(--on-gold); box-shadow: 0 4px 0 #7a5713; }
+.throw:active { transform: translateY(3px); box-shadow: 0 1px 0 #7a5713; }
+.throw[aria-disabled="true"] { filter: grayscale(0.7) brightness(0.8); cursor: not-allowed; }
+.under { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 16px; margin-top: 18px; align-items: start; }
+@media (max-width: 760px) { .under { grid-template-columns: minmax(0, 1fr); } }
+.fact { border-left: 3px solid var(--water); padding: 2px 0 2px 12px; font-size: 14px; color: var(--muted); margin: 0; max-width: 70ch; }
+.fact b { color: var(--ink); }
+.stats { display: flex; gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+.stat { background: var(--surface); padding: 8px 14px; min-width: 0; flex: 1; }
+.stat span { display: block; font: 500 10px/1.4 var(--mono); letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); white-space: nowrap; }
+.stat b { font: 500 20px/1.3 var(--mono); font-variant-numeric: tabular-nums; }
+
+/* sections */
+section h2 { font-family: var(--display); font-weight: 700; font-size: clamp(24px, 4vw, 32px); letter-spacing: 0.06em; margin: 0 0 6px; text-wrap: balance; }
+section > p.lede { margin: 0 0 22px; color: var(--muted); max-width: 62ch; }
+.journal { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; border-top: 1px solid var(--line); }
+.journal li { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 12px 2px; border-bottom: 1px solid var(--line); }
+.journal .text { overflow-wrap: anywhere; }
+.journal .text.gold { color: var(--gold); font-family: var(--display); letter-spacing: 0.03em; }
+.journal .text.silent { color: var(--muted); font-style: italic; }
+.journal .meta { font: 500 12px var(--mono); color: var(--muted); text-align: right; white-space: nowrap; }
+.badge { font: 500 10px var(--mono); font-style: normal; letter-spacing: 0.1em; text-transform: uppercase; color: var(--on-gold); background: var(--gold); border-radius: 5px; padding: 2px 6px; margin-left: 8px; vertical-align: 2px; }
+.empty-note { color: var(--muted); padding: 16px 2px; border-top: 1px solid var(--line); margin: 0; }
+.journal-more { color: var(--muted); font-size: 13px; margin: 10px 2px 0; }
+.row-end { display: flex; justify-content: flex-end; margin-top: 12px; }
+.btn { border: 1.5px solid var(--line); background: transparent; border-radius: 10px; padding: 8px 14px; font-size: 13px; font-weight: 700;
+  letter-spacing: 0.06em; color: var(--ink); text-decoration: none; text-align: center; display: inline-block; }
+.btn:hover { border-color: var(--gold); }
+.btn.danger { color: #ff9c8f; border-color: #6b3a3a; }
+.btn.primary { background: var(--gold); border-color: var(--gold); color: var(--on-gold); }
+.btn:disabled { opacity: 0.55; cursor: not-allowed; }
+
+.packs { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr)); gap: 14px; }
+.pack { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 18px; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.pack .pile { height: 54px; position: relative; }
+.pack .pile .ico { position: absolute; width: 38px; height: 38px; }
+.pack h3 { margin: 0; font-family: var(--display); letter-spacing: 0.06em; font-size: 18px; }
+.pack p { margin: 0; color: var(--muted); font-size: 14px; }
+.pack .buy { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: auto; flex-wrap: wrap; }
+.price { font: 500 20px var(--mono); font-variant-numeric: tabular-nums; }
+.notice { font-size: 13px; color: var(--muted); margin-top: 16px; max-width: 70ch; }
+
+footer { font-size: 13px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 18px; display: flex; flex-direction: column; gap: 6px; }
+footer p { margin: 0; max-width: 75ch; }
+.toast { position: fixed; left: 50%; bottom: calc(20px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); z-index: 50; pointer-events: none;
+  background: var(--ink); color: var(--bg); padding: 12px 18px; border-radius: 14px; box-shadow: 0 12px 32px rgba(0,0,0,0.4);
+  max-width: min(92vw, 440px); animation: toast-in 0.35s ease; font-weight: 700; }
+/* short landscape screens: the coin in hand sits at the bottom, so show the toast under the sticky header */
+@media (orientation: landscape) and (max-height: 700px) {
+  .toast { bottom: auto; top: calc(var(--hdr, 64px) + env(safe-area-inset-top, 0px) + 8px); }
+}
+@keyframes toast-in { from { transform: translate(-50%, 20px); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .msg.show .big, .msg.show .sub, .toast { animation: none; }
+  .wishfloat { animation-duration: 2s; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <a class="brand" href="#fountain">Coin<b>Tose</b></a>
+    <nav aria-label="Sections">
+      <a href="#fountain">Fountain</a>
+      <a href="#wishes">Wishes</a>
+      <a href="#coins">Get coins</a>
+      <button class="icon-btn" id="soundBtn" aria-pressed="true" title="Turn sound on or off">Sound</button>
+    </nav>
+  </header>
+
+  <main id="fountain">
+    <div class="stage" id="stage">
+      <canvas id="scene" aria-label="A fountain in a piazza at dusk. Flick the coin upward to throw it into the water."></canvas>
+      <div class="hud"><span>In the fountain <b id="hudCount">0</b></span><span class="legend">Right hand, left shoulder</span></div>
+      <div class="msg" id="msg" aria-live="polite"><div class="big" id="msgBig">Make a wish</div><div class="sub" id="msgSub">Type it below, then flick the coin up into the water</div></div>
+      <div class="hint-line" id="hintLine">Drag the coin and flick it upward. Throw harder to reach the top bowl.</div>
+    </div>
+
+    <div class="controls">
+      <div>
+        <p class="eyebrow">Your coins</p>
+        <div class="picks">
+          <button class="pick" data-type="copper" aria-pressed="true"><span class="top"><i class="ico copper"></i><b>Copper</b><span class="n" id="nCopper">3</span></span><small id="sCopper">3 free every day</small></button>
+          <button class="pick" data-type="silver" aria-pressed="false"><span class="top"><i class="ico silver"></i><b>Silver</b><span class="n" id="nSilver">0</span></span><small>Bigger splash</small></button>
+          <button class="pick" data-type="gold" aria-pressed="false"><span class="top"><i class="ico gold"></i><b>Gold</b><span class="n" id="nGold">0</span></span><small>Glows, golden wish</small></button>
+        </div>
+      </div>
+      <div>
+        <p class="eyebrow"><label for="wish">Your wish, kept on this device only</label></p>
+        <div class="wish-row">
+          <input id="wish" maxlength="80" placeholder="I wish…" autocomplete="off">
+          <button class="throw" id="throwBtn">THROW</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="under">
+      <p class="fact" id="fact"></p>
+      <div class="stats">
+        <div class="stat"><span>Wishes</span><b id="stWishes">0</b></div>
+        <div class="stat"><span>Top bowl</span><b id="stLucky">0</b></div>
+        <div class="stat"><span>Best day</span><b id="stDay">0</b></div>
+      </div>
+    </div>
+  </main>
+
+  <section id="wishes">
+    <h2>Your wishes</h2>
+    <p class="lede">Every wish that reached the water. They are saved only in this browser, and nobody else can read them.</p>
+    <div id="journalWrap"></div>
+  </section>
+
+  <section id="coins">
+    <h2>Get coins</h2>
+    <p class="lede">Copper coins are free, three every day. Silver and gold coins make bigger splashes and keep shining on the fountain floor, and gold wishes are written in gold in your journal.</p>
+    <div class="packs" id="packs"></div>
+    <p class="notice" id="shopNotice"></p>
+  </section>
+
+  <footer>
+    <p>Coins thrown here are virtual. They have no cash value and can't be withdrawn or exchanged. A wish is a wish; nothing is promised.</p>
+  </footer>
+</div>
+
+<script>
+/* =====================================================================
+   SHOP SETTINGS: edit this block to sell coins.
+   For each pack, create a Stripe Payment Link (dashboard.stripe.com →
+   Payment Links). Under "After payment" choose "Don't show confirmation
+   page" and redirect customers to:  https://lehelbalog.de/cointose/?paid=<pack id>
+   for example https://lehelbalog.de/cointose/?paid=gold5
+   Then paste the payment link into `link`. An empty link shows "Coming soon".
+   vatNote is shown in the notice under the packs once a pack is live. German price
+   rules need one of: "Prices include VAT." or, for the small-business
+   exemption, "No VAT is charged under § 19 UStG."
+   ===================================================================== */
+const SHOP = {
+  currency: "EUR",
+  locale: "de-DE",
+  vatNote: "",
+  packs: [
+    { id: "silver3", coin: "silver", count: 3,  price: 0.99, name: "Handful of silver", desc: "3 silver coins. Bigger splash and a silver shine on the floor.", link: "" },
+    { id: "gold5",   coin: "gold",   count: 5,  price: 2.99, name: "Pocket of gold",    desc: "5 gold coins. They glow under the water and your wishes turn gold.", link: "" },
+    { id: "gold20",  coin: "gold",   count: 20, price: 7.99, name: "Trevi purse",       desc: "20 gold coins, enough for a whole week of big wishes.", link: "" }
+  ]
+};
+
+const COINS = {
+  copper: { name: "Copper", base: "#c4743f", light: "#f5c29a", dark: "#5e2c12", splash: 1 },
+  silver: { name: "Silver", base: "#c3cad4", light: "#ffffff", dark: "#5f6773", splash: 1.35 },
+  gold:   { name: "Gold",   base: "#e2b23f", light: "#fff2b8", dark: "#7d540c", splash: 1.7 }
+};
+const FREE_PER_DAY = 3;
+const FACTS = [
+  "<b>More than €1.5 million</b> is thrown into Rome's Trevi Fountain each year. The city gives it to the charity Caritas.",
+  "<b>The Trevi rule:</b> throw with your right hand over your left shoulder. One coin means you'll return to Rome, two mean a new romance, three mean a wedding.",
+  "<b>The film Three Coins in the Fountain</b> (1954) made the Trevi coin toss famous around the world.",
+  "<b>Coins in water are an old idea.</b> About 12,000 Roman coins were found in the sacred spring at Bath, England, left as offerings to the goddess Sulis Minerva.",
+  "<b>Hit the top bowl</b> for a lucky coin. It's the smallest target in the piazza, so flick harder and aim for the middle."
+];
+const LEGEND = ["", "One coin. You will come back.", "Two coins. A new romance.", "Three coins. Wedding bells."];
+
+/* ---------- state ---------- */
+const KEY = "cointose.fountain.v1";
+const today = () => new Date().toLocaleDateString("en-CA");
+const state = {
+  coins: { copper: FREE_PER_DAY, silver: 0, gold: 0 }, freeDay: "", selected: "copper",
+  floor: [], bowl: [], wishes: [], lucky: 0, sound: true, fact: 0, dayCount: 0, dayKey: "", bestDay: 0,
+  wishCount: 0, inFountain: 0, pending: {}, credits: {}
+};
+// Read from storage at boot and whenever another tab saves, so tabs never overwrite each other's coins.
+function loadState() {
+  let s = {};
+  try {
+    s = JSON.parse(localStorage.getItem(KEY) || "{}") || {};
+    Object.assign(state, s);
+    state.coins = { copper: 0, silver: 0, gold: 0, ...(s.coins || { copper: FREE_PER_DAY }) };
+  } catch (e) {}
+  state.credits = s.credits && typeof s.credits === "object" ? s.credits : {};
+  if (!COINS[state.selected]) state.selected = "copper";
+  if (!state.pending || typeof state.pending !== "object") state.pending = {};
+  else if (state.pending.t) state.pending = { old: state.pending }; // older single-throw format
+  state.wishCount = Math.max(state.wishCount || 0, state.wishes.length);
+  state.inFountain = Math.max(state.inFountain || 0, state.floor.length + state.bowl.length);
+}
+loadState();
+function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} }
+// Bookkeeping for a coin that reached the water or the top bowl.
+function recordLanding(t, wish, lucky) {
+  if (state.dayKey !== today()) { state.dayKey = today(); state.dayCount = 0; }
+  state.dayCount++; state.bestDay = Math.max(state.bestDay, state.dayCount);
+  if (lucky) state.lucky++;
+  state.wishCount++; state.inFountain++;
+  state.wishes.unshift({ text: wish, t, at: Date.now(), lucky });
+  state.wishes = state.wishes.slice(0, 200);
+}
+function addToFloor(coin) { state.floor.push(coin); if (state.floor.length > 320) state.floor.shift(); }
+function addToBowl(coin) { state.bowl.push(coin); if (state.bowl.length > 14) state.bowl.shift(); }
+// A throw's outcome is decided when it starts and stored under its own id until it lands.
+// Throws still listed when a page boots were cut off by a closed tab or reload: settle them now.
+function settlePending() {
+  const list = Object.values(state.pending);
+  if (!list.length) return;
+  state.pending = {};
+  for (const p of list) {
+    if (!p || !COINS[p.t]) continue;
+    if (p.miss) state.coins[p.t]++;
+    else {
+      recordLanding(p.t, p.wish || "", !!p.bowl);
+      if (p.bowl) addToBowl({ du: p.du, dv: p.dv, t: p.t }); else addToFloor({ u: p.u, v: p.v, t: p.t });
+    }
+  }
+  save();
+}
+settlePending();
+function refillFree() {
+  if (state.freeDay !== today()) {
+    state.coins.copper = Math.max(state.coins.copper, FREE_PER_DAY);
+    state.freeDay = today();
+    save();
+  }
+}
+refillFree();
+let sessionThrows = 0;
+
+const $ = (s) => document.querySelector(s);
+const rand = () => { const a = new Uint32Array(1); crypto.getRandomValues(a); return a[0] / 4294967296; };
+const money = (v) => new Intl.NumberFormat(SHOP.locale, { style: "currency", currency: SHOP.currency }).format(v);
+const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)");
+
+/* ---------- scene geometry ---------- */
+// Positions in the basin use u (left/right) and v (back/front), both -1..1 at the water's edge.
+const cv = $("#scene"), ctx = cv.getContext("2d");
+let W = 0, H = 0, DPR = 1, G = {};
+const back = document.createElement("canvas"), fore = document.createElement("canvas"), floorCv = document.createElement("canvas");
+let floorDirty = true;
+const BOWL = { u: 0, v: -0.42, r: 0.2 };
+let hand = { x: 0, y: 0 }, drag = null, flight = null, lastT = performance.now();
+
+function resize() {
+  const r = cv.getBoundingClientRect();
+  if (!r.width) return;
+  W = r.width; H = r.height; DPR = Math.min(2, devicePixelRatio || 1);
+  cv.width = Math.round(W * DPR); cv.height = Math.round(H * DPR);
+  const narrow = W < 640 && H >= 400; // short landscape phones get the flatter basin
+  const rx = Math.min(W * (narrow ? 0.46 : 0.42), H * 0.85);
+  const ry = rx * (narrow ? 0.42 : 0.31);
+  G = { cx: W / 2, cy: H * 0.6, rx, ry, rim: Math.max(10, rx * 0.06), band: Math.max(16, rx * 0.075), k: Math.max(0.7, Math.min(1.25, rx / 400)) };
+  G.oRx = G.rx + G.rim; G.oRy = G.ry + G.rim * (ry / rx) * 1.6;
+  G.wallBottom = G.cy - G.oRy - G.ry * 0.5;
+  G.pedBaseY = G.cy + BOWL.v * G.ry;
+  G.bowlH = Math.min(Math.max(80, G.ry * 1.25 + 30 * G.k), G.pedBaseY - 84 * G.k); // spout and jet stay on the canvas
+  G.bowlY = G.pedBaseY - G.bowlH;
+  G.bowlRx = BOWL.r * G.rx; G.bowlRy = BOWL.r * G.ry;
+  G.spoutY = G.bowlY - 34 * G.k;
+  G.handY = H - 44 * G.k - (narrow ? 32 : 16);
+  const hint = $("#hintLine"); // on very narrow screens the hint wraps to more lines: keep the coin above it
+  if (!hint.hidden) G.handY = Math.min(G.handY, H - 16 - hint.offsetHeight - 26 * G.k);
+  G.handY = Math.max(G.handY, G.cy + G.ry * 0.6);
+  if (!drag) { hand.x = G.cx; hand.y = G.handY; }
+  particles = [];
+  paintBack(); paintFore(); floorDirty = true;
+}
+const P = (u, v) => [G.cx + u * G.rx, G.cy + v * G.ry];
+const coinR = (v) => 15 * G.k * (0.78 + 0.16 * v);
+
+/* static background: sky, facade, piazza, basin */
+function paintBack() {
+  back.width = cv.width; back.height = cv.height;
+  const c = back.getContext("2d"); c.setTransform(DPR, 0, 0, DPR, 0, 0);
+  const { cx, cy, rx, ry } = G;
+  const wallTop = Math.max(24, G.bowlY - 140 * G.k);
+  let g = c.createLinearGradient(0, 0, 0, wallTop + 40);
+  g.addColorStop(0, "#141b38"); g.addColorStop(1, "#4b3a5e");
+  c.fillStyle = g; c.fillRect(0, 0, W, wallTop + 40);
+  c.fillStyle = "rgba(255,255,255,0.7)";
+  for (let i = 0; i < 26; i++) { const s = i % 3 ? 1 : 1.6; c.fillRect((i * 97.3) % W, (i * 53.7) % Math.max(10, wallTop - 6), s, s); }
+  // facade
+  g = c.createLinearGradient(0, wallTop, 0, G.wallBottom);
+  g.addColorStop(0, "#b8a27c"); g.addColorStop(1, "#7e6a4d");
+  c.fillStyle = g; c.fillRect(0, wallTop, W, G.wallBottom - wallTop);
+  c.fillStyle = "rgba(255,240,210,0.18)"; c.fillRect(0, wallTop, W, 8 * G.k);
+  c.fillStyle = "rgba(0,0,0,0.18)"; c.fillRect(0, wallTop + 8 * G.k, W, 3);
+  for (const f of [-1.25, -0.8, 0.8, 1.25]) {
+    const x = cx + f * rx, w = 26 * G.k;
+    const pg = c.createLinearGradient(x - w / 2, 0, x + w / 2, 0);
+    pg.addColorStop(0, "rgba(255,245,220,0.22)"); pg.addColorStop(1, "rgba(0,0,0,0.12)");
+    c.fillStyle = pg; c.fillRect(x - w / 2, wallTop + 11 * G.k, w, G.wallBottom - wallTop - 11 * G.k);
+  }
+  // niche behind the statue
+  const nw = Math.max(G.bowlRx * 2.4, 90 * G.k), nTop = wallTop + 26 * G.k;
+  c.beginPath(); c.moveTo(cx - nw / 2, G.wallBottom); c.lineTo(cx - nw / 2, nTop + nw / 2);
+  c.arc(cx, nTop + nw / 2, nw / 2, Math.PI, 0); c.lineTo(cx + nw / 2, G.wallBottom); c.closePath();
+  g = c.createLinearGradient(0, nTop, 0, G.wallBottom); g.addColorStop(0, "#2a2436"); g.addColorStop(1, "#4a3c35");
+  c.fillStyle = g; c.fill();
+  c.strokeStyle = "rgba(255,240,210,0.25)"; c.lineWidth = 3; c.stroke();
+  // lamps
+  c.globalCompositeOperation = "lighter";
+  for (const f of [-1.02, 1.02]) {
+    const x = cx + f * rx, y = wallTop + 50 * G.k;
+    const lg = c.createRadialGradient(x, y, 2, x, y, 120 * G.k);
+    lg.addColorStop(0, "rgba(255,200,120,0.55)"); lg.addColorStop(1, "rgba(255,160,80,0)");
+    c.fillStyle = lg; c.fillRect(x - 130 * G.k, y - 130 * G.k, 260 * G.k, 260 * G.k);
+  }
+  c.globalCompositeOperation = "source-over";
+  for (const f of [-1.02, 1.02]) { c.fillStyle = "#ffe2a8"; c.beginPath(); c.arc(cx + f * rx, wallTop + 50 * G.k, 5 * G.k, 0, 7); c.fill(); }
+  // piazza
+  g = c.createLinearGradient(0, G.wallBottom, 0, H);
+  g.addColorStop(0, "#3d3a40"); g.addColorStop(1, "#1d1e26");
+  c.fillStyle = g; c.fillRect(0, G.wallBottom, W, H - G.wallBottom);
+  c.strokeStyle = "rgba(255,255,255,0.04)"; c.lineWidth = 1;
+  for (let i = 1; i < 14; i++) { const y = G.wallBottom + (H - G.wallBottom) * Math.pow(i / 14, 1.6); c.beginPath(); c.moveTo(0, y); c.lineTo(W, y); c.stroke(); }
+  // basin: shadow, front band, rim
+  c.fillStyle = "rgba(0,0,0,0.35)";
+  c.beginPath(); c.ellipse(cx, cy + G.band + 6, G.oRx + 12, G.oRy + 6, 0, 0, 7); c.fill();
+  c.beginPath(); c.ellipse(cx, cy, G.oRx, G.oRy, 0, 0, Math.PI);
+  c.lineTo(cx - G.oRx, cy + G.band); c.ellipse(cx, cy + G.band, G.oRx, G.oRy, 0, Math.PI, 0, true); c.closePath();
+  g = c.createLinearGradient(cx - G.oRx, 0, cx + G.oRx, 0);
+  g.addColorStop(0, "#6c5a40"); g.addColorStop(0.45, "#b29c78"); g.addColorStop(1, "#5e4e37");
+  c.fillStyle = g; c.fill();
+  c.beginPath(); c.ellipse(cx, cy, G.oRx, G.oRy, 0, 0, 7);
+  g = c.createLinearGradient(0, cy - G.oRy, 0, cy + G.oRy); g.addColorStop(0, "#c9b690"); g.addColorStop(1, "#e7d8b8");
+  c.fillStyle = g; c.fill();
+  // basin floor
+  c.save(); c.beginPath(); c.ellipse(cx, cy, rx, ry, 0, 0, 7); c.clip();
+  g = c.createRadialGradient(cx, cy + ry * 0.3, ry * 0.2, cx, cy, rx);
+  g.addColorStop(0, "#1a7d86"); g.addColorStop(1, "#06323f");
+  c.fillStyle = g; c.fillRect(cx - rx, cy - ry, rx * 2, ry * 2);
+  c.fillStyle = "rgba(255,255,255,0.035)";
+  for (let i = 0; i < 160; i++) { const a = i * 2.399, d = Math.sqrt(i / 160); c.fillRect(cx + Math.cos(a) * d * rx, cy + Math.sin(a) * d * ry, 3, 2); }
+  c.fillStyle = "rgba(0,0,0,0.3)"; // inner wall shadow at the back
+  c.beginPath(); c.ellipse(cx, cy, rx, ry, 0, Math.PI, 0); c.ellipse(cx, cy + ry * 0.12, rx, ry, 0, 0, Math.PI, true); c.fill();
+  c.restore();
+  c.strokeStyle = "rgba(60,45,25,0.6)"; c.lineWidth = 2; c.beginPath(); c.ellipse(cx, cy, rx, ry, 0, 0, 7); c.stroke();
+}
+
+/* coins lying on the floor, cached and redrawn only when a coin settles or the size changes */
+const sinkingCoins = new Set();
+function paintFloor() {
+  floorCv.width = cv.width; floorCv.height = cv.height;
+  const c = floorCv.getContext("2d"); c.setTransform(DPR, 0, 0, DPR, 0, 0);
+  c.beginPath(); c.ellipse(G.cx, G.cy, G.rx, G.ry, 0, 0, 7); c.clip();
+  for (const coin of state.floor) {
+    if (sinkingCoins.has(coin)) continue;
+    const [x, y] = P(coin.u, coin.v);
+    drawCoin(c, x, y + 3, coinR(coin.v) * 0.9, COINS[coin.t] ? coin.t : "copper", (G.ry / G.rx) * 1.05, 0.92);
+  }
+}
+
+/* static statue: plinth, column, top bowl, spout. Drawn over the water. */
+function paintFore() {
+  fore.width = cv.width; fore.height = cv.height;
+  const c = fore.getContext("2d"); c.setTransform(DPR, 0, 0, DPR, 0, 0);
+  const x = G.cx, base = G.pedBaseY, k = G.k, flat = G.ry / G.rx;
+  const stone = (x0, x1) => { const g = c.createLinearGradient(x0, 0, x1, 0); g.addColorStop(0, "#7c6a4e"); g.addColorStop(0.4, "#e3d3b1"); g.addColorStop(1, "#6b5a40"); return g; };
+  const pw = 34 * k, ph = 26 * k;
+  c.fillStyle = stone(x - pw, x + pw);
+  c.fillRect(x - pw, base - ph, pw * 2, ph);
+  c.beginPath(); c.ellipse(x, base, pw, pw * flat, 0, 0, Math.PI); c.fill();
+  c.fillStyle = "#e9dcbd"; c.beginPath(); c.ellipse(x, base - ph, pw, pw * flat, 0, 0, 7); c.fill();
+  const cw = 12 * k;
+  c.fillStyle = stone(x - cw, x + cw);
+  c.fillRect(x - cw, G.bowlY, cw * 2, base - ph - G.bowlY);
+  c.beginPath(); c.moveTo(x - G.bowlRx * 1.08, G.bowlY);
+  c.quadraticCurveTo(x - G.bowlRx * 0.5, G.bowlY + 34 * k, x - cw, G.bowlY + 30 * k);
+  c.lineTo(x + cw, G.bowlY + 30 * k);
+  c.quadraticCurveTo(x + G.bowlRx * 0.5, G.bowlY + 34 * k, x + G.bowlRx * 1.08, G.bowlY);
+  c.closePath(); c.fillStyle = stone(x - G.bowlRx, x + G.bowlRx); c.fill();
+  c.fillStyle = "#eadcbc"; c.beginPath(); c.ellipse(x, G.bowlY, G.bowlRx * 1.08, G.bowlRy * 1.08 + 3, 0, 0, 7); c.fill();
+  const wg = c.createLinearGradient(0, G.bowlY - G.bowlRy, 0, G.bowlY + G.bowlRy);
+  wg.addColorStop(0, "#1d6f7a"); wg.addColorStop(1, "#4fc0bb");
+  c.fillStyle = wg; c.beginPath(); c.ellipse(x, G.bowlY, G.bowlRx * 0.92, G.bowlRy * 0.92, 0, 0, 7); c.fill();
+  c.fillStyle = stone(x - 6 * k, x + 6 * k); c.fillRect(x - 5 * k, G.spoutY, 10 * k, G.bowlY - G.spoutY);
+  c.fillStyle = "#eadcbc"; c.beginPath(); c.arc(x, G.spoutY, 7 * k, 0, 7); c.fill();
+}
+
+function drawCoin(c, x, y, r, type, squash, alpha = 1) {
+  const k = COINS[type], s = Math.max(0.07, Math.abs(squash));
+  c.save(); c.globalAlpha = alpha; c.translate(x, y);
+  c.fillStyle = k.dark; c.beginPath(); c.ellipse(0, r * 0.14 * (1 - s * 0.5), r, r * s, 0, 0, 7); c.fill();
+  const g = c.createRadialGradient(-r * 0.35, -r * 0.4 * s, r * 0.1, 0, 0, r);
+  g.addColorStop(0, k.light); g.addColorStop(0.55, k.base); g.addColorStop(1, k.dark);
+  c.fillStyle = g; c.beginPath(); c.ellipse(0, 0, r, r * s, 0, 0, 7); c.fill();
+  c.strokeStyle = k.dark; c.globalAlpha = alpha * 0.55; c.lineWidth = Math.max(1, r * 0.09);
+  c.beginPath(); c.ellipse(0, 0, r * 0.74, r * 0.74 * s, 0, 0, 7); c.stroke();
+  c.restore();
+}
+
+/* ---------- moving parts ---------- */
+let particles = [], ripples = [], splashes = [], sinking = [], sparkles = [];
+const fish = [
+  { a: 0.3, sp: 0.00011, ru: 0.62, rv: 0.55, ph: 0, col: "#ff8a3d", len: 1 },
+  { a: 2.1, sp: -0.00009, ru: 0.7, rv: 0.4, ph: 1.4, col: "#f4f0e8", len: 0.85 },
+  { a: 4.0, sp: 0.00013, ru: 0.5, rv: 0.62, ph: 2.7, col: "#e8512f", len: 0.7 }
+];
+function fishPos(f, a) { return [Math.cos(a) * f.ru - Math.sin(a * 2) * 0.08, Math.sin(a) * f.rv + Math.cos(a * 1.5 + f.ph) * 0.06]; }
+
+function spawnJets(dt) {
+  const k = G.k, n = (reduceMotion.matches ? 1 : 3) * dt;
+  for (let i = 0; i < n; i++) {
+    if (rand() < 0.5) { // top jet into the bowl
+      particles.push({ x: G.cx + (rand() - 0.5) * 2, y: G.spoutY - 6 * k, vx: (rand() - 0.5) * 1.6 * k, vy: -(1.6 + rand() * 0.9) * k, dieY: G.bowlY - G.bowlRy * 0.3 + rand() * G.bowlRy, r: 1.4 });
+    } else { // curtain from the bowl rim into the basin
+      const a = rand() * Math.PI, ca = Math.cos(a), sa = Math.sin(a);
+      const x = G.cx + ca * G.bowlRx * 1.08, y = G.bowlY + sa * (G.bowlRy * 1.08 + 3);
+      const lu = ca * BOWL.r * 1.5, lv = BOWL.v + sa * BOWL.r * 1.5;
+      particles.push({ x, y, vx: ca * (0.35 + rand() * 0.4) * k, vy: 0.2, dieY: G.cy + lv * G.ry, r: 1.3, land: true, u: lu, v: lv });
+    }
+  }
+}
+function addRipple(u, v, size = 1, slow = false) { ripples.push({ u, v, t: performance.now(), size, dur: slow ? 2600 : 1700 }); }
+
+function update(dt, now) {
+  spawnJets(dt);
+  for (const p of particles) {
+    p.vy += 0.09 * G.k * dt; p.x += p.vx * dt; p.y += p.vy * dt;
+    if (p.y >= p.dieY) { p.dead = true; if (p.land && rand() < 0.04) addRipple(p.u, p.v, 0.25); }
+  }
+  particles = particles.filter((p) => !p.dead);
+  for (const s of splashes) { s.vy += 0.22 * G.k * dt; s.x += s.vx * dt; s.y += s.vy * dt; s.life -= 0.02 * dt; }
+  splashes = splashes.filter((s) => s.life > 0 && s.y < s.floor + 2);
+  ripples = ripples.filter((r) => now - r.t < r.dur);
+  sparkles = sparkles.filter((s) => now - s.t < 1200);
+  for (const f of fish) { f.a += f.sp * (1 + (f.boost || 0) * 4) * 16.67 * dt; if (f.boost) f.boost = Math.max(0, f.boost - 0.01 * dt); }
+}
+
+function draw(now) {
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.drawImage(back, 0, 0);
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  const { cx, cy, rx, ry } = G, flat = ry / rx;
+
+  // under the water: coins on the floor, sinking coins, fish
+  ctx.save(); ctx.beginPath(); ctx.ellipse(cx, cy, rx, ry, 0, 0, 7); ctx.clip();
+  if (floorDirty) { paintFloor(); floorDirty = false; }
+  ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.drawImage(floorCv, 0, 0); ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  for (let i = 0; i < state.floor.length; i++) {
+    const c = state.floor[i];
+    if (c.t !== "copper" && Math.sin(now / 700 + i * 2.3) > 0.985 && rand() < 0.08) { const [x, y] = P(c.u, c.v); sparkles.push({ x, y: y + 2, t: now, gold: c.t === "gold" }); }
+  }
+  for (const s of sinking) {
+    const t = Math.min(1, (now - s.t0) / 1100), c = s.coin;
+    const [x, y] = P(c.u, c.v);
+    drawCoin(ctx, x + Math.sin(t * 9) * 4 * (1 - t), y + 3 * t, coinR(c.v) * (0.9 + 0.1 * (1 - t)), c.t, flat * (1 + Math.sin(t * 7) * 0.6 * (1 - t)), 1);
+    if (t >= 1) { s.done = true; sinkingCoins.delete(c); floorDirty = true; }
+  }
+  sinking = sinking.filter((s) => !s.done);
+  for (const f of fish) {
+    const [u, v] = fishPos(f, f.a), [u2, v2] = fishPos(f, f.a + 0.02 * Math.sign(f.sp));
+    const [x, y] = P(u, v), [x2, y2] = P(u2, v2);
+    const ang = Math.atan2((y2 - y) / flat, x2 - x), L = 20 * G.k * f.len;
+    ctx.save(); ctx.translate(x, y); ctx.scale(1, flat * 1.2); ctx.rotate(ang); ctx.globalAlpha = 0.85;
+    const wig = Math.sin(now / 120 + f.ph) * 0.5;
+    ctx.fillStyle = f.col;
+    ctx.beginPath(); ctx.moveTo(-L * 0.55, 0); ctx.lineTo(-L * 0.95, -L * 0.28 + wig * 3); ctx.lineTo(-L * 0.95, L * 0.28 + wig * 3); ctx.closePath(); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(0, 0, L * 0.6, L * 0.22, 0, 0, 7); ctx.fill();
+    ctx.fillStyle = f.col === "#f4f0e8" ? "#e8512f" : "#fff3e6"; ctx.globalAlpha = 0.7;
+    ctx.beginPath(); ctx.ellipse(L * 0.12, -L * 0.03, L * 0.14, L * 0.09, 0, 0, 7); ctx.fill();
+    ctx.restore();
+  }
+  // the water surface
+  const g = ctx.createLinearGradient(0, cy - ry, 0, cy + ry);
+  g.addColorStop(0, "rgba(10, 70, 95, 0.62)"); g.addColorStop(1, "rgba(60, 190, 185, 0.38)");
+  ctx.fillStyle = g; ctx.fillRect(cx - rx, cy - ry, rx * 2, ry * 2);
+  if (!reduceMotion.matches) {
+    ctx.lineWidth = 1.2;
+    for (let i = 0; i < 9; i++) {
+      const yy = cy - ry + (i + 0.5) * (ry * 2 / 9);
+      ctx.strokeStyle = `rgba(200, 255, 250, ${0.05 + 0.04 * (i % 3)})`;
+      ctx.beginPath();
+      for (let x = cx - rx; x <= cx + rx; x += 12) {
+        const y = yy + Math.sin(x / 38 + now / 700 + i * 1.7) * 2.2 * (0.6 + i / 9);
+        x === cx - rx ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+    }
+  }
+  for (const r of ripples) {
+    const a = Math.max(0, (now - r.t) / r.dur), [x, y] = P(r.u, r.v);
+    const R = (0.03 + a * 0.32) * r.size;
+    ctx.strokeStyle = `rgba(230, 255, 252, ${(1 - a) * 0.55})`; ctx.lineWidth = 1.6;
+    ctx.beginPath(); ctx.ellipse(x, y, R * rx, R * ry, 0, 0, 7); ctx.stroke();
+    if (r.size > 0.5) { ctx.beginPath(); ctx.ellipse(x, y, R * 0.6 * rx, R * 0.6 * ry, 0, 0, 7); ctx.stroke(); }
+  }
+  ctx.restore();
+
+  // the statue, coins in the top bowl, falling water
+  const behind = flight && flightBehind(now);
+  if (behind) drawFlight(now);
+  ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.drawImage(fore, 0, 0); ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  for (const b of state.bowl) drawCoin(ctx, G.cx + b.du * G.bowlRx, G.bowlY + b.dv * G.bowlRy, 7 * G.k, b.t, flat, 0.9);
+  ctx.fillStyle = "rgba(220, 250, 255, 0.55)";
+  for (const p of particles) ctx.fillRect(p.x - p.r / 2, p.y - p.r / 2, p.r, p.r * 1.6);
+  ctx.fillStyle = "rgba(235, 252, 255, 0.85)";
+  for (const s of splashes) { ctx.globalAlpha = Math.max(0, s.life); ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, 7); ctx.fill(); }
+  ctx.globalAlpha = 1;
+  for (const s of sparkles) {
+    const a = (now - s.t) / 1200, sz = (s.big ? 14 : 6) * G.k * Math.sin(a * Math.PI);
+    ctx.strokeStyle = s.gold ? "rgba(255, 236, 170, 0.95)" : "rgba(255,255,255,0.9)"; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(s.x - sz, s.y); ctx.lineTo(s.x + sz, s.y); ctx.moveTo(s.x, s.y - sz); ctx.lineTo(s.x, s.y + sz); ctx.stroke();
+  }
+
+  if (flight && !behind) drawFlight(now);
+  // the coin in your hand
+  if (!flight && state.coins[state.selected] > 0) {
+    const bob = drag ? 0 : Math.sin(now / 500) * 2, r = 24 * G.k;
+    ctx.fillStyle = "rgba(0,0,0,0.35)"; ctx.beginPath(); ctx.ellipse(hand.x, hand.y + r * 0.9, r * 0.9, r * 0.25, 0, 0, 7); ctx.fill();
+    if (state.selected === "gold") {
+      const gg = ctx.createRadialGradient(hand.x, hand.y, 2, hand.x, hand.y, r * 2.2);
+      gg.addColorStop(0, "rgba(255,210,100,0.3)"); gg.addColorStop(1, "rgba(255,210,100,0)");
+      ctx.fillStyle = gg; ctx.fillRect(hand.x - r * 2.2, hand.y - r * 2.2, r * 4.4, r * 4.4);
+    }
+    drawCoin(ctx, hand.x, hand.y + bob, r, state.selected, 0.92 + Math.sin(now / 800) * 0.06);
+  }
+}
+
+function frame(now) {
+  requestAnimationFrame(frame);
+  const dt = Math.max(0, Math.min(3, (now - lastT) / 16.67)); lastT = now;
+  if (W) { update(dt, now); draw(now); }
+}
+
+/* ---------- throwing ---------- */
+// A flight is a chain of hops; each hop moves the coin between two basin points plus a height in px.
+function classify(u, v) {
+  if (Math.hypot(u - BOWL.u, v - BOWL.v) < BOWL.r * 0.85) return "bowl";
+  const r = Math.hypot(u, v);
+  if (r < 0.9) return "water";
+  if (v < -1.05 && Math.abs(u) < 1) return "wall";
+  if (r < 1.16) return "rim";
+  return "miss";
+}
+function throwCoin(power, aimU, fromX, fromY) {
+  if (flight) return;
+  const type = state.selected;
+  if (state.coins[type] <= 0) { noCoins(); return; }
+  state.coins[type]--; renderCoins();
+  $("#msg").classList.add("away");
+  if (clearArmed) { clearArmed = false; renderJournal(); }
+  audio(); startAmbient();
+  power = Math.max(0, Math.min(1.3, power));
+  const u0 = (fromX - G.cx) / G.rx, v0 = (fromY - G.cy) / G.ry;
+  const vt = 1.3 - power * 2.15 + (rand() - 0.5) * 0.08;
+  const ut = aimU + (rand() - 0.5) * 0.08;
+  const kind = classify(ut, vt);
+  const peak = (90 + power * 130) * G.k;
+  const hops = [];
+  if (kind === "bowl") {
+    hops.push({ to: { u: ut, v: vt, h: G.bowlH }, peak: peak * 0.8, dur: 820, sound: "bowl" });
+  } else if (kind === "wall") {
+    hops.push({ to: { u: ut, v: -1.18, h: 46 * G.k }, peak, dur: 820, sound: "clink" });
+    const bu = ut * 0.92, bv = -0.8, sc = Math.min(1, 0.85 / Math.hypot(bu, bv));
+    hops.push({ to: { u: bu * sc, v: bv * sc, h: 0 }, peak: 6, dur: 380, sound: "splash" });
+  } else if (kind === "rim") {
+    hops.push({ to: { u: ut, v: vt, h: 6 }, peak, dur: 760, sound: "clink" });
+    if (rand() < 0.5) hops.push({ to: { u: ut * 0.74, v: vt * 0.74, h: 0 }, peak: 28 * G.k, dur: 420, sound: "splash" });
+    else { const d = Math.hypot(ut, vt) || 1; hops.push({ to: { u: ut / d * 1.3, v: vt / d * 1.3, h: 0 }, peak: 30 * G.k, dur: 480, sound: "thud", miss: true }); }
+  } else if (kind === "miss") {
+    hops.push({ to: { u: ut, v: vt, h: 0 }, peak, dur: 760, sound: "thud", miss: true });
+  } else {
+    hops.push({ to: { u: ut, v: vt, h: 0 }, peak, dur: 700 + power * 300, sound: "splash" });
+  }
+  // short canvases: lower the first arc so its top stays on screen
+  const h0 = hops[0], top = 24 * G.k + 6;
+  for (let i = 1; i < 20; i++) {
+    const t = i / 20, room = G.cy + (v0 + (h0.to.v - v0) * t) * G.ry - h0.to.h * t - top;
+    h0.peak = Math.max(0, Math.min(h0.peak, room / (4 * t * (1 - t))));
+  }
+  const wish = $("#wish").value.trim(), last = hops[hops.length - 1];
+  const pending = { t: type, wish, miss: !!last.miss };
+  if (last.sound === "bowl") Object.assign(pending, { bowl: true, du: (last.to.u - BOWL.u) / BOWL.r * 0.75, dv: (last.to.v - BOWL.v) / BOWL.r * 0.75 });
+  else if (!last.miss) Object.assign(pending, { u: last.to.u, v: last.to.v });
+  const id = Date.now().toString(36) + rand().toString(36).slice(2, 8);
+  state.pending[id] = pending; save();
+  flight = { id, type, wish, pending, hops, i: 0, from: { u: u0, v: v0, h: 0 }, t0: performance.now(), spin: 7 + power * 8, fade: 0 };
+  whoosh();
+  $("#throwBtn").setAttribute("aria-disabled", "true");
+  $("#hintLine").hidden = true;
+}
+
+// behind the statue's depth (and below the top bowl) the coin is drawn before the statue layer
+function flightBehind(now) {
+  const f = flight, hop = f.hops[f.i];
+  if (hop.sound === "bowl") return false;
+  const t = Math.min(1, (now - f.t0) / hop.dur);
+  const v = f.from.v + (hop.to.v - f.from.v) * t;
+  const h = f.from.h + (hop.to.h - f.from.h) * t + 4 * t * (1 - t) * hop.peak;
+  return v < BOWL.v && h < G.bowlH;
+}
+function drawFlight(now) {
+  const f = flight, hop = f.hops[f.i];
+  const t = Math.min(1, (now - f.t0) / hop.dur);
+  const u = f.from.u + (hop.to.u - f.from.u) * t, v = f.from.v + (hop.to.v - f.from.v) * t;
+  const h = f.from.h + (hop.to.h - f.from.h) * t + 4 * t * (1 - t) * hop.peak;
+  const r = f.i === 0 ? 24 * G.k + (coinR(v) - 24 * G.k) * Math.min(1, t * 1.2) : coinR(v);
+  const [x, y0] = P(u, v), y = Math.max(r + 4, y0 - h);
+  const squash = f.fade ? G.ry / G.rx : Math.cos((now - f.t0) / 1000 * f.spin * Math.PI);
+  ctx.fillStyle = `rgba(0,0,0,${0.25 * (1 - Math.min(1, h / 200))})`;
+  ctx.beginPath(); ctx.ellipse(x, y0 + 2, r * 0.9, r * 0.9 * G.ry / G.rx, 0, 0, 7); ctx.fill();
+  drawCoin(ctx, x, y, r, f.type, squash, f.fade ? Math.max(0, 1 - (now - f.fade) / 500) : 1);
+  if (f.fade) { if (now - f.fade > 500) endFlight("miss"); return; }
+  if (t < 1) return;
+  const p = hop.to;
+  if (hop.sound === "clink") clink(0.6);
+  if (hop.sound === "thud") clink(0.25);
+  if (hop.sound === "splash") splash(p.u, p.v, f.type);
+  if (hop.sound === "bowl") { clink(0.8); splashAt(x, y, 8, G.bowlY + G.bowlRy); }
+  if (hop.miss) { f.fade = now; return; }
+  f.i++; f.from = { ...p }; f.t0 = now;
+  if (f.i < f.hops.length) return;
+  const mine = f.id in state.pending; // false if another tab already settled this throw
+  if (hop.sound === "bowl") {
+    const { du, dv } = f.pending;
+    if (mine) addToBowl({ du, dv, t: f.type });
+    sparkles.push({ x: G.cx + du * G.bowlRx, y: G.bowlY + dv * G.bowlRy, t: now, big: true, gold: true });
+    endFlight("bowl", G.cx + du * G.bowlRx, G.bowlY);
+  } else {
+    const coin = (!mine && state.floor.find((c) => c.u === p.u && c.v === p.v && c.t === f.type)) || { u: p.u, v: p.v, t: f.type };
+    if (mine) addToFloor(coin);
+    sinkingCoins.add(coin); floorDirty = true;
+    sinking.push({ coin, t0: now });
+    endFlight("water", x, y0);
+  }
+}
+
+function splash(u, v, type) {
+  const [x, y] = P(u, v), m = COINS[type].splash;
+  splashAt(x, y, Math.round(16 * m), y + 4);
+  addRipple(u, v, m); setTimeout(() => addRipple(u, v, m * 0.7, true), 180);
+  splashSound(m);
+  try { navigator.vibrate && navigator.vibrate(15); } catch (e) {}
+  for (const f of fish) { const [fu, fv] = fishPos(f, f.a); if (Math.hypot(fu - u, fv - v) < 0.5) f.boost = 1; }
+}
+function splashAt(x, y, n, floor) {
+  if (reduceMotion.matches) n = Math.ceil(n / 3);
+  for (let i = 0; i < n; i++) splashes.push({ x, y, vx: (rand() - 0.5) * 3.2 * G.k, vy: -(1.5 + rand() * 3.4) * G.k, r: 1 + rand() * 1.6, life: 1, floor });
+}
+
+function endFlight(kind, x, y) {
+  const f = flight; flight = null;
+  $("#throwBtn").removeAttribute("aria-disabled");
+  hand.x = G.cx; hand.y = G.handY;
+  const mine = f.id in state.pending;
+  delete state.pending[f.id];
+  if (kind === "miss") {
+    if (mine) state.coins[f.type]++;
+    save(); renderCoins();
+    showMsg("So close", "It bounced off the stone. The coin is back in your hand, so try again.");
+    return;
+  }
+  const lucky = kind === "bowl";
+  sessionThrows++;
+  if (mine) recordLanding(f.type, f.wish, lucky);
+  state.fact = (state.fact + 1) % FACTS.length;
+  save();
+  const legend = LEGEND[sessionThrows] || "";
+  if (lucky) showMsg("Lucky coin!", "Right in the top bowl. " + (f.wish ? "That wish gets extra luck." : "Next time, add a wish."));
+  else showMsg(f.wish ? "Your wish is in the water" : "Splash!", legend || (f.wish ? "Now don't tell anyone." : "Add a wish before the next one."));
+  if (f.wish) {
+    // start below the message and stop before reaching it
+    const msgBottom = $("#msg").offsetTop + $("#msg").offsetHeight;
+    const startY = Math.max(y - 10, msgBottom + 24);
+    const el = document.createElement("div");
+    el.className = "wishfloat" + (f.type === "gold" ? " gold" : "");
+    el.textContent = f.wish;
+    el.style.top = startY + "px";
+    el.style.setProperty("--rise", -Math.max(20, Math.min(150, startY - msgBottom - 14)) + "px");
+    $("#stage").appendChild(el);
+    // keep the whole label inside the stage at its widest (end-of-animation letter-spacing)
+    const sw = $("#stage").clientWidth;
+    el.style.animation = "none"; el.style.letterSpacing = "0.3em";
+    const half = el.offsetWidth / 2;
+    el.style.animation = ""; el.style.letterSpacing = "";
+    el.style.left = Math.max(half + 8, Math.min(sw - half - 8, x)) + "px";
+    setTimeout(() => el.remove(), 3400);
+    if ($("#wish").value.trim() === f.wish) $("#wish").value = "";
+  }
+  renderAll();
+}
+
+function showMsg(big, sub) {
+  const m = $("#msg");
+  $("#msgBig").textContent = big; $("#msgSub").textContent = sub;
+  m.classList.remove("show", "away"); void m.offsetWidth; m.classList.add("show");
+}
+const isLive = (p) => /^https:\/\//.test(p.link || "");
+const onSale = (c) => SHOP.packs.some((p) => p.coin === c && isLive(p));
+function noCoins() {
+  const t = state.selected, name = COINS[t].name, refill = `Free coins refill in ${untilMidnight()}.`;
+  const other = ["gold", "silver", "copper"].find((c) => c !== t && state.coins[c] > 0);
+  if (other) {
+    showMsg(`No ${name.toLowerCase()} coins`, `You still have ${state.coins[other]} ${COINS[other].name.toLowerCase()}. Pick it below.` + (t === "copper" ? ` ${refill}` : ""));
+    return;
+  }
+  if (t === "copper") {
+    const sale = ["silver", "gold"].filter(onSale).map((c) => COINS[c].name);
+    showMsg("Out of copper", refill + (sale.length === 2 ? " Silver and gold are below." : sale.length ? ` ${sale[0]} coins are below.` : ""));
+    return;
+  }
+  showMsg(`No ${name.toLowerCase()} coins`, onSale(t) ? `Get some below. ${refill}` : `${name} coins are coming soon. ${refill}`);
+}
+function untilMidnight() {
+  const n = new Date(), m = new Date(n); m.setHours(24, 0, 0, 0);
+  const mins = Math.ceil((m - n) / 60000);
+  return mins >= 60 ? `${Math.floor(mins / 60)} h ${mins % 60} min` : `${mins} min`;
+}
+
+/* ---------- sound ---------- */
+let actx = null, ambient = null;
+function audio() {
+  if (!state.sound) return null;
+  try {
+    if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)();
+    if (actx.state === "suspended") actx.resume();
+  } catch (e) { return null; }
+  return actx;
+}
+function noiseBuf(a, secs) {
+  const len = Math.floor(a.sampleRate * secs), b = a.createBuffer(1, len, a.sampleRate), d = b.getChannelData(0);
+  for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
+  return b;
+}
+function clink(vol) {
+  const a = audio(); if (!a) return;
+  const t = a.currentTime;
+  [1, 2.76, 5.4].forEach((m, i) => {
+    const o = a.createOscillator(), g = a.createGain();
+    o.frequency.value = 2100 * m * (0.98 + rand() * 0.04);
+    g.gain.setValueAtTime(vol * 0.2 / (i + 1), t); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.5 / (i + 1));
+    o.connect(g).connect(a.destination); o.start(t); o.stop(t + 0.6);
+  });
+}
+function whoosh() {
+  const a = audio(); if (!a) return;
+  const t = a.currentTime, src = a.createBufferSource(), f = a.createBiquadFilter(), g = a.createGain();
+  src.buffer = noiseBuf(a, 0.4); f.type = "bandpass"; f.frequency.setValueAtTime(600, t); f.frequency.linearRampToValueAtTime(2000, t + 0.3);
+  g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(0.08, t + 0.1); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.4);
+  src.connect(f).connect(g).connect(a.destination); src.start(t);
+}
+function splashSound(m) {
+  const a = audio(); if (!a) return;
+  const t = a.currentTime, src = a.createBufferSource(), f = a.createBiquadFilter(), g = a.createGain();
+  src.buffer = noiseBuf(a, 0.6); f.type = "lowpass"; f.frequency.setValueAtTime(2600, t); f.frequency.exponentialRampToValueAtTime(260, t + 0.5);
+  g.gain.setValueAtTime(0.32 * m, t); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.55);
+  src.connect(f).connect(g).connect(a.destination); src.start(t);
+  for (let i = 0; i < 3; i++) {
+    const o = a.createOscillator(), og = a.createGain(), s = t + 0.04 + i * 0.07 + rand() * 0.05;
+    o.frequency.setValueAtTime(900 + rand() * 700, s); o.frequency.exponentialRampToValueAtTime(280, s + 0.07);
+    og.gain.setValueAtTime(0.06, s); og.gain.exponentialRampToValueAtTime(0.0001, s + 0.09);
+    o.connect(og).connect(a.destination); o.start(s); o.stop(s + 0.1);
+  }
+}
+function startAmbient() {
+  const a = audio(); if (!a || ambient) return;
+  const src = a.createBufferSource(), f = a.createBiquadFilter(), g = a.createGain();
+  src.buffer = noiseBuf(a, 3); src.loop = true; f.type = "lowpass"; f.frequency.value = 900;
+  g.gain.setValueAtTime(0.0001, a.currentTime); g.gain.linearRampToValueAtTime(0.035, a.currentTime + 1.5);
+  src.connect(f).connect(g).connect(a.destination); src.start();
+  ambient = { src, g };
+}
+function stopAmbient() { if (ambient) { try { ambient.src.stop(); } catch (e) {} ambient = null; } }
+
+/* ---------- page rendering ---------- */
+function renderCoins() {
+  for (const t of ["copper", "silver", "gold"]) {
+    $("#n" + t[0].toUpperCase() + t.slice(1)).textContent = state.coins[t];
+    const b = document.querySelector(`.pick[data-type="${t}"]`);
+    b.setAttribute("aria-pressed", state.selected === t);
+    b.classList.toggle("empty", state.coins[t] === 0);
+  }
+  $("#sCopper").textContent = state.coins.copper > 0 ? `${FREE_PER_DAY} free every day` : `Refills in ${untilMidnight()}`;
+}
+function renderAll() {
+  renderCoins();
+  $("#hudCount").textContent = state.inFountain.toLocaleString("en");
+  $("#stWishes").textContent = state.wishCount.toLocaleString("en");
+  $("#stLucky").textContent = state.lucky;
+  $("#stDay").textContent = state.bestDay;
+  $("#fact").innerHTML = FACTS[state.fact];
+  $("#soundBtn").setAttribute("aria-pressed", state.sound);
+  renderJournal();
+}
+let clearArmed = false;
+function renderJournal() {
+  const w = $("#journalWrap");
+  const refocus = document.activeElement && document.activeElement.id === "clearBtn";
+  if (!state.wishes.length) {
+    w.innerHTML = `<p class="empty-note" tabindex="-1">No wishes yet. Throw your first coin and it will show up here.</p>`;
+    if (refocus) w.firstChild.focus({ preventScroll: true });
+    return;
+  }
+  const fmt = new Intl.DateTimeFormat(undefined, { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
+  const ul = document.createElement("ul"); ul.className = "journal";
+  for (const x of state.wishes.slice(0, 40)) {
+    const li = document.createElement("li");
+    li.innerHTML = `<i class="ico ${COINS[x.t] ? x.t : "copper"}"></i><span class="text"></span><span class="meta"></span>`;
+    const tx = li.querySelector(".text");
+    tx.textContent = x.text || "A silent wish";
+    if (!x.text) tx.classList.add("silent"); else if (x.t === "gold") tx.classList.add("gold");
+    if (x.lucky) { const b = document.createElement("span"); b.className = "badge"; b.textContent = "Top bowl"; tx.appendChild(b); }
+    li.querySelector(".meta").textContent = fmt.format(new Date(x.at));
+    ul.appendChild(li);
+  }
+  const parts = [ul];
+  if (state.wishes.length > 40) {
+    const more = document.createElement("p"); more.className = "journal-more";
+    more.textContent = `Showing your latest 40 of ${state.wishes.length} saved wishes. The journal keeps the latest 200.`;
+    parts.push(more);
+  }
+  const row = document.createElement("div"); row.className = "row-end";
+  row.innerHTML = `<button class="btn danger" id="clearBtn">${clearArmed ? "Press again to delete all wishes" : "Forget my wishes"}</button>`;
+  parts.push(row);
+  w.replaceChildren(...parts);
+  if (refocus) $("#clearBtn").focus({ preventScroll: true });
+}
+function renderShop() {
+  const live = isLive;
+  $("#packs").innerHTML = SHOP.packs.map((p) => {
+    const pile = Array.from({ length: Math.min(6, p.count) }, (_, i) => `<i class="ico ${p.coin}" style="left:${i * 18}px;bottom:${(i % 2) * 10}px"></i>`).join("");
+    return `<div class="pack"><div class="pile">${pile}</div><h3>${p.name}</h3><p>${p.desc}</p>
+      <div class="buy"><span class="price">${money(p.price)}</span>
+      ${live(p) ? `<a class="btn primary" href="${p.link}">Buy ${p.count} coins</a>` : `<button class="btn" disabled>Coming soon</button>`}</div></div>`;
+  }).join("");
+  $("#shopNotice").textContent = SHOP.packs.some(live)
+    ? (SHOP.vatNote ? SHOP.vatNote + " " : "") + "Payment is handled securely by Stripe. After paying, Stripe brings you back here and your coins are added right away."
+    : "Silver and gold coins are coming soon. Until then, enjoy your free copper coins.";
+}
+function toast(text) {
+  document.querySelectorAll(".toast").forEach((t) => t.remove());
+  const el = document.createElement("div"); el.className = "toast"; el.setAttribute("role", "status"); el.textContent = text;
+  document.body.appendChild(el); setTimeout(() => el.remove(), 4200);
+}
+
+// Credits made by this tab in the last minute. If another tab's save overwrote one, resync re-applies it.
+const myCredits = new Map();
+/* Coins bought through Stripe arrive here: the payment link redirects back to ?paid=<pack id> (or #paid-<pack id>). */
+function creditPurchase() {
+  let id = null;
+  try { id = new URLSearchParams(location.search).get("paid"); } catch (e) {}
+  const m = location.hash.match(/^#paid-([\w-]+)$/);
+  if (!id && m) id = m[1];
+  if (!id) return;
+  const pack = SHOP.packs.find((p) => p.id === id);
+  try { history.replaceState(null, "", location.pathname); } catch (e) {}
+  if (!pack) return;
+  const cid = Date.now().toString(36) + rand().toString(36).slice(2, 8);
+  for (const k in state.credits) if (Date.now() - state.credits[k] > 864e5) delete state.credits[k];
+  state.coins[pack.coin] += pack.count; state.credits[cid] = Date.now(); state.selected = pack.coin; save();
+  myCredits.set(cid, pack); setTimeout(() => myCredits.delete(cid), 60000);
+  renderCoins();
+  toast(`Thank you! ${pack.count} ${COINS[pack.coin].name.toLowerCase()} coins are in your hand.`);
+}
+
+/* ---------- input ---------- */
+function canvasPoint(e) { const r = cv.getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top, t: performance.now() }; }
+const handMinY = () => G.cy + G.ry * 0.6;
+const nearHand = (x, y) => Math.hypot(x - hand.x, y - hand.y) < 64 * G.k;
+// On touch screens a swipe scrolls the page unless it starts on the coin.
+cv.addEventListener("touchstart", (e) => {
+  const t = e.touches[0], r = cv.getBoundingClientRect();
+  if (e.touches.length === 1 && !flight && state.coins[state.selected] > 0 && nearHand(t.clientX - r.left, t.clientY - r.top)) e.preventDefault();
+}, { passive: false });
+cv.addEventListener("pointerdown", (e) => {
+  if (flight || drag) return;
+  const p = canvasPoint(e);
+  if (e.pointerType !== "mouse" && !nearHand(p.x, p.y)) return;
+  if (state.coins[state.selected] <= 0) { noCoins(); return; }
+  drag = { id: e.pointerId, samples: [p] };
+  hand.x = p.x; hand.y = Math.max(p.y, handMinY());
+  try { cv.setPointerCapture(e.pointerId); } catch (err) {}
+  cv.classList.add("dragging");
+  $("#msg").classList.add("away");
+  audio(); startAmbient();
+});
+cv.addEventListener("pointermove", (e) => {
+  if (!drag || e.pointerId !== drag.id) return;
+  const p = canvasPoint(e);
+  drag.samples.push(p); if (drag.samples.length > 12) drag.samples.shift();
+  hand.x = Math.max(20, Math.min(W - 20, p.x)); hand.y = Math.max(handMinY(), Math.min(H - 10, p.y));
+});
+cv.addEventListener("pointerup", (e) => {
+  if (!drag || e.pointerId !== drag.id) return;
+  const s = drag.samples, now = performance.now();
+  drag = null; cv.classList.remove("dragging");
+  const b = s[s.length - 1], a = s.find((p) => now - p.t < 110) || b;
+  const dt = Math.max(16, b.t - a.t), vx = (b.x - a.x) / dt, vy = (b.y - a.y) / dt;
+  if (-vy > 0.25 && b.y - s[0].y < -12) {
+    throwCoin((-vy - 0.25) / (1.5 * G.k), (hand.x - G.cx) / G.rx + vx * 0.8, hand.x, hand.y);
+  } else {
+    hand.x = G.cx; hand.y = G.handY;
+    $("#msg").classList.remove("away");
+    if (Math.hypot(b.x - s[0].x, b.y - s[0].y) < 8) showMsg("Flick it upward", "Drag the coin and let go while moving up. A faster flick throws farther.");
+  }
+});
+cv.addEventListener("pointercancel", (e) => { if (!drag || e.pointerId !== drag.id) return; drag = null; cv.classList.remove("dragging"); hand.x = G.cx; hand.y = G.handY; $("#msg").classList.remove("away"); });
+
+$("#throwBtn").addEventListener("click", () => {
+  // a good, slightly random throw for the button and keyboard
+  const lucky = rand() < 0.12;
+  throwCoin(lucky ? 0.79 : 0.35 + rand() * 0.35, lucky ? 0 : (rand() - 0.5) * 0.9, G.cx, G.handY);
+});
+$("#wish").addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); if (!e.repeat) $("#throwBtn").click(); } });
+document.querySelectorAll(".pick").forEach((b) => b.addEventListener("click", () => {
+  state.selected = b.dataset.type; save(); renderCoins();
+  if (state.coins[state.selected] <= 0) noCoins();
+}));
+$("#soundBtn").addEventListener("click", () => {
+  state.sound = !state.sound; save();
+  if (state.sound) startAmbient(); else stopAmbient();
+  renderAll();
+});
+document.addEventListener("click", (e) => {
+  if (e.target.id !== "clearBtn") { if (clearArmed) { clearArmed = false; renderJournal(); } return; }
+  if (!clearArmed) { clearArmed = true; renderJournal(); return; }
+  if (e.detail > 1) return; // second click of a double-click: stay armed so the prompt can be read
+  clearArmed = false; state.wishes = []; state.wishCount = 0; save(); renderAll();
+  toast("Your wishes are forgotten.");
+});
+document.addEventListener("keydown", (e) => { if (e.repeat && (e.target.id === "clearBtn" || e.target.id === "throwBtn")) e.preventDefault(); });
+document.addEventListener("focusout", (e) => {
+  if (e.target.id === "clearBtn") setTimeout(() => {
+    if (clearArmed && (!document.activeElement || document.activeElement.id !== "clearBtn")) { clearArmed = false; renderJournal(); }
+  });
+});
+addEventListener("hashchange", creditPurchase);
+const resync = () => {
+  loadState();
+  // loadState replaced state.floor with fresh objects: re-link coins that are still sinking
+  sinkingCoins.clear();
+  for (const s of sinking) {
+    const m = state.floor.find((c) => c.u === s.coin.u && c.v === s.coin.v && c.t === s.coin.t);
+    if (m) { s.coin = m; sinkingCoins.add(m); }
+  }
+  let fixed = false;
+  for (const [cid, pack] of myCredits) if (!(cid in state.credits)) { state.coins[pack.coin] += pack.count; state.credits[cid] = Date.now(); fixed = true; }
+  if (fixed) save();
+  floorDirty = true; renderAll();
+};
+addEventListener("storage", (e) => { if (e.key === KEY) resync(); });
+addEventListener("pageshow", (e) => { if (e.persisted) resync(); });
+{ const hd = document.querySelector("header"), setHdr = () => document.documentElement.style.setProperty("--hdr", hd.offsetHeight + "px");
+  setHdr(); if (window.ResizeObserver) new ResizeObserver(setHdr).observe(hd); }
+addEventListener("resize", resize);
+document.addEventListener("visibilitychange", () => { if (actx) { if (document.hidden) actx.suspend(); else if (state.sound) actx.resume(); } });
+setInterval(() => { refillFree(); renderCoins(); }, 60000);
+
+/* ---------- boot ---------- */
+creditPurchase();
+resize();
+renderAll();
+renderShop();
+if (document.fonts) document.fonts.ready.then(resize);
+requestAnimationFrame(frame);
+</script>
+<!-- GoatCounter — privacy-friendly, cookie-free visit counting -->
+<script data-goatcounter="https://lbideas.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script>
+</body>
+</html>
