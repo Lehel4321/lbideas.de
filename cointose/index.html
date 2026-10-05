@@ -203,7 +203,7 @@ footer p { margin: 0; max-width: 75ch; }
       <div>
         <p class="eyebrow">Your coins</p>
         <div class="picks">
-          <button class="pick" data-type="copper" aria-pressed="true"><span class="top"><i class="ico copper"></i><b>Copper</b><span class="n" id="nCopper">3</span></span><small id="sCopper">3 free every day</small></button>
+          <button class="pick" data-type="copper" aria-pressed="true"><span class="top"><i class="ico copper"></i><b>Copper</b><span class="n" id="nCopper">10</span></span><small id="sCopper">Free, 1 back every minute</small></button>
           <button class="pick" data-type="silver" aria-pressed="false"><span class="top"><i class="ico silver"></i><b>Silver</b><span class="n" id="nSilver">0</span></span><small>Bigger splash</small></button>
           <button class="pick" data-type="gold" aria-pressed="false"><span class="top"><i class="ico gold"></i><b>Gold</b><span class="n" id="nGold">0</span></span><small>Glows, golden wish</small></button>
         </div>
@@ -235,7 +235,7 @@ footer p { margin: 0; max-width: 75ch; }
 
   <section id="coins">
     <h2>Get coins</h2>
-    <p class="lede">Copper coins are free, three every day. Silver and gold coins make bigger splashes and keep shining on the fountain floor, and gold wishes are written in gold in your journal.</p>
+    <p class="lede">Copper coins are free: you hold up to ten, and a new one comes back every minute. Silver and gold coins make bigger splashes and keep shining on the fountain floor, and gold wishes are written in gold in your journal.</p>
     <div class="packs" id="packs"></div>
     <p class="notice" id="shopNotice"></p>
   </section>
@@ -273,7 +273,7 @@ const COINS = {
   silver: { name: "Silver", base: "#c3cad4", light: "#ffffff", dark: "#5f6773", splash: 1.35 },
   gold:   { name: "Gold",   base: "#e2b23f", light: "#fff2b8", dark: "#7d540c", splash: 1.7 }
 };
-const FREE_PER_DAY = 3;
+const FREE_MAX = 10, FREE_EVERY = 60000; // free copper coins: hold up to 10, one comes back every minute
 const FACTS = [
   "<b>More than €1.5 million</b> is thrown into Rome's Trevi Fountain each year. The city gives it to the charity Caritas.",
   "<b>The Trevi rule:</b> throw with your right hand over your left shoulder. One coin means you'll return to Rome, two mean a new romance, three mean a wedding.",
@@ -287,7 +287,7 @@ const LEGEND = ["", "One coin. You will come back.", "Two coins. A new romance."
 const KEY = "cointose.fountain.v1";
 const today = () => new Date().toLocaleDateString("en-CA");
 const state = {
-  coins: { copper: FREE_PER_DAY, silver: 0, gold: 0 }, freeDay: "", selected: "copper",
+  coins: { copper: FREE_MAX, silver: 0, gold: 0 }, copperAt: 0, selected: "copper",
   floor: [], bowl: [], wishes: [], lucky: 0, sound: true, fact: 0, dayCount: 0, dayKey: "", bestDay: 0,
   wishCount: 0, inFountain: 0, pending: {}, credits: {}
 };
@@ -297,7 +297,7 @@ function loadState() {
   try {
     s = JSON.parse(localStorage.getItem(KEY) || "{}") || {};
     Object.assign(state, s);
-    state.coins = { copper: 0, silver: 0, gold: 0, ...(s.coins || { copper: FREE_PER_DAY }) };
+    state.coins = { copper: 0, silver: 0, gold: 0, ...(s.coins || { copper: FREE_MAX }) };
   } catch (e) {}
   state.credits = s.credits && typeof s.credits === "object" ? s.credits : {};
   if (!COINS[state.selected]) state.selected = "copper";
@@ -337,11 +337,14 @@ function settlePending() {
 }
 settlePending();
 function refillFree() {
-  if (state.freeDay !== today()) {
-    state.coins.copper = Math.max(state.coins.copper, FREE_PER_DAY);
-    state.freeDay = today();
-    save();
+  const now = Date.now(), before = state.coins.copper;
+  if (!state.copperAt) { state.coins.copper = Math.max(before, FREE_MAX); state.copperAt = now; } // first visit or older save
+  if (state.coins.copper >= FREE_MAX) state.copperAt = now; // the clock only runs while you are below the maximum
+  else {
+    const n = Math.floor((now - state.copperAt) / FREE_EVERY);
+    if (n > 0) { state.coins.copper = Math.min(FREE_MAX, state.coins.copper + n); state.copperAt = state.coins.copper >= FREE_MAX ? now : state.copperAt + n * FREE_EVERY; }
   }
+  if (state.coins.copper !== before) save();
 }
 refillFree();
 let sessionThrows = 0;
@@ -1238,7 +1241,7 @@ function showMsg(big, sub) {
 const isLive = (p) => /^https:\/\//.test(p.link || "");
 const onSale = (c) => SHOP.packs.some((p) => p.coin === c && isLive(p));
 function noCoins() {
-  const t = state.selected, name = COINS[t].name, refill = `Free coins refill in ${untilMidnight()}.`;
+  const t = state.selected, name = COINS[t].name, refill = `Next free coin in ${untilNext()}.`;
   const other = ["gold", "silver", "copper"].find((c) => c !== t && state.coins[c] > 0);
   if (other) {
     showMsg(`No ${name.toLowerCase()} coins`, `You still have ${state.coins[other]} ${COINS[other].name.toLowerCase()}. Pick it below.` + (t === "copper" ? ` ${refill}` : ""));
@@ -1250,6 +1253,10 @@ function noCoins() {
     return;
   }
   showMsg(`No ${name.toLowerCase()} coins`, onSale(t) ? `Get some below. ${refill}` : `${name} coins are coming soon. ${refill}`);
+}
+function untilNext() {
+  const ms = Math.max(0, FREE_EVERY - (Date.now() - state.copperAt)), sec = Math.ceil(ms / 1000);
+  return `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, "0")}`;
 }
 function untilMidnight() {
   const n = new Date(), m = new Date(n); m.setHours(24, 0, 0, 0);
@@ -1320,7 +1327,7 @@ function renderCoins() {
     b.setAttribute("aria-pressed", state.selected === t);
     b.classList.toggle("empty", state.coins[t] === 0);
   }
-  $("#sCopper").textContent = state.coins.copper > 0 ? `${FREE_PER_DAY} free every day` : `Refills in ${untilMidnight()}`;
+  $("#sCopper").textContent = state.coins.copper >= FREE_MAX ? "Free, 1 back every minute" : `Next free coin in ${untilNext()}`;
 }
 function renderAll() {
   renderCoins();
@@ -1494,7 +1501,7 @@ addEventListener("pageshow", (e) => { if (e.persisted) resync(); });
   setHdr(); if (window.ResizeObserver) new ResizeObserver(setHdr).observe(hd); }
 addEventListener("resize", resize);
 document.addEventListener("visibilitychange", () => { if (actx) { if (document.hidden) actx.suspend(); else if (state.sound) actx.resume(); } });
-setInterval(() => { refillFree(); renderCoins(); }, 60000);
+setInterval(() => { refillFree(); renderCoins(); }, 1000);
 
 /* ---------- boot ---------- */
 creditPurchase();
