@@ -66,7 +66,7 @@ nav a, .icon-btn {
 }
 nav a:hover, .icon-btn:hover { color: var(--ink); background: var(--surface); }
 .icon-btn[aria-pressed="false"] { text-decoration: line-through; }
-@media (max-width: 480px) { nav a[href="#fountain"], .hud .legend { display: none; } nav a, .icon-btn { padding-inline: 6px; letter-spacing: 0.06em; } .brand { font-size: 20px; } }
+@media (max-width: 480px) { nav a[href="#fountain"], nav a[href="#wishes"] { display: none; } nav a, .icon-btn { padding-inline: 6px; letter-spacing: 0.06em; } .brand { font-size: 20px; } }
 header + main { margin-top: -36px; }
 
 /* stage */
@@ -95,6 +95,13 @@ header + main { margin-top: -36px; }
 }
 .wishfloat.gold { color: #fff3c4; text-shadow: 0 0 14px rgba(232, 191, 82, 0.95); }
 @keyframes wish-up { 0% { opacity: 0; margin-top: 0; filter: blur(2px); } 15% { opacity: 1; filter: blur(0); } 100% { opacity: 0; margin-top: var(--rise, -150px); letter-spacing: 0.3em; filter: blur(3px); } }
+.hud-right b { font-size: 14px; }
+.combo { background: var(--gold); color: var(--on-gold); border-radius: 6px; padding: 1px 7px; margin-right: 8px; font-weight: 700; }
+.scorepop { position: absolute; transform: translate(-50%, -50%); pointer-events: none; text-align: center; line-height: 1.1; white-space: nowrap;
+  font-family: var(--display); font-weight: 900; font-size: 24px; color: #ffe39a; text-shadow: 0 2px 10px rgba(0,0,0,0.75); animation: score-up 1.4s ease-out forwards; }
+.scorepop small { display: block; font: 700 12px var(--body); letter-spacing: 0.08em; color: #fff; text-transform: uppercase; }
+.scorepop.plain { font-size: 17px; color: #d9f5ff; }
+@keyframes score-up { 0% { opacity: 0; margin-top: 12px; } 18% { opacity: 1; } 100% { opacity: 0; margin-top: -64px; } }
 .hint-line { position: absolute; left: 0; right: 0; bottom: 12px; text-align: center; pointer-events: none;
   font: 500 12px var(--mono); letter-spacing: 0.06em; color: rgba(255, 245, 225, 0.7); padding-inline: 16px; }
 
@@ -131,6 +138,26 @@ header + main { margin-top: -36px; }
 .stat { background: var(--surface); padding: 8px 14px; min-width: 0; flex: 1; }
 .stat span { display: block; font: 500 10px/1.4 var(--mono); letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); white-space: nowrap; }
 .stat b { font: 500 20px/1.3 var(--mono); font-variant-numeric: tabular-nums; }
+
+.game { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr); gap: 16px; margin-top: 18px; }
+@media (max-width: 760px) { .game { grid-template-columns: minmax(0, 1fr); } }
+.card-box { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; min-width: 0; }
+.lvbar { height: 8px; background: var(--line); border-radius: 4px; overflow: hidden; margin: 2px 0 6px; }
+.lvbar i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, #b88a2c, #f1cf74); transition: width 0.5s; }
+.lvnext { font-size: 13px; color: var(--muted); margin: 0 0 14px; }
+.scenes { display: flex; flex-wrap: wrap; gap: 6px; }
+.scene-btn { border: 1.5px solid var(--line); background: var(--surface-2); border-radius: 999px; padding: 6px 12px; font-size: 13px; font-weight: 700; }
+.scene-btn[aria-pressed="true"] { border-color: var(--gold); color: var(--gold); }
+.scene-btn:disabled { opacity: 0.5; cursor: not-allowed; font-weight: 500; }
+.quests { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 12px; }
+.quests li { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 5px 10px; align-items: center; }
+.quests .qtext { font-size: 14px; }
+.quests .qnum { font: 500 12px var(--mono); color: var(--muted); display: flex; align-items: center; gap: 6px; font-variant-numeric: tabular-nums; }
+.quests .qnum .ico { width: 16px; height: 16px; }
+.quests .qbar { grid-column: 1 / -1; height: 5px; background: var(--line); border-radius: 3px; overflow: hidden; }
+.quests .qbar i { display: block; height: 100%; background: var(--water); transition: width 0.4s; }
+.quests li.done .qtext { color: var(--muted); text-decoration: line-through; }
+.quests li.done .qbar i { background: var(--gold); }
 
 /* sections */
 section h2 { font-family: var(--display); font-weight: 700; font-size: clamp(24px, 4vw, 32px); letter-spacing: 0.06em; margin: 0 0 6px; text-wrap: balance; }
@@ -187,6 +214,7 @@ footer p { margin: 0; max-width: 75ch; }
       <a href="#fountain">Fountain</a>
       <a href="#wishes">Wishes</a>
       <a href="#coins">Get coins</a>
+      <button class="icon-btn" id="musicBtn" aria-pressed="true" title="Turn music on or off">Music</button>
       <button class="icon-btn" id="soundBtn" aria-pressed="true" title="Turn sound on or off">Sound</button>
     </nav>
   </header>
@@ -194,9 +222,9 @@ footer p { margin: 0; max-width: 75ch; }
   <main id="fountain">
     <div class="stage" id="stage">
       <canvas id="scene" aria-label="A fountain in a piazza at dusk. Flick the coin upward to throw it into the water."></canvas>
-      <div class="hud"><span>In the fountain <b id="hudCount">0</b></span><span class="legend">Right hand, left shoulder</span></div>
+      <div class="hud"><span>In the fountain <b id="hudCount">0</b></span><span class="hud-right"><span class="combo" id="hudCombo" hidden></span>Level <b id="hudLevel">1</b> · <b id="hudScore">0</b> pts</span></div>
       <div class="msg" id="msg" aria-live="polite"><div class="big" id="msgBig">Make a wish</div><div class="sub" id="msgSub">Type it below, then flick the coin up into the water</div></div>
-      <div class="hint-line" id="hintLine">Drag the coin and flick it upward. Throw harder to reach the top bowl.</div>
+      <div class="hint-line" id="hintLine">Flick the coin up. Hit lily pads and the top bowl for bonus points.</div>
     </div>
 
     <div class="controls">
@@ -223,6 +251,20 @@ footer p { margin: 0; max-width: 75ch; }
         <div class="stat"><span>Wishes</span><b id="stWishes">0</b></div>
         <div class="stat"><span>Top bowl</span><b id="stLucky">0</b></div>
         <div class="stat"><span>Best day</span><b id="stDay">0</b></div>
+      </div>
+    </div>
+
+    <div class="game">
+      <div class="card-box">
+        <p class="eyebrow">Level <span id="lvNum">1</span> · best combo ×<span id="lvCombo">0</span></p>
+        <div class="lvbar"><i id="lvFill"></i></div>
+        <p class="lvnext" id="lvNext"></p>
+        <p class="eyebrow">Scene</p>
+        <div class="scenes" id="scenes"></div>
+      </div>
+      <div class="card-box">
+        <p class="eyebrow">Today's quests · new ones every day</p>
+        <ul class="quests" id="quests"></ul>
       </div>
     </div>
   </main>
@@ -281,6 +323,24 @@ const FACTS = [
   "<b>Coins in water are an old idea.</b> About 12,000 Roman coins were found in the sacred spring at Bath, England, left as offerings to the goddess Sulis Minerva.",
   "<b>Hit the top bowl</b> for a lucky coin. It's the smallest target in the piazza, so flick harder and aim for the middle."
 ];
+// Levels: points needed for level n are 100·n·(n−1): 0, 200, 600, 1200, 2000…
+const SCENES = [
+  { id: "dusk", name: "Dusk", level: 1, sky: ["#0b1129", "#262a55", "#6f4a6a"], tint: null, lamp: 1, stars: 1 },
+  { id: "golden", name: "Golden hour", level: 2, sky: ["#4a6a98", "#d99a68", "#ffd089"], tint: ["soft-light", "rgba(255,165,70,0.6)"], lamp: 0.2, stars: 0 },
+  { id: "night", name: "Night", level: 3, sky: ["#01030a", "#081028", "#18204a"], tint: ["multiply", "rgb(78,98,165)"], lamp: 1.7, stars: 1.7 },
+  { id: "rain", name: "Rain", level: 4, sky: ["#262c3a", "#363e4e", "#4a5060"], tint: ["multiply", "rgb(150,160,182)"], lamp: 1.15, stars: 0, rain: true },
+];
+const sceneOf = () => SCENES.find((x) => x.id === state.scene) || SCENES[0];
+const levelAt = (n) => 100 * n * (n - 1);
+function levelOf(score) { let n = 1; while (score >= levelAt(n + 1)) n++; return n; }
+const QUESTS = [
+  { id: "pads", n: 3, reward: "silver", text: (n) => `Land ${n} coins on lily pads` },
+  { id: "bowl", n: 1, reward: "gold", text: () => "Hit the top bowl" },
+  { id: "combo", n: 3, reward: "gold", text: (n) => `Reach a ×${n} combo` },
+  { id: "words", n: 3, reward: "silver", text: (n) => `Make ${n} wishes with words` },
+  { id: "throws", n: 12, reward: "silver", text: (n) => `Throw ${n} coins into the water` },
+  { id: "points", n: 300, reward: "silver", text: (n) => `Score ${n} points today` },
+];
 const LEGEND = ["", "One coin. You will come back.", "Two coins. A new romance.", "Three coins. Wedding bells."];
 
 /* ---------- state ---------- */
@@ -291,7 +351,8 @@ const today = () => new Date().toLocaleDateString("en-CA");
 const state = {
   coins: { copper: FREE_MAX, silver: 0, gold: 0 }, copperAt: 0, selected: "copper",
   floor: [], bowl: [], wishes: [], lucky: 0, sound: true, fact: 0, dayCount: 0, dayKey: "", bestDay: 0,
-  wishCount: 0, inFountain: 0, pending: {}, credits: {}
+  wishCount: 0, inFountain: 0, pending: {}, credits: {},
+  score: 0, bestCombo: 0, scene: "dusk", music: true, quests: null
 };
 // Read from storage at boot and whenever another tab saves, so tabs never overwrite each other's coins.
 function loadState() {
@@ -351,6 +412,18 @@ function settlePending() {
   save();
 }
 settlePending();
+// three quests a day, the same for everyone on the same date
+function dailyQuests() {
+  const d = today();
+  if (state.quests && state.quests.day === d) return false;
+  let h = 7; for (const ch of d) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
+  const pool = QUESTS.map((q) => q.id), pick = [];
+  while (pick.length < 3) { h = (Math.imul(h, 1103515245) + 12345) >>> 0; pick.push(pool.splice(h % pool.length, 1)[0]); }
+  state.quests = { day: d, list: pick.map((id) => ({ id, p: 0, done: false })) };
+  save();
+  return true;
+}
+dailyQuests();
 function refillFree() {
   const now = Date.now(), before = state.coins.copper;
   if (!state.copperAt) { state.coins.copper = Math.max(before, FREE_MAX); state.copperAt = now; } // first visit or older save
@@ -481,14 +554,15 @@ function paintBack() {
 
   // dusk sky, stars, moon
   let g = c.createLinearGradient(0, 0, 0, fTop + 30);
-  g.addColorStop(0, "#0b1129"); g.addColorStop(0.55, "#262a55"); g.addColorStop(1, "#6f4a6a");
+  const look = sceneOf();
+  g.addColorStop(0, look.sky[0]); g.addColorStop(0.55, look.sky[1]); g.addColorStop(1, look.sky[2]);
   c.fillStyle = g; c.fillRect(0, 0, W, fTop + 30);
-  for (let i = 0; i < 70; i++) {
+  for (let i = 0; i < 70 * look.stars; i++) {
     const x = R() * W, y = R() * Math.max(4, fTop - 18 * k), s = R() < 0.12 ? 1.7 : 1;
     c.globalAlpha = 0.25 + R() * 0.65; c.fillStyle = "#fffaf0"; c.fillRect(x, y, s, s);
   }
   c.globalAlpha = 1;
-  if (fTop > 70) {
+  if (fTop > 70 && look.stars) {
     const mx = W * 0.83, my = Math.min(fTop * 0.42, 56 * k), mr = 10 * k;
     const mg = c.createRadialGradient(mx, my, mr, mx, my, mr * 7);
     mg.addColorStop(0, "rgba(225,228,255,0.28)"); mg.addColorStop(1, "rgba(225,228,255,0)");
@@ -819,6 +893,14 @@ const fish = [
   { a: 4.0, sp: 0.00013, ru: 0.5, rv: 0.62, ph: 2.7, col: "#e8512f", col2: "#2a2224", spot: "#1d1a1c", len: 0.7 },
   { a: 5.2, sp: -0.00012, ru: 0.45, rv: 0.5, ph: 4.1, col: "#f0b43c", col2: "#f6dfa4", spot: "#fff6dc", len: 0.6 }
 ];
+// lily pads drift slowly around the basin; landing a coin on one scores bonus points
+const pads = [
+  { a: 0.5, r: 0.64, sp: 0.00006, size: 0.085, flower: true, hit: 0 },
+  { a: 2.6, r: 0.52, sp: -0.00005, size: 0.075, flower: false, hit: 0 },
+  { a: 4.3, r: 0.72, sp: 0.00004, size: 0.07, flower: true, hit: 0 },
+];
+const padPos = (p) => [Math.cos(p.a) * p.r, Math.sin(p.a) * p.r * 0.85 + 0.1];
+let combo = 0, rain = [];
 // petals and leaves drifting in a slow current; splashes push them away
 let foams = [];
 const petals = Array.from({ length: 8 }, (_, i) => {
@@ -856,6 +938,13 @@ function update(dt, now) {
   sparkles = sparkles.filter((s) => now - s.t < 1200);
   for (const f of fish) { f.a += f.sp * (1 + (f.boost || 0) * 4) * 16.67 * dt; if (f.boost) f.boost = Math.max(0, f.boost - 0.01 * dt); }
   foams = foams.filter((f) => now - f.t < 700);
+  for (const p of pads) { p.a += p.sp * 16.67 * dt; if (p.hit > 0) p.hit = Math.max(0, p.hit - 0.012 * dt); }
+  if (sceneOf().rain && !reduceMotion.matches) {
+    for (let i = 0; i < 5 * dt; i++) rain.push({ x: rand() * (W + 60) - 30, y: -20, vy: (11 + rand() * 5) * G.k, len: (12 + rand() * 10) * G.k });
+    for (const d of rain) d.y += d.vy * dt;
+    rain = rain.filter((d) => d.y < H + 20);
+    if (rand() < 0.35 * dt && ripples.length < 40) { const a = rand() * 6.283, r = Math.sqrt(rand()) * 0.9; addRipple(Math.cos(a) * r, Math.sin(a) * r, 0.16); }
+  } else if (rain.length) rain = [];
   for (const p of petals) {
     p.s = p.s0 || (p.s0 = p.s) ; p.s = p.s0 * G.k;
     const drift = 0.00025 * dt, ru = p.u, rv = p.v;
@@ -1023,6 +1112,27 @@ function draw(now) {
     ctx.fillStyle = `rgba(255,255,255,${0.45 * (1 - a)})`;
     ctx.beginPath(); ctx.ellipse(x, y, (5 + a * 9) * k * fm.m, (2 + a * 3.5) * k * fm.m, 0, 0, 7); ctx.fill();
   }
+  // lily pads on the surface
+  for (const pd of pads) {
+    const [pu, pv] = padPos(pd), [x, y] = P(pu, pv), R = pd.size * rx * (1 + 0.18 * Math.sin(pd.hit * Math.PI * 4) * pd.hit);
+    ctx.save(); ctx.translate(x, y); ctx.scale(1, flat);
+    ctx.fillStyle = "rgba(0,15,25,0.3)"; ctx.beginPath(); ctx.arc(2 * k, 5 * k, R, 0, 7); ctx.fill();
+    ctx.save(); ctx.rotate(pd.a * 1.5);
+    const pg = ctx.createRadialGradient(-R * 0.3, -R * 0.3, R * 0.1, 0, 0, R);
+    pg.addColorStop(0, "#7cb356"); pg.addColorStop(1, "#2f5d2b");
+    ctx.beginPath(); ctx.moveTo(0, 0); ctx.arc(0, 0, R, 0.28, Math.PI * 2 - 0.28); ctx.closePath(); ctx.fillStyle = pg; ctx.fill();
+    ctx.strokeStyle = "rgba(20,45,18,0.45)"; ctx.lineWidth = 1;
+    ctx.beginPath(); for (let i = 1; i < 8; i++) { const a = 0.28 + i * (Math.PI * 2 - 0.56) / 8; ctx.moveTo(0, 0); ctx.lineTo(Math.cos(a) * R * 0.9, Math.sin(a) * R * 0.9); } ctx.stroke();
+    ctx.strokeStyle = "rgba(190,230,150,0.35)"; ctx.beginPath(); ctx.arc(0, 0, R * 0.97, 0.3, Math.PI * 2 - 0.3); ctx.stroke();
+    ctx.restore();
+    if (pd.flower) {
+      ctx.translate(-R * 0.25, -R * 0.2);
+      for (let i = 0; i < 8; i++) { ctx.rotate(Math.PI / 4); ctx.fillStyle = i % 2 ? "#f6c3d0" : "#f9dbe3"; ctx.beginPath(); ctx.ellipse(R * 0.22, 0, R * 0.24, R * 0.1, 0, 0, 7); ctx.fill(); }
+      ctx.fillStyle = "#f2c94c"; ctx.beginPath(); ctx.arc(0, 0, R * 0.09, 0, 7); ctx.fill();
+    }
+    ctx.restore();
+    if (pd.hit > 0) { ctx.strokeStyle = `rgba(255,225,140,${pd.hit})`; ctx.lineWidth = 2; ctx.beginPath(); ctx.ellipse(x, y, R * (1.3 + (1 - pd.hit)), R * flat * (1.3 + (1 - pd.hit)), 0, 0, 7); ctx.stroke(); }
+  }
   // petals and leaves floating on the surface
   for (const p of petals) {
     const [x, y] = P(p.u, p.v), bob = Math.sin(now / 900 + p.ph) * 0.6;
@@ -1046,14 +1156,23 @@ function draw(now) {
   for (const s of splashes) { ctx.globalAlpha = Math.max(0, s.life); ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, 7); ctx.fill(); }
   ctx.globalAlpha = 1;
   for (const s of sparkles) {
+    if (now < s.t) continue;
     const a = (now - s.t) / 1200, sz = (s.big ? 14 : 6) * G.k * Math.sin(a * Math.PI);
     ctx.strokeStyle = s.gold ? "rgba(255, 236, 170, 0.95)" : "rgba(255,255,255,0.9)"; ctx.lineWidth = 1.5;
     ctx.beginPath(); ctx.moveTo(s.x - sz, s.y); ctx.lineTo(s.x + sz, s.y); ctx.moveTo(s.x, s.y - sz); ctx.lineTo(s.x, s.y + sz); ctx.stroke();
   }
+  // the scene's light: golden hour, night or rain
+  const look = sceneOf();
+  if (look.tint) { ctx.save(); ctx.globalCompositeOperation = look.tint[0]; ctx.fillStyle = look.tint[1]; ctx.fillRect(0, 0, W, H); ctx.restore(); }
+  if (rain.length) {
+    ctx.strokeStyle = "rgba(205,215,235,0.35)"; ctx.lineWidth = 1; ctx.beginPath();
+    for (const d of rain) { ctx.moveTo(d.x, d.y); ctx.lineTo(d.x - d.len * 0.15, d.y - d.len); }
+    ctx.stroke();
+  }
   // lamplight: a gentle flicker and a few moths drifting around each lantern
   ctx.save(); ctx.globalCompositeOperation = "lighter";
   G.lamps.forEach((L, li) => {
-    const fl = still ? 0.8 : 0.75 + 0.15 * Math.sin(now * 0.013 + li * 2) + 0.1 * Math.sin(now * 0.031 + li);
+    const fl = (still ? 0.8 : 0.75 + 0.15 * Math.sin(now * 0.013 + li * 2) + 0.1 * Math.sin(now * 0.031 + li)) * look.lamp;
     const lg = ctx.createRadialGradient(L.x, L.y - 2 * k, 1, L.x, L.y - 2 * k, 46 * k);
     lg.addColorStop(0, `rgba(255,214,140,${0.55 * fl})`); lg.addColorStop(1, "rgba(255,180,90,0)");
     ctx.fillStyle = lg; ctx.fillRect(L.x - 50 * k, L.y - 52 * k, 100 * k, 100 * k);
@@ -1180,6 +1299,8 @@ function drawFlight(now) {
     sparkles.push({ x: G.cx + du * G.bowlRx, y: G.bowlY + dv * G.bowlRy, t: now, big: true, gold: true });
     endFlight("bowl", G.cx + du * G.bowlRx, G.bowlY);
   } else {
+    const pi = pads.findIndex((pd) => { const [pu, pv] = padPos(pd); return Math.hypot(p.u - pu, p.v - pv) < pd.size + 0.03; });
+    if (pi >= 0) { pads[pi].hit = 1; f.pad = true; clink(0.35); }
     const coin = (!mine && state.floor.find((c) => c.u === p.u && c.v === p.v && c.t === f.type)) || { u: p.u, v: p.v, t: f.type };
     if (mine) addToFloor(coin);
     sinkingCoins.add(coin); floorDirty = true;
@@ -1213,6 +1334,7 @@ function endFlight(kind, x, y) {
   const mine = f.id in state.pending;
   delete state.pending[f.id];
   if (kind === "miss") {
+    combo = 0;
     if (mine) state.coins[f.type]++;
     save(); renderCoins();
     showMsg("So close", "It bounced off the stone. The coin is back in your hand, so try again.");
@@ -1232,10 +1354,29 @@ function endFlight(kind, x, y) {
       checkAchievements();
     }
   }
+  // points: water 10, lily pad 50, top bowl 150; target hits in a row build a combo (up to ×5); silver ×1.5, gold ×2
+  const target = lucky ? "bowl" : f.pad ? "pad" : "water";
+  let pts = 0;
+  if (mine) {
+    combo = target === "water" ? 0 : combo + 1;
+    pts = Math.round({ water: 10, pad: 50, bowl: 150 }[target] * Math.min(5, Math.max(1, combo)) * ({ copper: 1, silver: 1.5, gold: 2 }[f.type] || 1));
+    const before = levelOf(state.score);
+    state.score += pts; state.bestCombo = Math.max(state.bestCombo, combo);
+    scorePop(x, y, pts, target);
+    bumpQuests({ pad: target === "pad", bowl: lucky, words: !!f.wish, points: pts });
+    const after = levelOf(state.score);
+    if (after > before) levelUp(after);
+    if (DESKTOP) {
+      if (target === "pad") achieve("LILY_PAD");
+      if (combo >= 5) achieve("COMBO_5");
+      if (after >= 4) achieve("LEVEL_4");
+    }
+  }
   state.fact = (state.fact + 1) % FACTS.length;
   save();
   const legend = LEGEND[sessionThrows] || "";
-  if (lucky) showMsg("Lucky coin!", "Right in the top bowl. " + (f.wish ? "That wish gets extra luck." : "Next time, add a wish."));
+  if (lucky) showMsg("Lucky coin!", "Right in the top bowl. " + (combo > 1 ? `Combo ×${combo}!` : f.wish ? "That wish gets extra luck." : "Next time, add a wish."));
+  else if (target === "pad") showMsg("Lily pad!", combo > 1 ? `Combo ×${combo}! Keep hitting targets.` : "Hit another target to start a combo.");
   else showMsg(f.wish ? "Your wish is in the water" : "Splash!", legend || (f.wish ? "Now don't tell anyone." : "Add a wish before the next one."));
   if (f.wish) {
     // start below the message and stop before reaching it
@@ -1259,6 +1400,47 @@ function endFlight(kind, x, y) {
   renderAll();
 }
 
+function scorePop(x, y, pts, target) {
+  const el = document.createElement("div");
+  el.className = "scorepop" + (target === "water" ? " plain" : "");
+  el.textContent = `+${pts}`;
+  if (target !== "water") { const sm = document.createElement("small"); sm.textContent = (target === "pad" ? "Lily pad" : "Top bowl") + (combo > 1 ? ` · ×${combo}` : ""); el.appendChild(sm); }
+  el.style.left = Math.max(40, Math.min($("#stage").clientWidth - 40, x)) + "px"; el.style.top = Math.max(30, y - 26) + "px";
+  $("#stage").appendChild(el); setTimeout(() => el.remove(), 1500);
+}
+function bumpQuests(ev) {
+  dailyQuests();
+  for (const q of state.quests.list) {
+    const def = QUESTS.find((d) => d.id === q.id);
+    if (!def || q.done) continue;
+    if (q.id === "pads" && ev.pad) q.p++;
+    if (q.id === "bowl" && ev.bowl) q.p++;
+    if (q.id === "combo") q.p = Math.max(q.p, combo);
+    if (q.id === "words" && ev.words) q.p++;
+    if (q.id === "throws") q.p++;
+    if (q.id === "points") q.p += ev.points;
+    if (q.p >= def.n) {
+      q.done = true; state.coins[def.reward]++;
+      toast(`Quest done: ${def.text(def.n)}. You earned a ${def.reward} coin!`); chime([0, 2, 4]);
+      if (DESKTOP) achieve("FIRST_QUEST");
+    }
+  }
+}
+function levelUp(n) {
+  const sc = SCENES.find((x) => x.level === n);
+  toast(`Level ${n}!` + (sc ? ` The ${sc.name.toLowerCase()} scene is unlocked. Pick it under Scene.` : ""));
+  chime([0, 2, 4, 7, 9]);
+  const now = performance.now();
+  for (let i = 0; i < 16; i++) sparkles.push({ x: G.cx + (rand() - 0.5) * G.rx * 1.4, y: G.cy + (rand() - 0.7) * G.ry * 1.6, t: now + i * 70, big: true, gold: true });
+}
+function setScene(id) {
+  const sc = SCENES.find((x) => x.id === id);
+  if (!sc || levelOf(state.score) < sc.level) return;
+  state.scene = id; save();
+  paintBack(); paintFore(); floorDirty = true;
+  if (ambient) tuneAmbient();
+  renderGame();
+}
 function showMsg(big, sub) {
   const m = $("#msg");
   $("#msgBig").textContent = big; $("#msgSub").textContent = sub;
@@ -1337,14 +1519,59 @@ function splashSound(m) {
   }
 }
 function startAmbient() {
+  startMusic();
   const a = audio(); if (!a || ambient) return;
   const src = a.createBufferSource(), f = a.createBiquadFilter(), g = a.createGain();
   src.buffer = noiseBuf(a, 3); src.loop = true; f.type = "lowpass"; f.frequency.value = 900;
-  g.gain.setValueAtTime(0.0001, a.currentTime); g.gain.linearRampToValueAtTime(0.035, a.currentTime + 1.5);
+  g.gain.setValueAtTime(0.0001, a.currentTime);
   src.connect(f).connect(g).connect(a.destination); src.start();
-  ambient = { src, g };
+  ambient = { src, g, f };
+  tuneAmbient();
+}
+// rain is louder and brighter than the fountain alone
+function tuneAmbient() {
+  const a = actx, r = sceneOf().rain;
+  ambient.f.frequency.setTargetAtTime(r ? 2600 : 900, a.currentTime, 0.5);
+  ambient.g.gain.setTargetAtTime(r ? 0.07 : 0.035, a.currentTime, 0.6);
 }
 function stopAmbient() { if (ambient) { try { ambient.src.stop(); } catch (e) {} ambient = null; } }
+
+// calm generative music: a slow harp-like line on a pentatonic scale with soft echoes
+const SCALE = [293.66, 329.63, 369.99, 440, 493.88, 587.33, 659.25, 739.99, 880];
+let music = null;
+function pluck(freq, when, vol, len = 2.2, dest) {
+  const a = actx, o = a.createOscillator(), o2 = a.createOscillator(), g = a.createGain();
+  o.type = "triangle"; o.frequency.value = freq; o2.type = "sine"; o2.frequency.value = freq * 2;
+  const g2 = a.createGain(); g2.gain.value = 0.25;
+  g.gain.setValueAtTime(0.0001, when); g.gain.exponentialRampToValueAtTime(vol, when + 0.012); g.gain.exponentialRampToValueAtTime(0.0001, when + len);
+  o.connect(g); o2.connect(g2).connect(g); g.connect(dest || a.destination);
+  o.start(when); o2.start(when); o.stop(when + len + 0.1); o2.stop(when + len + 0.1);
+}
+function startMusic() {
+  if (music || !state.music) return;
+  const a = audio(); if (!a) return;
+  const out = a.createGain(), delay = a.createDelay(1), fb = a.createGain(), wet = a.createGain();
+  out.gain.value = 0.055; delay.delayTime.value = 0.42; fb.gain.value = 0.38; wet.gain.value = 0.5;
+  out.connect(a.destination); out.connect(delay); delay.connect(fb).connect(delay); delay.connect(wet).connect(a.destination);
+  music = { out, i: 4, n: 0, timer: 0 };
+  const step = () => {
+    if (!music) return;
+    const t = actx.currentTime + 0.05;
+    if (music.n % 16 === 0) { pluck(146.83, t, 0.5, 4, music.out); pluck(220, t + 0.02, 0.35, 4, music.out); }
+    if (rand() < 0.82) {
+      music.i = Math.max(0, Math.min(SCALE.length - 1, music.i + [-2, -1, -1, 1, 1, 2][(rand() * 6) | 0]));
+      pluck(SCALE[music.i], t, 0.42 + rand() * 0.2, 2.2, music.out);
+    }
+    music.n++;
+    music.timer = setTimeout(step, 520 + rand() * 380);
+  };
+  step();
+}
+function stopMusic() { if (music) { clearTimeout(music.timer); try { music.out.disconnect(); } catch (e) {} music = null; } }
+function chime(steps) {
+  const a = audio(); if (!a) return;
+  steps.forEach((s, i) => pluck(SCALE[Math.min(SCALE.length - 1, s)] * 1.0, a.currentTime + 0.05 + i * 0.09, 0.22, 1.6));
+}
 
 /* ---------- page rendering ---------- */
 function renderCoins() {
@@ -1364,7 +1591,36 @@ function renderAll() {
   $("#stDay").textContent = state.bestDay;
   $("#fact").innerHTML = FACTS[state.fact];
   $("#soundBtn").setAttribute("aria-pressed", state.sound);
+  $("#musicBtn").setAttribute("aria-pressed", state.music);
   renderJournal();
+  renderGame();
+}
+function renderGame() {
+  const lv = levelOf(state.score), lo = levelAt(lv), hi = levelAt(lv + 1), next = SCENES.find((x) => x.level === lv + 1);
+  $("#hudLevel").textContent = lv; $("#hudScore").textContent = state.score.toLocaleString("en");
+  const hc = $("#hudCombo"); hc.hidden = combo < 2; hc.textContent = `×${combo}`;
+  $("#lvNum").textContent = lv; $("#lvCombo").textContent = state.bestCombo;
+  $("#lvFill").style.width = Math.min(100, (100 * (state.score - lo)) / (hi - lo)) + "%";
+  $("#lvNext").textContent = `${(hi - state.score).toLocaleString("en")} points to level ${lv + 1}` + (next ? `, which unlocks ${next.name.toLowerCase()}.` : ".");
+  const sc = $("#scenes"); sc.replaceChildren();
+  for (const x of SCENES) {
+    const b = document.createElement("button"), open = lv >= x.level;
+    b.className = "scene-btn"; b.disabled = !open; b.setAttribute("aria-pressed", state.scene === x.id);
+    b.textContent = open ? x.name : `${x.name} · level ${x.level}`;
+    b.addEventListener("click", () => setScene(x.id));
+    sc.appendChild(b);
+  }
+  dailyQuests();
+  const ul = $("#quests"); ul.replaceChildren();
+  for (const q of state.quests.list) {
+    const def = QUESTS.find((d) => d.id === q.id); if (!def) continue;
+    const li = document.createElement("li"); if (q.done) li.className = "done";
+    li.innerHTML = `<span class="qtext"></span><span class="qnum"><span></span><i class="ico ${def.reward}" title="${def.reward} coin reward"></i></span><span class="qbar"><i></i></span>`;
+    li.querySelector(".qtext").textContent = def.text(def.n);
+    li.querySelector(".qnum span").textContent = `${Math.min(q.p, def.n)}/${def.n}`;
+    li.querySelector(".qbar i").style.width = Math.min(100, (100 * q.p) / def.n) + "%";
+    ul.appendChild(li);
+  }
 }
 let clearArmed = false;
 function renderJournal() {
@@ -1411,10 +1667,15 @@ function renderShop() {
     ? (SHOP.vatNote ? SHOP.vatNote + " " : "") + "Payment is handled securely by Stripe. After paying, Stripe brings you back here and your coins are added right away."
     : "Silver and gold coins are coming soon. Until then, enjoy your free copper coins.";
 }
-function toast(text) {
-  document.querySelectorAll(".toast").forEach((t) => t.remove());
+const toastQ = []; let toastBusy = false;
+function toast(text) { toastQ.push(text); if (!toastBusy) nextToast(); }
+function nextToast() {
+  const text = toastQ.shift();
+  if (!text) { toastBusy = false; return; }
+  toastBusy = true;
   const el = document.createElement("div"); el.className = "toast"; el.setAttribute("role", "status"); el.textContent = text;
-  document.body.appendChild(el); setTimeout(() => el.remove(), 4200);
+  document.body.appendChild(el);
+  setTimeout(() => { el.remove(); nextToast(); }, toastQ.length ? 2600 : 3800);
 }
 
 // Credits made by this tab in the last minute. If another tab's save overwrote one, resync re-applies it.
@@ -1483,17 +1744,27 @@ cv.addEventListener("pointercancel", (e) => { if (!drag || e.pointerId !== drag.
 
 $("#throwBtn").addEventListener("click", () => {
   // a good, slightly random throw for the button and keyboard
-  const lucky = rand() < 0.12;
-  throwCoin(lucky ? 0.79 : 0.35 + rand() * 0.35, lucky ? 0 : (rand() - 0.5) * 0.9, G.cx, G.handY);
+  const r = rand();
+  if (r < 0.12) return throwCoin(0.79, 0, G.cx, G.handY);
+  if (r < 0.35) { // aim at a lily pad
+    const [pu, pv] = padPos(pads[(rand() * pads.length) | 0]);
+    return throwCoin((1.3 - pv) / 2.15, pu, G.cx, G.handY);
+  }
+  throwCoin(0.35 + rand() * 0.35, (rand() - 0.5) * 0.9, G.cx, G.handY);
 });
 $("#wish").addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); if (!e.repeat) $("#throwBtn").click(); } });
 document.querySelectorAll(".pick").forEach((b) => b.addEventListener("click", () => {
   state.selected = b.dataset.type; save(); renderCoins();
   if (state.coins[state.selected] <= 0) noCoins();
 }));
+$("#musicBtn").addEventListener("click", () => {
+  state.music = !state.music; save();
+  if (state.music) startMusic(); else stopMusic();
+  renderAll();
+});
 $("#soundBtn").addEventListener("click", () => {
   state.sound = !state.sound; save();
-  if (state.sound) startAmbient(); else stopAmbient();
+  if (state.sound) startAmbient(); else { stopAmbient(); stopMusic(); }
   renderAll();
 });
 document.addEventListener("click", (e) => {
@@ -1529,7 +1800,7 @@ addEventListener("pageshow", (e) => { if (e.persisted) resync(); });
   setHdr(); if (window.ResizeObserver) new ResizeObserver(setHdr).observe(hd); }
 addEventListener("resize", resize);
 document.addEventListener("visibilitychange", () => { if (actx) { if (document.hidden) actx.suspend(); else if (state.sound) actx.resume(); } });
-setInterval(() => { refillFree(); renderCoins(); }, 1000);
+setInterval(() => { refillFree(); renderCoins(); if (dailyQuests()) renderGame(); }, 1000);
 
 /* ---------- boot ---------- */
 if (DESKTOP) {
