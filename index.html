@@ -110,7 +110,9 @@ try {
   html[data-theme="dark"] .app-cta:hover, html[data-theme="dark"] .contact-val a:hover { color:var(--ACC); border-color:var(--ACC); }
   html[data-theme="dark"] .repo-cta-line a:hover { color:var(--ACC); border-color:var(--ACC); }
   html[data-theme="dark"] .foot-name { color:var(--INK2); }
-  html[data-theme="dark"] .foot-copy { color:#5f7078; }
+  html[data-theme="dark"] .foot-copy { color:#7f919b; }
+  html[data-theme="dark"] .sim-app-tag, html[data-theme="dark"] .sim-fullscreen { color:var(--INK2); }
+  html[data-theme="dark"] .sim-fullscreen:hover { color:var(--INK); }
   html[data-theme="dark"] .app-card { background:linear-gradient(135deg, var(--S1) 0%, var(--S) 55%, var(--SD) 100%); }
   html[data-theme="dark"] .ch-right { background:linear-gradient(135deg, var(--S) 0%, var(--SD) 100%); }
   html[data-theme="dark"] nav { box-shadow:0 4px 24px rgba(0,0,0,0.8); }
@@ -177,6 +179,17 @@ try {
   .lang-btn.active { background:var(--GAP); color:var(--S2); border-color:var(--GAP); }
   .lang-btn:hover, .theme-btn:hover { color:var(--INK); }
   .theme-btn { min-width:2rem; }
+  /* skip link — off-screen until it receives keyboard focus */
+  .skip-link {
+    position:fixed; top:0.5rem; left:0.5rem; z-index:300;
+    font-family:var(--MONO); font-size:0.7rem; letter-spacing:0.1em; text-transform:uppercase;
+    padding:0.6rem 1rem; background:var(--GAP); color:var(--S2); text-decoration:none;
+    border:1px solid var(--S3); transform:translateY(-200%); opacity:0;
+  }
+  .skip-link:focus { transform:none; opacity:1; outline:2px solid var(--INK); outline-offset:2px; }
+  html[data-theme="dark"] .skip-link { color:var(--INK); }
+  html[data-theme="dark"] .skip-link:focus { outline-color:var(--ACC); }
+  #main:focus { outline:none; }
   /* visible keyboard focus for the interactive chrome */
   .lang-btn:focus-visible, .theme-btn:focus-visible, .btn-primary:focus-visible, .btn-ghost:focus-visible,
   .sim-fullscreen:focus-visible, .sim-poster:focus-visible, .nav-links a:focus-visible, .hamburger:focus-visible {
@@ -582,6 +595,7 @@ try {
 </style>
 </head>
 <body>
+<a class="skip-link" href="#main" data-en="Skip to content" data-de="Zum Inhalt springen">Skip to content</a>
 
 <nav>
   <a href="#" class="nav-name">Lehel Balog</a>
@@ -596,9 +610,9 @@ try {
     <li><a href="#comments"   data-en="Comments"    data-de="Kommentare">Comments</a></li>
   </ul>
   <div class="nav-right">
-    <div class="lang-toggle">
-      <button class="lang-btn active" onclick="setLang('en')">EN</button>
-      <button class="lang-btn"        onclick="setLang('de')">DE</button>
+    <div class="lang-toggle" role="group" aria-label="Language / Sprache">
+      <button class="lang-btn active" aria-pressed="true"  onclick="setLang('en')">EN</button>
+      <button class="lang-btn"        aria-pressed="false" onclick="setLang('de')">DE</button>
     </div>
     <button type="button" class="theme-btn" aria-label="Switch design">☾</button>
     <button class="hamburger" id="hamburger" aria-label="Menu">
@@ -617,14 +631,14 @@ try {
   <a href="#contact"    onclick="closeMenu()" data-en="Contact"     data-de="Kontakt">Contact</a>
   <a href="#comments"   onclick="closeMenu()" data-en="Comments"    data-de="Kommentare">Comments</a>
   <div class="mobile-menu-footer">
-    <button class="lang-btn active" onclick="setLang('en')">EN</button>
-    <button class="lang-btn"        onclick="setLang('de')">DE</button>
+    <button class="lang-btn active" aria-pressed="true"  onclick="setLang('en')">EN</button>
+    <button class="lang-btn"        aria-pressed="false" onclick="setLang('de')">DE</button>
     <button type="button" class="theme-btn" aria-label="Switch design">☾</button>
   </div>
 </div>
 
 <!-- HERO -->
-<div class="hero">
+<div class="hero" id="main" tabindex="-1">
   <div class="hero-inner">
     <div>
       <p class="hero-label" data-en="PLC Programmer · Siemens TIA Portal" data-de="SPS-Programmierer · Siemens TIA Portal">PLC Programmer · Siemens TIA Portal</p>
@@ -995,9 +1009,11 @@ try {
   function setLang(lang) {
     document.documentElement.lang = lang;
     try { localStorage.setItem('lang', lang); } catch(e) {}
-    document.querySelectorAll('.lang-btn').forEach((b,i) =>
-      b.classList.toggle('active', (i%2===0) ? lang==='en' : lang==='de')
-    );
+    document.querySelectorAll('.lang-btn').forEach((b,i) => {
+      const on = (i%2===0) ? lang==='en' : lang==='de';
+      b.classList.toggle('active', on);
+      b.setAttribute('aria-pressed', on ? 'true' : 'false');
+    });
     document.querySelectorAll('[data-en]').forEach(el => {
       if (el.tagName==='INPUT'||el.tagName==='TEXTAREA') return;
       el.innerHTML = el.getAttribute('data-'+lang) || '';
