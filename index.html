@@ -930,9 +930,9 @@ try {
         </div>
         <div class="ch-right">
           <form class="form" id="contact-form">
-            <input type="text"  id="contact-name"    data-placeholder-en="Name"    data-placeholder-de="Name"      placeholder="Name" autocomplete="name" required>
-            <input type="email" id="contact-email"   data-placeholder-en="Email"   data-placeholder-de="E-Mail"    placeholder="Email" autocomplete="email" required>
-            <textarea rows="5"  id="contact-message" data-placeholder-en="Message" data-placeholder-de="Nachricht" placeholder="Message" required></textarea>
+            <input type="text"  id="contact-name"    data-placeholder-en="Name"    data-placeholder-de="Name"      placeholder="Name" aria-label="Name" autocomplete="name" required>
+            <input type="email" id="contact-email"   data-placeholder-en="Email"   data-placeholder-de="E-Mail"    placeholder="Email" aria-label="Email" autocomplete="email" required>
+            <textarea rows="5"  id="contact-message" data-placeholder-en="Message" data-placeholder-de="Nachricht" placeholder="Message" aria-label="Message" required></textarea>
             <input type="text" name="_honey" style="display:none" tabindex="-1" autocomplete="off">
             <button type="submit" class="btn-primary" id="contact-submit" data-en="Send message" data-de="Nachricht senden">Send message</button>
             <div class="form-status" id="contact-status" role="status" aria-live="polite"></div>
@@ -1004,6 +1004,7 @@ try {
     });
     document.querySelectorAll('[data-placeholder-en]').forEach(el => {
       el.placeholder = el.getAttribute('data-placeholder-'+lang) || '';
+      el.setAttribute('aria-label', el.placeholder);
     });
   }
 
