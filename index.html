@@ -54,6 +54,7 @@ try {
   if (t === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
   var l = localStorage.getItem('lang') || ((navigator.language || '').toLowerCase().indexOf('de') === 0 ? 'de' : 'en');
   document.documentElement.lang = l;
+  if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) document.documentElement.classList.add('ladder-run');
 } catch (e) {}
 </script>
 <style>
@@ -161,24 +162,40 @@ try {
   .prose { max-width:42rem; }
 
   /* HERO */
-  .hero { position:relative; padding:5.5rem 0 calc(var(--trace-h) + 2.5rem); --trace-h:9rem; }
-  .hero > .wrap { position:relative; z-index:1; }
-  /* live trace along the bottom of the header, like a TIA Trace scope */
-  .hero-trace {
-    position:absolute; left:0; right:0; bottom:0; width:100%; height:var(--trace-h);
-    pointer-events:none; z-index:0;
-    -webkit-mask-image:linear-gradient(to right, transparent 0%, #000 22%, #000 100%);
-            mask-image:linear-gradient(to right, transparent 0%, #000 22%, #000 100%);
-    opacity:0; transition:opacity 0.8s;
-  }
-  .hero-trace.on { opacity:1; }
-  .hero h1, .hero-intro, .hero-text, .hero-actions, .facts { animation:rise 0.7s both; }
+  .hero { padding:4.5rem 0 3.5rem; }
+  /* LADDER PANEL: a LAD network in TIA Portal online monitoring that writes the name */
+  :root { --lad-bg:#ffffff; --lad-head:#e9ecef; --lad-on:#1fa84a; --lad-off:#3d7fd1; --lad-ink:#1b1f22; --lad-dim:#6b757c; }
+  html[data-theme="dark"] { --lad-bg:#171c20; --lad-head:#20282e; --lad-on:#3fd06a; --lad-off:#5a9be6; --lad-ink:#dfe5e9; --lad-dim:#8d9aa3; }
+  .ladder { background:var(--lad-bg); border:1px solid var(--line); border-radius:6px; overflow:hidden; box-shadow:0 1px 2px rgba(0,0,0,0.05), 0 10px 30px rgba(0,0,0,0.08); }
+  .ladder-bar { display:flex; align-items:center; gap:0.8rem; padding:0.45rem 0.8rem; border-bottom:1px solid var(--line); font-family:var(--mono); font-size:0.75rem; color:var(--lad-dim); }
+  .ladder-bar strong { color:var(--lad-ink); font-weight:600; }
+  .ladder-dot { display:inline-block; width:8px; height:8px; border-radius:50%; background:var(--lad-on); margin-right:0.35rem; vertical-align:0; }
+  .ladder-replay { margin-left:auto; font:inherit; color:var(--lad-ink); background:transparent; border:1px solid var(--line); border-radius:4px; padding:0.15rem 0.55rem; cursor:pointer; }
+  .ladder-replay:hover { border-color:var(--lad-dim); }
+  .ladder svg { display:block; width:100%; height:auto; }
+  .ladder text { font-family:var(--mono); fill:var(--lad-ink); }
+  .ladder .head { fill:var(--lad-head); }
+  .ladder .addr { fill:var(--lad-dim); }
+  .ladder .w { stroke:var(--lad-off); stroke-width:2; stroke-dasharray:5 4; fill:none; transition:stroke 0.15s; }
+  .ladder .w.on { stroke:var(--lad-on); stroke-dasharray:none; stroke-width:2.6; }
+  .ladder .el { stroke:var(--lad-ink); stroke-width:2; fill:none; transition:stroke 0.15s; }
+  .ladder .el.on { stroke:var(--lad-on); }
+  .ladder .fill { fill:var(--lad-on); opacity:0; transition:opacity 0.15s; }
+  .ladder .fill.on { opacity:0.28; }
+  /* name letters in the heading follow the contacts */
+  h1 .lt { display:inline-block; transition:opacity 0.3s, color 0.3s; }
+  h1 .lt.off { opacity:0.13; }
+  h1 .lt.hit { color:var(--accent); }
+  html.ladder-run h1 .lt { opacity:0.13; animation:lt-safe 0.3s 8s forwards; }
+  @keyframes lt-safe { to { opacity:1; } }
+  .hero-intro, .hero-text, .hero-actions, .facts, .ladder { animation:rise 0.7s both; }
   .hero-intro { animation-delay:0.1s; }
   .hero-text { animation-delay:0.18s; }
   .hero-actions { animation-delay:0.26s; }
   .facts { animation-delay:0.34s; }
+  .ladder { animation-delay:0.2s; }
   @keyframes rise { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:none; } }
-  .hero-grid { display:grid; grid-template-columns:1fr 300px; gap:4rem; align-items:end; }
+  .hero-grid { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1.05fr); gap:3rem; align-items:center; }
   h1 {
     font-family:var(--head); font-weight:800; line-height:0.92;
     font-size:clamp(3.6rem, 9vw, 6.6rem); letter-spacing:-0.01em; margin-bottom:1.6rem;
@@ -196,9 +213,9 @@ try {
   .btn.secondary:hover { border-color:var(--ink2); opacity:1; }
   .btn:disabled { opacity:0.5; cursor:default; }
 
-  .facts { border-top:2px solid var(--ink); }
-  .facts div { display:grid; grid-template-columns:6.8rem 1fr; gap:0.8rem; padding:0.6rem 0; border-bottom:1px solid var(--line); font-size:0.92rem; }
-  .facts dt { color:var(--ink2); }
+  .facts { grid-column:1 / -1; display:grid; grid-template-columns:repeat(6, minmax(0,1fr)); border-top:2px solid var(--ink); margin-top:1rem; }
+  .facts div { padding:0.8rem 1rem 0.2rem 0; font-size:0.9rem; }
+  .facts dt { color:var(--ink2); font-size:0.82rem; margin-bottom:0.15rem; }
   .facts dd { font-weight:600; }
   .nw { white-space:nowrap; }
 
@@ -295,7 +312,6 @@ try {
     html { font-size:170%; }
     .wrap, .nav-inner, .foot { max-width:1780px; }
     .sec { grid-template-columns:300px 1fr; }
-    .hero-grid { grid-template-columns:1fr 440px; }
     .viewer iframe { height:1100px; }
   }
   @media (min-width:3200px) {
@@ -309,13 +325,14 @@ try {
     .hamburger { display:flex; }
     .sec { grid-template-columns:1fr; gap:1.4rem; }
     .sec > h2 { position:static; }
-    .hero-grid { grid-template-columns:1fr; gap:2.5rem; }
-    .facts { max-width:30rem; }
+    .hero-grid { grid-template-columns:1fr; gap:2rem; }
+    .facts { grid-template-columns:repeat(3, minmax(0,1fr)); margin-top:0; }
   }
   @media (max-width:720px) {
     .wrap, .nav-inner, .foot { padding-left:1rem; padding-right:1rem; }
     section { padding:3.2rem 0; }
-    .hero { padding:3.5rem 0 calc(var(--trace-h) + 1.5rem); --trace-h:6.5rem; }
+    .hero { padding:3rem 0 2.5rem; }
+    .facts { grid-template-columns:repeat(2, minmax(0,1fr)); }
     .hero-intro { font-size:1.15rem; }
     .two-col, .demo-grid, .contact-grid { grid-template-columns:1fr; }
     .viewer iframe { height:600px; }
@@ -362,10 +379,9 @@ try {
 
 <!-- HERO -->
 <header class="hero">
-  <canvas class="hero-trace" id="hero-trace" aria-hidden="true"></canvas>
   <div class="wrap hero-grid">
     <div>
-      <h1>Lehel Balog</h1>
+      <h1 aria-label="Lehel Balog"><span aria-hidden="true"><span class="lt">L</span><span class="lt">e</span><span class="lt">h</span><span class="lt">e</span><span class="lt">l</span> <span class="lt">B</span><span class="lt">a</span><span class="lt">l</span><span class="lt">o</span><span class="lt">g</span></span></h1>
       <p class="hero-intro" data-l="en">I write the control software for special-purpose machines on Siemens S7. Mostly in SCL, often with servo motion and safety.</p>
       <p class="hero-intro" data-l="de">Ich schreibe die Steuerungssoftware für Sondermaschinen auf Siemens S7. Meistens in SCL, oft mit Servoachsen und Sicherheitstechnik.</p>
       <p class="hero-text" data-l="en">I have been programming PLCs since 2014, first in Romania and since 2019 in Germany: water treatment, flour silos, gravel dosing, and since 2022 cutting and forming machines at Metzner Maschinenbau in Neu-Ulm. I take a machine from the first talk with the customer to commissioning on site.</p>
@@ -374,6 +390,14 @@ try {
         <a href="#contact" class="btn"><span data-l="en">Get in touch</span><span data-l="de">Kontakt aufnehmen</span></a>
         <a href="#side-project" class="btn secondary"><span data-l="en">See a project</span><span data-l="de">Projekt ansehen</span></a>
       </div>
+    </div>
+    <div class="ladder" id="ladder">
+      <div class="ladder-bar">
+        <span><strong>Main</strong> [OB1]</span>
+        <span><i class="ladder-dot"></i><span data-l="en">Online</span><span data-l="de">Online</span></span>
+        <button type="button" class="ladder-replay" id="ladder-replay"><span data-l="en">Run again</span><span data-l="de">Neu starten</span></button>
+      </div>
+      <svg id="ladder-svg" role="img" aria-label="Ladder diagram in TIA Portal style that writes the name Lehel Balog"></svg>
     </div>
     <dl class="facts">
       <div><dt data-l="en">Now</dt><dt data-l="de">Aktuell</dt><dd><span data-l="en">PLC programmer at Metzner Maschinenbau</span><span data-l="de">SPS-Programmierer bei Metzner Maschinenbau</span></dd></div>
@@ -708,100 +732,104 @@ try {
 <script>
   const isDe = () => document.documentElement.lang === 'de';
 
-  // HEADER TRACE: jerk-limited move profiles scrolling like a scope.
-  // Velocity (accent), modulo position (grey) and a BUSY bit along the bottom.
-  (function heroTrace() {
-    const cv = document.getElementById('hero-trace');
-    if (!cv || !cv.getContext) return;
-    const ctx = cv.getContext('2d');
+  // HEADER LADDER: two LAD networks in online monitoring. Each contact closes in turn,
+  // power flow goes from dashed blue to solid green, and the letter lights up in the heading.
+  (function heroLadder() {
+    const svg = document.getElementById('ladder-svg');
+    if (!svg) return;
+    const NS = 'http://www.w3.org/2000/svg';
+    const letters = [...document.querySelectorAll('h1 .lt')];
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const CYCLE = 2.6;            // s per move cycle: accel, cruise, decel, dwell
-    const PX_PER_S = 70;          // scroll speed
-    // one normalized cycle, sampled: v in 0..1, p in 0..1 (integral of v)
-    const N = 400, V = new Float32Array(N + 1), P = new Float32Array(N + 1);
-    const smoother = x => x * x * x * (x * (6 * x - 15) + 10);  // S-curve ramp
-    for (let i = 0; i <= N; i++) {
-      const u = i / N;
-      V[i] = u < 0.22 ? smoother(u / 0.22)
-           : u < 0.52 ? 1
-           : u < 0.74 ? smoother(1 - (u - 0.52) / 0.22)
-           : 0;
-    }
-    for (let i = 1; i <= N; i++) P[i] = P[i - 1] + (V[i] + V[i - 1]) / 2;
-    for (let i = 0; i <= N; i++) P[i] /= P[N];
-    // each cycle gets its own speed, so the trace doesn't look like a loop
-    const amp = k => 0.55 + 0.45 * Math.abs(Math.sin(k * 12.9898 + 4.1) * 43758.5453 % 1);
-    const at = t => {
-      const k = Math.floor(t / CYCLE), i = Math.round((t / CYCLE - k) * N);
-      return { v: V[i] * amp(k), p: P[i], busy: i < N * 0.74 };
+    const nets = [
+      { en: 'Network 1: First name', de: 'Netzwerk 1: Vorname', bits: ['L', 'e', 'h', 'e2', 'l'], byte: 10, coil: 'First', q: '%Q0.0' },
+      { en: 'Network 2: Last name', de: 'Netzwerk 2: Nachname', bits: ['B', 'a', 'l', 'o', 'g'], byte: 11, coil: 'Last', q: '%Q0.1' },
+    ];
+    let parts = [];   // per network: { wires[], contacts[], coil }
+
+    const el = (tag, attrs, parent, text) => {
+      const e = document.createElementNS(NS, tag);
+      for (const k in attrs) e.setAttribute(k, attrs[k]);
+      if (text != null) e.textContent = text;
+      parent.appendChild(e);
+      return e;
     };
 
-    let W = 0, H = 0, dpr = 1, colors = {};
-    function readColors() {
-      const cs = getComputedStyle(document.documentElement);
-      colors = { acc: cs.getPropertyValue('--accent').trim(), ink2: cs.getPropertyValue('--ink2').trim(), line: cs.getPropertyValue('--line').trim() };
-    }
-    function resize() {
-      dpr = Math.min(window.devicePixelRatio || 1, 2);
-      W = cv.clientWidth; H = cv.clientHeight;
-      cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    }
-    function draw(now) {
-      ctx.clearRect(0, 0, W, H);
-      const top = 10, bottom = H - 26, span = bottom - top, edge = W - 24;
-      // time grid moving with the signal
-      ctx.strokeStyle = colors.line; ctx.lineWidth = 1;
-      ctx.beginPath();
-      const grid = PX_PER_S * 0.5, off = (now * PX_PER_S) % grid;
-      for (let x = edge - off; x > 0; x -= grid) { ctx.moveTo(Math.round(x) + 0.5, top); ctx.lineTo(Math.round(x) + 0.5, H - 4); }
-      ctx.moveTo(0, bottom + 0.5); ctx.lineTo(edge, bottom + 0.5);
-      ctx.stroke();
-      // position (sawtooth with S-shaped ramps)
-      ctx.strokeStyle = colors.ink2; ctx.lineWidth = 1.2; ctx.globalAlpha = 0.7;
-      ctx.beginPath();
-      let lastP = null;
-      for (let x = 0; x <= edge; x += 2) {
-        const s = at(now - (edge - x) / PX_PER_S), y = bottom - s.p * span * 0.92;
-        if (lastP !== null && s.p < lastP - 0.5) ctx.moveTo(x, y); else ctx.lineTo(x, y);
-        lastP = s.p;
-      }
-      ctx.stroke();
-      // BUSY bit
-      ctx.beginPath();
-      for (let x = 0; x <= edge; x += 2) {
-        const y = at(now - (edge - x) / PX_PER_S).busy ? H - 16 : H - 6;
-        x === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
-      }
-      ctx.stroke();
-      ctx.globalAlpha = 1;
-      // velocity
-      ctx.strokeStyle = colors.acc; ctx.lineWidth = 2;
-      ctx.beginPath();
-      for (let x = 0; x <= edge; x += 2) {
-        const y = bottom - at(now - (edge - x) / PX_PER_S).v * span * 0.92;
-        x === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
-      }
-      ctx.stroke();
-      // live edge: cursor line and the current value
-      const yNow = bottom - at(now).v * span * 0.92;
-      ctx.strokeStyle = colors.line; ctx.beginPath(); ctx.moveTo(edge + 0.5, top); ctx.lineTo(edge + 0.5, H - 4); ctx.stroke();
-      ctx.fillStyle = colors.acc; ctx.beginPath(); ctx.arc(edge, yNow, 3.5, 0, Math.PI * 2); ctx.fill();
+    function build() {
+      const narrow = svg.clientWidth && svg.clientWidth < 420;
+      const W = narrow ? 420 : 580, STEP = narrow ? 64 : 80, X0 = narrow ? 52 : 74, COIL = X0 + 4 * STEP + (narrow ? 78 : 98);
+      const NET_H = narrow ? 134 : 128, HEAD = 26, F = narrow ? 17 : 13;
+      const tag = name => narrow ? `"${name}"` : `"Name".${name}`;
+      svg.innerHTML = '';
+      svg.setAttribute('viewBox', `0 0 ${W} ${nets.length * NET_H + 8}`);
+      parts = nets.map((n, ni) => {
+        const y0 = ni * NET_H + 4, y = y0 + HEAD + 58;
+        el('rect', { x: 0, y: y0, width: W, height: HEAD, class: 'head' }, svg);
+        el('text', { x: 10, y: y0 + 17, 'font-size': F, 'data-l': 'en' }, svg, n.en);
+        el('text', { x: 10, y: y0 + 17, 'font-size': F, 'data-l': 'de' }, svg, n.de);
+        // left power rail is always powered
+        el('line', { x1: 12, y1: y0 + HEAD + 10, x2: 12, y2: y0 + NET_H - 6, class: 'w on' }, svg);
+        const xs = n.bits.map((_, i) => X0 + i * STEP);
+        const wires = [];
+        xs.forEach((x, i) => {
+          wires.push(el('line', { x1: i ? xs[i - 1] + 8 : 12, y1: y, x2: x - 8, y2: y, class: 'w' }, svg));
+        });
+        wires.push(el('line', { x1: xs[4] + 8, y1: y, x2: COIL - 15, y2: y, class: 'w' }, svg));
+        const contacts = xs.map((x, i) => {
+          const letter = n.bits[i].replace(/\d/, '');
+          el('text', { x, y: y - 24, 'font-size': F, 'text-anchor': 'middle' }, svg, tag(letter));
+          el('text', { x, y: y + 34, 'font-size': F - 3, 'text-anchor': 'middle', class: 'addr' }, svg, `%M${n.byte}.${i}`);
+          const fill = el('rect', { x: x - 8, y: y - 13, width: 16, height: 26, class: 'fill' }, svg);
+          const a = el('line', { x1: x - 8, y1: y - 14, x2: x - 8, y2: y + 14, class: 'el' }, svg);
+          const b = el('line', { x1: x + 8, y1: y - 14, x2: x + 8, y2: y + 14, class: 'el' }, svg);
+          return [fill, a, b];
+        });
+        el('text', { x: COIL, y: y - 24, 'font-size': F, 'text-anchor': 'middle' }, svg, tag(n.coil));
+        el('text', { x: COIL, y: y + 34, 'font-size': F - 3, 'text-anchor': 'middle', class: 'addr' }, svg, n.q);
+        const coil = [
+          el('circle', { cx: COIL, cy: y, r: 10, class: 'fill' }, svg),
+          el('path', { d: `M${COIL - 7} ${y - 14} Q${COIL - 17} ${y} ${COIL - 7} ${y + 14}`, class: 'el' }, svg),
+          el('path', { d: `M${COIL + 7} ${y - 14} Q${COIL + 17} ${y} ${COIL + 7} ${y + 14}`, class: 'el' }, svg),
+        ];
+        return { wires, contacts, coil };
+      });
+      show(closed);
     }
 
-    readColors(); resize();
-    new MutationObserver(readColors).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
-    window.addEventListener('resize', () => { resize(); if (reduce) draw(30); });
-    cv.classList.add('on');
-    if (reduce) { draw(30); return; }
+    // closed = how many of the 10 contacts are closed
+    let closed = 0, timer = 0;
+    function show(k) {
+      parts.forEach((p, ni) => {
+        const c = Math.max(0, Math.min(5, k - ni * 5));
+        p.wires.forEach((w, i) => w.classList.toggle('on', i <= c));
+        p.contacts.forEach((parts3, i) => parts3.forEach(e => e.classList.toggle('on', i < c)));
+        p.coil.forEach(e => e.classList.toggle('on', c === 5));
+      });
+      letters.forEach((l, i) => l.classList.toggle('off', i >= k));
+    }
+    function run() {
+      clearTimeout(timer);
+      closed = 0;
+      show(0);
+      const tick = () => {
+        closed++;
+        show(closed);
+        const l = letters[closed - 1];
+        if (l) { l.classList.add('hit'); setTimeout(() => l.classList.remove('hit'), 450); }
+        if (closed < 10) timer = setTimeout(tick, closed === 5 ? 650 : 280);
+      };
+      timer = setTimeout(tick, 700);
+    }
 
-    let visible = true, raf = 0;
-    const t0 = performance.now() - 30000;  // start with a full screen of history
-    function frame(ts) { draw((ts - t0) / 1000); raf = requestAnimationFrame(frame); }
-    function run() { cancelAnimationFrame(raf); if (visible && !document.hidden) raf = requestAnimationFrame(frame); }
-    new IntersectionObserver(e => { visible = e[0].isIntersecting; run(); }).observe(cv);
-    document.addEventListener('visibilitychange', run);
-    run();
+    build();
+    document.documentElement.classList.remove('ladder-run');
+    if (reduce) { closed = 10; show(10); }
+    else run();
+    document.getElementById('ladder-replay').addEventListener('click', run);
+    let wasNarrow = svg.clientWidth < 420;
+    window.addEventListener('resize', () => {
+      const n = svg.clientWidth < 420;
+      if (n !== wasNarrow) { wasNarrow = n; build(); }
+    });
   })();
 
   // MOBILE MENU
