@@ -1,11 +1,11 @@
-// Header scene: a 6-axis style robot doing pick and place with jerk-limited moves.
-// Plain three.js, self-hosted. Loaded by index.html only when WebGL works.
+// Header scene: a small machine line. An indexing conveyor carries parts under a
+// servo-driven eccentric press; a photo-eye sees each part, a stack light shows
+// the state. Plain three.js, self-hosted. Loaded by index.html only when WebGL works.
 import * as THREE from '/assets/vendor/three-0.160.1.module.min.js';
 
 export function start(host) {
   const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const css = () => getComputedStyle(document.documentElement);
-  const cssColor = name => new THREE.Color(css().getPropertyValue(name).trim() || '#888');
+  const cssColor = name => new THREE.Color(getComputedStyle(document.documentElement).getPropertyValue(name).trim() || '#888');
 
   // RENDERER / SCENE / CAMERA
   const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'low-power' });
@@ -16,27 +16,29 @@ export function start(host) {
   host.appendChild(renderer.domElement);
 
   const scene = new THREE.Scene();
-  const camera = new THREE.PerspectiveCamera(32, 1, 0.1, 50);
-  const target = new THREE.Vector3(0.1, 0.65, 0);
+  const camera = new THREE.PerspectiveCamera(30, 1, 0.1, 60);
+  const target = new THREE.Vector3(0.1, 0.95, 0);
 
-  scene.add(new THREE.HemisphereLight(0xdfe8ee, 0x30363b, 1.1));
+  scene.add(new THREE.HemisphereLight(0xe2eaef, 0x2c3237, 1.15));
   const sun = new THREE.DirectionalLight(0xffffff, 2.2);
-  sun.position.set(3, 6, 2.5);
+  sun.position.set(2.5, 6, 4);
   sun.castShadow = true;
   sun.shadow.mapSize.set(1024, 1024);
-  Object.assign(sun.shadow.camera, { left: -3, right: 3, top: 3, bottom: -3, near: 1, far: 15 });
+  Object.assign(sun.shadow.camera, { left: -3.5, right: 3.5, top: 3.5, bottom: -3.5, near: 1, far: 16 });
   sun.shadow.radius = 4;
   scene.add(sun);
-  const rim = new THREE.DirectionalLight(0xffd29a, 0.8);
+  const rim = new THREE.DirectionalLight(0xffd29a, 0.7);
   rim.position.set(-4, 3, -3);
   scene.add(rim);
 
   // MATERIALS (accent follows the site theme)
-  const mAccent = new THREE.MeshStandardMaterial({ color: cssColor('--accent'), metalness: 0.35, roughness: 0.42 });
-  const mDark = new THREE.MeshStandardMaterial({ color: 0x2b3338, metalness: 0.6, roughness: 0.38 });
-  const mSteel = new THREE.MeshStandardMaterial({ color: 0x9aa6ad, metalness: 0.85, roughness: 0.3 });
-  const mBox = new THREE.MeshStandardMaterial({ color: 0xc8b48f, metalness: 0.0, roughness: 0.8 });
-  const mStation = new THREE.MeshStandardMaterial({ color: 0x3a4349, metalness: 0.4, roughness: 0.55 });
+  const mAccent = new THREE.MeshStandardMaterial({ color: cssColor('--accent'), metalness: 0.3, roughness: 0.45 });
+  const mFrame = new THREE.MeshStandardMaterial({ color: 0x2f373c, metalness: 0.55, roughness: 0.4 });
+  const mDark = new THREE.MeshStandardMaterial({ color: 0x1c2125, metalness: 0.4, roughness: 0.55 });
+  const mBelt = new THREE.MeshStandardMaterial({ color: 0x15191c, metalness: 0.0, roughness: 0.9 });
+  const mSteel = new THREE.MeshStandardMaterial({ color: 0xaab4ba, metalness: 0.9, roughness: 0.28 });
+  const mPart = new THREE.MeshStandardMaterial({ color: 0xc3ccd1, metalness: 0.75, roughness: 0.35 });
+  const mHole = new THREE.MeshStandardMaterial({ color: 0x0b0d0f, roughness: 1 });
 
   const mesh = (geo, mat, parent, pos, rot) => {
     const m = new THREE.Mesh(geo, mat);
@@ -46,145 +48,140 @@ export function start(host) {
     parent.add(m);
     return m;
   };
-  const along = Math.PI / 2;  // turn a Y-axis primitive onto X or Z
+  const Q = Math.PI / 2;
 
-  // FLOOR: shadow catcher + polar grid
-  const floor = new THREE.Mesh(new THREE.CircleGeometry(3, 48), new THREE.ShadowMaterial({ opacity: 0.28 }));
-  floor.rotation.x = -Math.PI / 2;
+  // FLOOR: shadow catcher + grid
+  const floor = new THREE.Mesh(new THREE.PlaneGeometry(9, 9), new THREE.ShadowMaterial({ opacity: 0.28 }));
+  floor.rotation.x = -Q;
   floor.receiveShadow = true;
   scene.add(floor);
   let grid;
   function makeGrid() {
     if (grid) { scene.remove(grid); grid.geometry.dispose(); grid.material.dispose(); }
     const c = cssColor('--line');
-    grid = new THREE.PolarGridHelper(2.6, 16, 6, 64, c, c);
+    grid = new THREE.GridHelper(8, 16, c, c);
     grid.position.y = 0.002;
     scene.add(grid);
   }
   makeGrid();
 
-  // ROBOT: base -> turret (J1) -> shoulder (J2) -> elbow (J3) -> wrist (J5) -> gripper
-  const H0 = 0.78, L1 = 1.0, L2 = 0.92, LT = 0.31;
-  const robot = new THREE.Group();
-  scene.add(robot);
-  mesh(new THREE.CylinderGeometry(0.4, 0.44, 0.16, 40), mDark, robot, [0, 0.08, 0]);
-  const turret = new THREE.Group(); robot.add(turret);
-  mesh(new THREE.CylinderGeometry(0.25, 0.31, 0.5, 40), mAccent, turret, [0, 0.41, 0]);
-  mesh(new THREE.BoxGeometry(0.3, 0.26, 0.44), mAccent, turret, [0, H0 - 0.06, 0]);
+  // CONVEYOR along X: frame, legs, belt, end rollers, cleats
+  const LEN = 4.8, BW = 0.72, TOP = 0.72, ROLL = 0.09;
+  const conveyor = new THREE.Group(); scene.add(conveyor);
+  [-1, 1].forEach(s => mesh(new THREE.BoxGeometry(LEN + 0.1, 0.16, 0.06), mFrame, conveyor, [0, TOP - 0.06, s * (BW / 2 + 0.05)]));
+  for (const x of [-2.1, -0.9, 0.9, 2.1]) for (const s of [-1, 1])
+    mesh(new THREE.BoxGeometry(0.07, TOP - 0.1, 0.07), mFrame, conveyor, [x, (TOP - 0.1) / 2, s * (BW / 2 + 0.05)]);
+  mesh(new THREE.BoxGeometry(LEN, 0.02, BW), mBelt, conveyor, [0, TOP - 0.01, 0]);
+  const rollers = [-1, 1].map(s => mesh(new THREE.CylinderGeometry(ROLL, ROLL, BW, 24), mSteel, conveyor, [s * LEN / 2, TOP - ROLL, 0], [Q, 0, 0]));
+  const CLEAT = 0.4, cleats = [];
+  for (let i = 0; i < LEN / CLEAT; i++) cleats.push(mesh(new THREE.BoxGeometry(0.025, 0.012, BW - 0.04), mDark, conveyor, [0, TOP + 0.006, 0]));
+  // drive motor at the outfeed end
+  mesh(new THREE.CylinderGeometry(0.12, 0.12, 0.34, 28), mAccent, conveyor, [LEN / 2 - 0.15, TOP - 0.2, BW / 2 + 0.28], [Q, 0, 0]);
+  mesh(new THREE.BoxGeometry(0.2, 0.2, 0.14), mFrame, conveyor, [LEN / 2 - 0.15, TOP - 0.2, BW / 2 + 0.1]);
 
-  const shoulder = new THREE.Group(); shoulder.position.y = H0; turret.add(shoulder);
-  mesh(new THREE.CylinderGeometry(0.2, 0.2, 0.56, 32), mDark, shoulder, null, [along, 0, 0]);
-  mesh(new THREE.CapsuleGeometry(0.13, L1 - 0.1, 8, 20), mAccent, shoulder, [L1 / 2, 0, 0.12], [0, 0, along]);
+  // PRESS PORTAL over x = 0: two columns, crown with servo motor, flywheel and crank
+  const press = new THREE.Group(); scene.add(press);
+  const CROWN = 1.92;
+  [-1, 1].forEach(s => mesh(new THREE.BoxGeometry(0.16, CROWN + 0.2, 0.16), mFrame, press, [0, (CROWN + 0.2) / 2, s * 0.56]));
+  mesh(new THREE.BoxGeometry(0.62, 0.42, 1.32), mFrame, press, [0, CROWN, 0]);
+  mesh(new THREE.BoxGeometry(0.5, 0.06, 0.9), mDark, press, [0, TOP - 0.09, 0]);   // die plate under the belt
+  mesh(new THREE.CylinderGeometry(0.15, 0.15, 0.46, 32), mAccent, press, [0, CROWN + 0.02, -0.92], [Q, 0, 0]);  // servo motor
+  mesh(new THREE.CylinderGeometry(0.155, 0.155, 0.05, 32), mDark, press, [0, CROWN + 0.02, -1.16], [Q, 0, 0]);
+  [-1, 1].forEach(s => mesh(new THREE.CylinderGeometry(0.025, 0.025, 0.9, 12), mSteel, press, [s * 0.2, CROWN - 0.62, 0]));  // ram guides
 
-  const elbow = new THREE.Group(); elbow.position.x = L1; shoulder.add(elbow);
-  mesh(new THREE.CylinderGeometry(0.16, 0.16, 0.42, 32), mDark, elbow, null, [along, 0, 0]);
-  mesh(new THREE.CapsuleGeometry(0.1, L2 - 0.12, 8, 20), mAccent, elbow, [L2 / 2, 0, -0.04], [0, 0, along]);
+  const CR = 0.17, ROD = 0.56, FZ = 0.7;    // crank radius, conrod length, flywheel plane (front)
+  const crankC = new THREE.Vector3(0, CROWN, FZ);
+  const flywheel = new THREE.Group(); flywheel.position.copy(crankC); press.add(flywheel);
+  mesh(new THREE.CylinderGeometry(0.3, 0.3, 0.07, 40), mAccent, flywheel, null, [Q, 0, 0]);
+  mesh(new THREE.CylinderGeometry(0.06, 0.06, 0.12, 20), mSteel, flywheel, null, [Q, 0, 0]);
+  const crankPin = mesh(new THREE.CylinderGeometry(0.035, 0.035, 0.14, 16), mSteel, flywheel, [0, CR, 0.07], [Q, 0, 0]);
+  const conrod = mesh(new THREE.BoxGeometry(0.06, ROD, 0.04), mSteel, press);
+  const ram = new THREE.Group(); press.add(ram);
+  mesh(new THREE.BoxGeometry(0.46, 0.26, 0.42), mDark, ram, [0, -0.13, 0]);
+  mesh(new THREE.BoxGeometry(0.1, 0.1, FZ - 0.05), mDark, ram, [0, -0.06, (FZ - 0.05) / 2 + 0.1]);   // arm out to the crank plane
+  mesh(new THREE.CylinderGeometry(0.06, 0.07, 0.14, 24), mSteel, ram, [0, -0.33, 0]);              // punch
+  const PUNCH = 0.4;   // ram pin to punch tip
 
-  const wrist = new THREE.Group(); wrist.position.x = L2; elbow.add(wrist);
-  mesh(new THREE.CylinderGeometry(0.1, 0.1, 0.26, 24), mDark, wrist, null, [along, 0, 0]);
-  mesh(new THREE.CylinderGeometry(0.075, 0.075, 0.08, 24), mSteel, wrist, [0.1, 0, 0], [0, 0, along]);
-  mesh(new THREE.BoxGeometry(0.1, 0.12, 0.3), mDark, wrist, [0.17, 0, 0]);
-  const fingers = [-1, 1].map(s => mesh(new THREE.BoxGeometry(0.17, 0.08, 0.035), mSteel, wrist, [0.3, 0, s * 0.16]));
-  const tcp = new THREE.Object3D(); tcp.position.x = LT; wrist.add(tcp);
+  // STACK LIGHT on the crown
+  const lamp = (color, y) => {
+    const m = new THREE.MeshStandardMaterial({ color, emissive: color, emissiveIntensity: 0.05, roughness: 0.4, transparent: true, opacity: 0.92 });
+    mesh(new THREE.CylinderGeometry(0.07, 0.07, 0.12, 20), m, press, [0.2, y, 0.5]);
+    return m;
+  };
+  mesh(new THREE.CylinderGeometry(0.02, 0.02, 0.12, 10), mSteel, press, [0.2, CROWN + 0.27, 0.5]);
+  const lGreen = lamp(0x2fbf5b, CROWN + 0.39), lAmber = lamp(0xf0a02c, CROWN + 0.51), lRed = lamp(0xd8423a, CROWN + 0.63);
+  mesh(new THREE.CylinderGeometry(0.075, 0.075, 0.03, 20), mDark, press, [0.2, CROWN + 0.71, 0.5]);
 
-  // STATIONS AND BOX
-  const BOX = 0.2, PED = 0.42;
-  const stationAt = phi => ({ phi, r: 1.38, h: PED + BOX / 2 });
-  const stations = [stationAt(THREE.MathUtils.degToRad(58)), stationAt(THREE.MathUtils.degToRad(-58))];
-  const cyl = s => new THREE.Vector3(Math.cos(s.phi) * s.r, 0, -Math.sin(s.phi) * s.r);
-  stations.forEach(s => {
-    const p = cyl(s);
-    mesh(new THREE.CylinderGeometry(0.2, 0.22, PED, 32), mStation, scene, [p.x, PED / 2, p.z]);
-    mesh(new THREE.TorusGeometry(0.2, 0.012, 8, 40), mAccent, scene, [p.x, PED + 0.002, p.z], [-Math.PI / 2, 0, 0]);
-  });
-  const box = mesh(new THREE.BoxGeometry(BOX, BOX, BOX), mBox, scene);
-  const label = mesh(new THREE.PlaneGeometry(BOX * 0.62, BOX * 0.3), mAccent, box, [0, 0, BOX / 2 + 0.001]);
-  label.castShadow = false;
-  function placeBox(s) {
-    scene.attach(box);
-    const p = cyl(s);
-    box.position.set(p.x, s.h, p.z);
-    box.rotation.set(0, s.phi, 0);
+  // PHOTO-EYE before the press: sensor, reflector, beam
+  const EYE_X = -0.9, EYE_Y = TOP + 0.07;
+  mesh(new THREE.BoxGeometry(0.08, 0.12, 0.08), mAccent, scene, [EYE_X, EYE_Y, BW / 2 + 0.12]);
+  mesh(new THREE.BoxGeometry(0.07, 0.1, 0.03), mDark, scene, [EYE_X, EYE_Y, -BW / 2 - 0.1]);
+  [1, -1].forEach(s => mesh(new THREE.BoxGeometry(0.03, EYE_Y, 0.03), mFrame, scene, [EYE_X, EYE_Y / 2, s * (BW / 2 + 0.11)]));
+  const beamMat = new THREE.MeshBasicMaterial({ color: 0xff4a3a, transparent: true, opacity: 0.25 });
+  const beam = new THREE.Mesh(new THREE.CylinderGeometry(0.006, 0.006, BW + 0.2, 6), beamMat);
+  beam.rotation.x = Q; beam.position.set(EYE_X, EYE_Y, 0.01);
+  scene.add(beam);
+
+  // PARTS: blanks ride the belt one pitch apart; the press punches a hole in each
+  const PITCH = 0.8, NP = 6, PW = 0.34, PH = 0.1;
+  const parts = [];
+  for (let i = 0; i < NP; i++) {
+    const g = new THREE.Group(); scene.add(g);
+    mesh(new THREE.BoxGeometry(PW, PH, PW * 0.8), mPart, g, [0, PH / 2, 0]);
+    const hole = mesh(new THREE.CylinderGeometry(0.065, 0.065, 0.004, 24), mHole, g, [0, PH + 0.002, 0]);
+    hole.visible = false;
+    parts.push({ g, hole, x: -LEN / 2 + i * PITCH });
   }
 
-  // INVERSE KINEMATICS: gripper always points straight down
-  function solve(phi, r, h) {
-    turret.rotation.y = phi;
-    const wx = r, wy = h + LT - H0;
-    const d = Math.min(Math.hypot(wx, wy), L1 + L2 - 1e-3);
-    const beta = Math.acos(THREE.MathUtils.clamp((L1 * L1 + d * d - L2 * L2) / (2 * L1 * d), -1, 1));
-    const gamma = Math.acos(THREE.MathUtils.clamp((L1 * L1 + L2 * L2 - d * d) / (2 * L1 * L2), -1, 1));
-    const a1 = Math.atan2(wy, wx) + beta;       // elbow up
-    const a2 = -(Math.PI - gamma);
-    shoulder.rotation.z = a1;
-    elbow.rotation.z = a2;
-    wrist.rotation.z = -Math.PI / 2 - (a1 + a2);
-  }
-  const setGrip = open => fingers.forEach((f, i) => { f.position.z = (i ? 1 : -1) * (BOX / 2 + 0.018 + open * 0.07); });
-
-  // MOTION: S-curve (smootherstep) segments in cylindrical coordinates, like joint moves
+  // CYCLE: index the belt one pitch (S-curve), then one full crank turn (S-curve)
+  const T_INDEX = 0.75, T_PRESS = 1.05, T = T_INDEX + T_PRESS;
   const ease = x => x * x * x * (x * (6 * x - 15) + 10);
-  const UP = 0.42;
-  let from = 0;  // station the box is on
-  function plan() {
-    const a = stations[from], b = stations[1 - from];
-    const above = s => ({ phi: s.phi, r: s.r, h: s.h + UP });
-    return [
-      { kind: 'move', p: above(b), q: above(a), t: 1.5, lift: 0.18 },
-      { kind: 'move', p: above(a), q: a, t: 0.65 },
-      { kind: 'grip', open: [1, 0], t: 0.35, at: a, attach: true },
-      { kind: 'move', p: a, q: above(a), t: 0.65 },
-      { kind: 'move', p: above(a), q: above(b), t: 1.6, lift: 0.3 },
-      { kind: 'move', p: above(b), q: b, t: 0.65 },
-      { kind: 'grip', open: [0, 1], t: 0.35, at: b, release: true },
-      { kind: 'move', p: b, q: above(b), t: 0.65 },
-      { kind: 'wait', at: above(b), t: 0.5 },
-    ];
-  }
-  let segs = plan(), seg = 0, segT = 0, gripOpen = 1;
-  placeBox(stations[from]);
+  let t = 0, belt = 0, beltPrev = 0, theta = 0, punched = false;
 
-  function step(dt) {
-    let s = segs[seg];
-    segT += dt;
-    while (segT >= s.t) {
-      segT -= s.t;
-      if (s.attach) tcp.attach(box);
-      if (s.release) { placeBox(s.at); from = 1 - from; }
-      seg++;
-      if (seg >= segs.length) { segs = plan(); seg = 0; }
-      s = segs[seg];
-    }
-    const u = ease(segT / s.t);
-    if (s.kind === 'move') {
-      const phi = s.p.phi + (s.q.phi - s.p.phi) * u;
-      const r = s.p.r + (s.q.r - s.p.r) * u;
-      const h = s.p.h + (s.q.h - s.p.h) * u + (s.lift || 0) * Math.sin(Math.PI * u);
-      solve(phi, r, h);
-    } else if (s.kind === 'grip') {
-      solve(s.at.phi, s.at.r, s.at.h);
-      gripOpen = s.open[0] + (s.open[1] - s.open[0]) * u;
-    } else {
-      solve(s.at.phi, s.at.r, s.at.h);
-    }
-    setGrip(gripOpen);
-  }
+  function update(dt) {
+    t += dt;
+    const k = Math.floor(t / T), u = t - k * T;
+    belt = k * PITCH + (u < T_INDEX ? PITCH * ease(u / T_INDEX) : PITCH);
+    theta = u < T_INDEX ? 0 : 2 * Math.PI * ease((u - T_INDEX) / T_PRESS);
+    if (u < T_INDEX) punched = false;
 
-  // TCP TRAIL
-  const TRAIL = 140;
-  const trailPos = new Float32Array(TRAIL * 3);
-  const trailGeo = new THREE.BufferGeometry();
-  trailGeo.setAttribute('position', new THREE.BufferAttribute(trailPos, 3));
-  const trailMat = new THREE.LineBasicMaterial({ color: mAccent.color, transparent: true, opacity: 0.55 });
-  const trail = new THREE.Line(trailGeo, trailMat);
-  trail.frustumCulled = false;
-  scene.add(trail);
-  const w = new THREE.Vector3();
-  function pushTrail(fill) {
-    tcp.getWorldPosition(w);
-    if (fill) { for (let i = 0; i < TRAIL; i++) trailPos.set([w.x, w.y, w.z], i * 3); }
-    else { trailPos.copyWithin(0, 3); trailPos.set([w.x, w.y, w.z], (TRAIL - 1) * 3); }
-    trailGeo.attributes.position.needsUpdate = true;
+    const ds = belt - beltPrev; beltPrev = belt;
+    // parts move with the belt, leave at the end and come back as fresh blanks
+    let underEye = false;
+    for (const p of parts) {
+      p.x += ds;
+      if (p.x > LEN / 2 + 0.05) { p.x -= NP * PITCH; p.hole.visible = false; }
+      const edge = Math.min(1, (LEN / 2 + 0.05 - Math.abs(p.x)) / 0.35);
+      p.g.scale.setScalar(Math.max(0.001, edge));
+      p.g.position.set(p.x, TOP, 0);
+      if (Math.abs(p.x - EYE_X) < PW / 2) underEye = true;
+    }
+    // crank -> conrod -> ram (eccentric press kinematics)
+    flywheel.rotation.z = -theta;
+    const pinX = crankC.x + CR * Math.sin(theta), pinY = crankC.y + CR * Math.cos(theta);
+    const ramY = pinY - Math.sqrt(ROD * ROD - (pinX - crankC.x) ** 2);
+    ram.position.set(0, ramY, 0);
+    conrod.position.set((pinX + crankC.x) / 2, (pinY + ramY) / 2, FZ + 0.09);
+    conrod.rotation.z = Math.atan2(pinX - crankC.x, pinY - ramY);
+    // bottom dead centre: the punch has gone through the part under the press
+    if (!punched && theta > Math.PI) {
+      punched = true;
+      const p = parts.find(q => Math.abs(q.x) < 0.1);
+      if (p) p.hole.visible = true;
+    }
+    const tip = ramY - PUNCH;
+    // belt details
+    cleats.forEach((c, i) => {
+      let x = ((i * CLEAT + belt) % LEN + LEN) % LEN - LEN / 2;
+      c.position.x = x;
+      c.visible = Math.abs(x) < LEN / 2 - 0.05;
+    });
+    rollers.forEach(r => { r.rotation.y = -belt / ROLL; });
+    // signals
+    beamMat.opacity = underEye ? 0.9 : 0.22;
+    lGreen.emissiveIntensity = 1.6;
+    lAmber.emissiveIntensity = tip < TOP + PH + 0.12 ? 1.8 : 0.05;
+    lRed.emissiveIntensity = 0.05;
   }
 
   // CAMERA: slow drift plus a little pointer parallax
@@ -193,21 +190,21 @@ export function start(host) {
     tx = (e.clientX / window.innerWidth - 0.5) * 2;
     ty = (e.clientY / window.innerHeight - 0.5) * 2;
   }, { passive: true });
-  function placeCamera(t) {
+  function placeCamera(time) {
     px += (tx - px) * 0.04; py += (ty - py) * 0.04;
-    const az = 0.32 + Math.sin(t * 0.12) * 0.22 + px * 0.25;
-    const el = 0.4 + py * 0.06;
-    const R = 5.9;
+    const az = 0.95 + Math.sin(time * 0.1) * 0.2 + px * 0.22;
+    const el = 0.42 + py * 0.05;
+    const R = 8.3;
     camera.position.set(target.x + R * Math.cos(el) * Math.cos(az), target.y + R * Math.sin(el), target.z + R * Math.cos(el) * Math.sin(az));
     camera.lookAt(target);
   }
 
   // SIZE / THEME
   function resize() {
-    const wpx = host.clientWidth, hpx = host.clientHeight;
-    if (!wpx || !hpx) return;
-    renderer.setSize(wpx, hpx, false);
-    camera.aspect = wpx / hpx;
+    const w = host.clientWidth, h = host.clientHeight;
+    if (!w || !h) return;
+    renderer.setSize(w, h, false);
+    camera.aspect = w / h;
     camera.updateProjectionMatrix();
   }
   new ResizeObserver(resize).observe(host);
@@ -217,15 +214,13 @@ export function start(host) {
 
   // LOOP: runs only while the header is on screen and the tab is visible
   const clock = new THREE.Clock();
-  let t = 0, raf = 0, visible = true;
-  step(0.8);
-  pushTrail(true);
+  let time = 0, raf = 0, visible = true;
+  update(T_INDEX + T_PRESS * 0.35);   // start mid-stroke so the still frame shows the press working
   function frame() {
     const dt = Math.min(clock.getDelta(), 0.05);
-    t += dt;
-    step(dt);
-    pushTrail(false);
-    placeCamera(t);
+    time += dt;
+    update(dt);
+    placeCamera(time);
     renderer.render(scene, camera);
     raf = requestAnimationFrame(frame);
   }
