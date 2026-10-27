@@ -161,7 +161,23 @@ try {
   .prose { max-width:42rem; }
 
   /* HERO */
-  .hero { padding:5.5rem 0 4.5rem; }
+  .hero { position:relative; padding:5.5rem 0 calc(var(--trace-h) + 2.5rem); --trace-h:9rem; }
+  .hero > .wrap { position:relative; z-index:1; }
+  /* live trace along the bottom of the header, like a TIA Trace scope */
+  .hero-trace {
+    position:absolute; left:0; right:0; bottom:0; width:100%; height:var(--trace-h);
+    pointer-events:none; z-index:0;
+    -webkit-mask-image:linear-gradient(to right, transparent 0%, #000 22%, #000 100%);
+            mask-image:linear-gradient(to right, transparent 0%, #000 22%, #000 100%);
+    opacity:0; transition:opacity 0.8s;
+  }
+  .hero-trace.on { opacity:1; }
+  .hero h1, .hero-intro, .hero-text, .hero-actions, .facts { animation:rise 0.7s both; }
+  .hero-intro { animation-delay:0.1s; }
+  .hero-text { animation-delay:0.18s; }
+  .hero-actions { animation-delay:0.26s; }
+  .facts { animation-delay:0.34s; }
+  @keyframes rise { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:none; } }
   .hero-grid { display:grid; grid-template-columns:1fr 300px; gap:4rem; align-items:end; }
   h1 {
     font-family:var(--head); font-weight:800; line-height:0.92;
@@ -267,7 +283,7 @@ try {
   /* the separator dot links to the stats panel; it looks and behaves like punctuation */
   .foot-dot { color:inherit; text-decoration:none; cursor:default; padding:0 0.4em; margin:0 -0.2em; }
 
-  @media (prefers-reduced-motion: reduce) { html { scroll-behavior:auto; } * { transition:none !important; } }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior:auto; } * { transition:none !important; animation:none !important; } }
 
   /* LARGE SCREENS: scale up so 1440p / 4K monitors don't get a narrow strip */
   @media (min-width:1600px) {
@@ -299,7 +315,7 @@ try {
   @media (max-width:720px) {
     .wrap, .nav-inner, .foot { padding-left:1rem; padding-right:1rem; }
     section { padding:3.2rem 0; }
-    .hero { padding:3.5rem 0 3rem; }
+    .hero { padding:3.5rem 0 calc(var(--trace-h) + 1.5rem); --trace-h:6.5rem; }
     .hero-intro { font-size:1.15rem; }
     .two-col, .demo-grid, .contact-grid { grid-template-columns:1fr; }
     .viewer iframe { height:600px; }
@@ -346,6 +362,7 @@ try {
 
 <!-- HERO -->
 <header class="hero">
+  <canvas class="hero-trace" id="hero-trace" aria-hidden="true"></canvas>
   <div class="wrap hero-grid">
     <div>
       <h1>Lehel Balog</h1>
@@ -690,6 +707,102 @@ try {
 
 <script>
   const isDe = () => document.documentElement.lang === 'de';
+
+  // HEADER TRACE: jerk-limited move profiles scrolling like a scope.
+  // Velocity (accent), modulo position (grey) and a BUSY bit along the bottom.
+  (function heroTrace() {
+    const cv = document.getElementById('hero-trace');
+    if (!cv || !cv.getContext) return;
+    const ctx = cv.getContext('2d');
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const CYCLE = 2.6;            // s per move cycle: accel, cruise, decel, dwell
+    const PX_PER_S = 70;          // scroll speed
+    // one normalized cycle, sampled: v in 0..1, p in 0..1 (integral of v)
+    const N = 400, V = new Float32Array(N + 1), P = new Float32Array(N + 1);
+    const smoother = x => x * x * x * (x * (6 * x - 15) + 10);  // S-curve ramp
+    for (let i = 0; i <= N; i++) {
+      const u = i / N;
+      V[i] = u < 0.22 ? smoother(u / 0.22)
+           : u < 0.52 ? 1
+           : u < 0.74 ? smoother(1 - (u - 0.52) / 0.22)
+           : 0;
+    }
+    for (let i = 1; i <= N; i++) P[i] = P[i - 1] + (V[i] + V[i - 1]) / 2;
+    for (let i = 0; i <= N; i++) P[i] /= P[N];
+    // each cycle gets its own speed, so the trace doesn't look like a loop
+    const amp = k => 0.55 + 0.45 * Math.abs(Math.sin(k * 12.9898 + 4.1) * 43758.5453 % 1);
+    const at = t => {
+      const k = Math.floor(t / CYCLE), i = Math.round((t / CYCLE - k) * N);
+      return { v: V[i] * amp(k), p: P[i], busy: i < N * 0.74 };
+    };
+
+    let W = 0, H = 0, dpr = 1, colors = {};
+    function readColors() {
+      const cs = getComputedStyle(document.documentElement);
+      colors = { acc: cs.getPropertyValue('--accent').trim(), ink2: cs.getPropertyValue('--ink2').trim(), line: cs.getPropertyValue('--line').trim() };
+    }
+    function resize() {
+      dpr = Math.min(window.devicePixelRatio || 1, 2);
+      W = cv.clientWidth; H = cv.clientHeight;
+      cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+    function draw(now) {
+      ctx.clearRect(0, 0, W, H);
+      const top = 10, bottom = H - 26, span = bottom - top, edge = W - 24;
+      // time grid moving with the signal
+      ctx.strokeStyle = colors.line; ctx.lineWidth = 1;
+      ctx.beginPath();
+      const grid = PX_PER_S * 0.5, off = (now * PX_PER_S) % grid;
+      for (let x = edge - off; x > 0; x -= grid) { ctx.moveTo(Math.round(x) + 0.5, top); ctx.lineTo(Math.round(x) + 0.5, H - 4); }
+      ctx.moveTo(0, bottom + 0.5); ctx.lineTo(edge, bottom + 0.5);
+      ctx.stroke();
+      // position (sawtooth with S-shaped ramps)
+      ctx.strokeStyle = colors.ink2; ctx.lineWidth = 1.2; ctx.globalAlpha = 0.7;
+      ctx.beginPath();
+      let lastP = null;
+      for (let x = 0; x <= edge; x += 2) {
+        const s = at(now - (edge - x) / PX_PER_S), y = bottom - s.p * span * 0.92;
+        if (lastP !== null && s.p < lastP - 0.5) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+        lastP = s.p;
+      }
+      ctx.stroke();
+      // BUSY bit
+      ctx.beginPath();
+      for (let x = 0; x <= edge; x += 2) {
+        const y = at(now - (edge - x) / PX_PER_S).busy ? H - 16 : H - 6;
+        x === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+      ctx.globalAlpha = 1;
+      // velocity
+      ctx.strokeStyle = colors.acc; ctx.lineWidth = 2;
+      ctx.beginPath();
+      for (let x = 0; x <= edge; x += 2) {
+        const y = bottom - at(now - (edge - x) / PX_PER_S).v * span * 0.92;
+        x === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+      // live edge: cursor line and the current value
+      const yNow = bottom - at(now).v * span * 0.92;
+      ctx.strokeStyle = colors.line; ctx.beginPath(); ctx.moveTo(edge + 0.5, top); ctx.lineTo(edge + 0.5, H - 4); ctx.stroke();
+      ctx.fillStyle = colors.acc; ctx.beginPath(); ctx.arc(edge, yNow, 3.5, 0, Math.PI * 2); ctx.fill();
+    }
+
+    readColors(); resize();
+    new MutationObserver(readColors).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+    window.addEventListener('resize', () => { resize(); if (reduce) draw(30); });
+    cv.classList.add('on');
+    if (reduce) { draw(30); return; }
+
+    let visible = true, raf = 0;
+    const t0 = performance.now() - 30000;  // start with a full screen of history
+    function frame(ts) { draw((ts - t0) / 1000); raf = requestAnimationFrame(frame); }
+    function run() { cancelAnimationFrame(raf); if (visible && !document.hidden) raf = requestAnimationFrame(frame); }
+    new IntersectionObserver(e => { visible = e[0].isIntersecting; run(); }).observe(cv);
+    document.addEventListener('visibilitychange', run);
+    run();
+  })();
 
   // MOBILE MENU
   const hamburger = document.getElementById('hamburger');
