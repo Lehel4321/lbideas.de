@@ -3,25 +3,25 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Lehel Balog — PLC Programmer · SPS-Programmierer</title>
-<meta name="description" content="Lehel Balog — PLC programmer (SPS-Programmierer) at Metzner Maschinenbau GmbH with over twelve years of experience in Siemens STEP7 / TIA Portal: machine programming in SCL, LAD and FBD, servo motion control with S7-1500T, safety with F-CPUs and OPC UA / PROFINET. Ulm / Neu-Ulm area, Germany.">
+<title>Lehel Balog, PLC programmer (SPS-Programmierer)</title>
+<meta name="description" content="Lehel Balog, PLC programmer at Metzner Maschinenbau in Neu-Ulm. Twelve years of Siemens STEP 7 and TIA Portal: SCL, LAD and FBD, servo motion with the S7-1500T, safety with F-CPUs, OPC UA and PROFINET.">
 
 <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
 <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png">
 <link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon-16.png">
 <link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png">
-<meta name="theme-color" content="#0f1417">
+<meta name="theme-color" content="#111518">
 
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://lehelbalog.de/">
-<meta property="og:title" content="Lehel Balog — PLC Programmer · SPS-Programmierer">
-<meta property="og:description" content="Over twelve years of PLC programming with Siemens STEP7 / TIA Portal: SCL, LAD and FBD, servo motion control with S7-1500T, safety with F-CPUs, OPC UA and PROFINET. Ulm / Neu-Ulm area, Germany.">
+<meta property="og:title" content="Lehel Balog, PLC programmer">
+<meta property="og:description" content="Twelve years of Siemens STEP 7 and TIA Portal: SCL, LAD and FBD, servo motion with the S7-1500T, safety with F-CPUs, OPC UA and PROFINET. Neu-Ulm, Germany.">
 <meta property="og:image" content="https://lehelbalog.de/assets/og-image.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Lehel Balog — PLC Programmer · SPS-Programmierer">
-<meta name="twitter:description" content="Over twelve years of PLC programming with Siemens STEP7 / TIA Portal: SCL, LAD and FBD, servo motion control with S7-1500T, safety with F-CPUs, OPC UA and PROFINET. Ulm / Neu-Ulm area, Germany.">
+<meta name="twitter:title" content="Lehel Balog, PLC programmer">
+<meta name="twitter:description" content="Twelve years of Siemens STEP 7 and TIA Portal: SCL, LAD and FBD, servo motion with the S7-1500T, safety with F-CPUs, OPC UA and PROFINET. Neu-Ulm, Germany.">
 <meta name="twitter:image" content="https://lehelbalog.de/assets/og-image.png">
 <link rel="canonical" href="https://lehelbalog.de/">
 
@@ -39,1074 +39,755 @@
     "https://www.linkedin.com/in/lehel-balog-75b9b2129/",
     "https://github.com/Lehel4321"
   ],
-  "knowsAbout": ["PLC Programming", "Siemens TIA Portal", "SCL", "Motion Control", "S7-1500T", "SIMATIC Safety", "OPC UA", "PROFINET", "WinCC", "SCADA", "Industrial Automation"]
+  "knowsAbout": ["PLC Programming", "Siemens TIA Portal", "SCL", "Motion Control", "S7-1500T", "SIMATIC Safety", "OPC UA", "PROFINET", "WinCC", "SCADA", "S7-1500 Web API", ".NET", "Industrial Automation"]
 }
 </script>
 
-<!-- Self-hosted fonts — no external CDN, GDPR-safe, works offline -->
-<link rel="preload" href="/assets/fonts/barlow-condensed-latin-800-normal.woff2" as="font" type="font/woff2" crossorigin>
+<!-- Self-hosted fonts, no external CDN -->
+<link rel="preload" href="/assets/fonts/barlow-condensed-latin-700-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="/assets/fonts/fonts.css">
 
-<!-- Apply the saved design before first paint so dark-mode visitors get no light flash -->
+<!-- Apply the saved theme and language before first paint -->
 <script>
 try {
   var t = localStorage.getItem('theme') || 'dark';
   if (t === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+  var l = localStorage.getItem('lang') || ((navigator.language || '').toLowerCase().indexOf('de') === 0 ? 'de' : 'en');
+  document.documentElement.lang = l;
 } catch (e) {}
 </script>
 <style>
   :root {
-    /* DAY SHIFT — Cybertruck stainless */
-    --BG:   #7e8d95;   /* page background */
-    --S:    #7e8d95;   /* mid steel — the dominant surface */
-    --S1:   #9aaab2;   /* lighter face */
-    --S2:   #b8c8d0;   /* highlight catch */
-    --S3:   #6e7e86;   /* shadow side / border tone */
-    --S4:   #1e2c33;   /* deep recess — dark ink accent only */
-    --SD:   #748590;   /* deep steel — gradient tail */
-    --EDGE: #5a6870;   /* machined edge — right/bottom borders */
-    --GAP:  #1a2226;   /* seam between panels — very dark */
-    --INK:  #080e10;   /* stamped text — near black */
-    --INK2: #152028;   /* secondary text — dark navy */
-    --OK:   #2f6b45;
-    --ERR:  #8a2f2f;
-    --TOPLINE: rgba(255,255,255,0.35);           /* light catch on nav edge */
-    --EMBOSS:  1px 1px 0 rgba(255,255,255,0.3), -1px -1px 0 rgba(0,0,0,0.2);
-    --EMBOSS2: 1px 1px 0 rgba(255,255,255,0.2), -1px -1px 0 rgba(0,0,0,0.15);
-    --STAMP:   0 -1px 1px rgba(0,0,0,0.35), 0 1px 0 rgba(255,255,255,0.3);
-    --MONO: 'IBM Plex Mono', monospace;
-    --SANS: 'Barlow Condensed', sans-serif;
+    --bg: #f3f1ec;
+    --surface: #ffffff;
+    --surface2: #ebe8e1;
+    --ink: #1b1f22;
+    --ink2: #59636b;
+    --line: #d8d3c9;
+    --accent: #a95b0c;
+    --accent-ink: #ffffff;
+    --ok: #2f6b45;
+    --err: #9a2f2f;
+    --shot-shadow: 0 1px 2px rgba(0,0,0,0.06), 0 8px 24px rgba(0,0,0,0.08);
+    --sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --head: 'Barlow Condensed', var(--sans);
+    --mono: 'IBM Plex Mono', ui-monospace, Consolas, monospace;
+  }
+  html[data-theme="dark"] {
+    --bg: #111518;
+    --surface: #181d21;
+    --surface2: #1f262b;
+    --ink: #e2e7ea;
+    --ink2: #9aa7af;
+    --line: #2b343a;
+    --accent: #e8a33d;
+    --accent-ink: #111518;
+    --ok: #7fd49a;
+    --err: #f0918f;
+    --shot-shadow: 0 1px 2px rgba(0,0,0,0.4), 0 10px 30px rgba(0,0,0,0.35);
   }
 
-  /* NIGHT SHIFT — graphite steel, amber-lit HMI */
-  html[data-theme="dark"] {
-    --BG:   #0f1417;
-    --S:    #1b2227;
-    --S1:   #232c33;
-    --S2:   #33404a;
-    --S3:   #3c4a54;
-    --S4:   #06090b;
-    --SD:   #161c21;
-    --EDGE: #0b0f12;
-    --GAP:  #05080a;
-    --INK:  #d7e2e8;
-    --INK2: #93a6b1;
-    --OK:   #7fd49a;
-    --ERR:  #f0918f;
-    --TOPLINE: rgba(255,255,255,0.09);
-    --EMBOSS:  0 2px 3px rgba(0,0,0,0.55), 0 -1px 0 rgba(255,255,255,0.05);
-    --EMBOSS2: 0 2px 3px rgba(0,0,0,0.45);
-    --STAMP:   none;   /* shadows blur light-on-dark text — keep it crisp */
-    --ACC:  #e8a33d;   /* amber — powered-on accents */
-  }
-  /* dark-only component accents */
-  html[data-theme="dark"] .sec-num { color:var(--ACC); opacity:0.9; }
-  html[data-theme="dark"] .skill-pill.core,
-  html[data-theme="dark"] .app-badge.live { color:var(--ACC); border-color:rgba(232,163,61,0.35); background:rgba(232,163,61,0.07); }
-  html[data-theme="dark"] .btn-primary { background:rgba(232,163,61,0.1); color:var(--ACC); border-color:rgba(232,163,61,0.45); box-shadow:none; }
-  html[data-theme="dark"] .btn-primary:hover { background:rgba(232,163,61,0.2); color:#ffc866; }
-  html[data-theme="dark"] .lang-btn.active { color:var(--ACC); background:rgba(232,163,61,0.08); border-color:rgba(232,163,61,0.4); }
-  html[data-theme="dark"] .form input:focus, html[data-theme="dark"] .form textarea:focus { border-color:rgba(232,163,61,0.55); }
-  html[data-theme="dark"] .app-cta:hover, html[data-theme="dark"] .contact-val a:hover { color:var(--ACC); border-color:var(--ACC); }
-  html[data-theme="dark"] .repo-cta-line a:hover { color:var(--ACC); border-color:var(--ACC); }
-  html[data-theme="dark"] .foot-name { color:var(--INK2); }
-  html[data-theme="dark"] .foot-copy { color:#5f7078; }
-  html[data-theme="dark"] .app-card { background:linear-gradient(135deg, var(--S1) 0%, var(--S) 55%, var(--SD) 100%); }
-  html[data-theme="dark"] .ch-right { background:linear-gradient(135deg, var(--S) 0%, var(--SD) 100%); }
-  html[data-theme="dark"] nav { box-shadow:0 4px 24px rgba(0,0,0,0.8); }
-  /* light-on-dark renders thinner — lift small mono text half a weight step
-     (only where text is actually small; on large scaled screens regular weight is crisper) */
-  @media (max-width:1599px) {
-    html[data-theme="dark"] .exp-list li, html[data-theme="dark"] .proj-desc,
-    html[data-theme="dark"] .app-desc, html[data-theme="dark"] .contact-text,
-    html[data-theme="dark"] .hero-bio, html[data-theme="dark"] .comments-note, html[data-theme="dark"] .code-note,
-    html[data-theme="dark"] .repo-cta-line, html[data-theme="dark"] .proj-cell { font-weight:500; }
-  }
+  /* Language switch: both languages are in the page, CSS shows one */
+  html[lang="de"] [data-l="en"], html:not([lang="de"]) [data-l="de"] { display:none !important; }
 
   *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
-  html { scroll-behavior:smooth; background:var(--BG); background-color:var(--BG); font-size:118%; }
-
+  html { scroll-behavior:smooth; font-size:106%; background:var(--bg); }
   body {
-    background: var(--BG);
-    background-color: var(--BG);
-    color: var(--INK);
-    font-family: var(--SANS);
-    font-weight: 400;
-    line-height: 1.6;
-    -webkit-font-smoothing: antialiased;
-    overflow-x: hidden;
+    background:var(--bg); color:var(--ink);
+    font-family:var(--sans); font-size:1rem; line-height:1.65;
+    -webkit-font-smoothing:antialiased; overflow-x:hidden;
   }
+  a { color:inherit; }
+  img { max-width:100%; height:auto; display:block; }
 
-  /* NAV — darker steel bar welded across the top */
+  /* NAV */
   nav {
-    position: fixed; top:0; left:0; right:0; z-index:100;
-    height: 2.7rem;
-    background: linear-gradient(180deg, var(--S2) 0%, var(--S1) 60%, var(--S) 100%);
-    border-bottom: 3px solid var(--GAP);
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 0 3rem;
-    box-shadow: 0 4px 24px rgba(0,0,0,0.55);
+    position:sticky; top:0; z-index:50;
+    background:color-mix(in srgb, var(--bg) 90%, transparent);
+    backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px);
+    border-bottom:1px solid var(--line);
   }
-  nav::before {
-    content:''; position:absolute; top:0; left:0; right:0; height:1px;
-    background: var(--TOPLINE);
+  .nav-inner {
+    max-width:1080px; margin:0 auto; padding:0 2rem; height:3.2rem;
+    display:flex; align-items:center; justify-content:space-between; gap:1rem;
   }
-
-  .nav-name {
-    font-family: var(--MONO); font-size:0.78rem; font-weight:600;
-    letter-spacing:0.16em; text-transform:uppercase;
-    color: var(--INK); text-decoration:none;
-  }
-
-  .nav-links { display:flex; gap:1.8rem; list-style:none; }
-  .nav-links a {
-    font-family: var(--MONO); font-size:0.68rem; font-weight:500; letter-spacing:0.1em;
-    text-transform:uppercase; color: var(--INK2);
-    text-decoration:none; transition:color 0.15s;
-  }
-  .nav-links a:hover { color: var(--INK); }
-
-  .nav-right { display:flex; align-items:center; gap:0.6rem; }
-  .lang-toggle { display:flex; gap:2px; }
+  .nav-name { font-family:var(--head); font-weight:700; font-size:1.25rem; text-decoration:none; letter-spacing:0.01em; }
+  .nav-links { display:flex; gap:1.6rem; list-style:none; }
+  .nav-links a { font-size:0.9rem; color:var(--ink2); text-decoration:none; }
+  .nav-links a:hover { color:var(--ink); }
+  .nav-right { display:flex; align-items:center; gap:0.5rem; }
   .lang-btn, .theme-btn {
-    font-family:var(--MONO); font-size:0.63rem; letter-spacing:0.1em;
-    padding:0.2rem 0.5rem; border:1px solid var(--S3);
-    background:rgba(0,0,0,0.12); color:var(--INK2);
-    cursor:pointer; transition:all 0.12s;
+    font-family:var(--sans); font-size:0.8rem; line-height:1;
+    padding:0.4rem 0.55rem; border:1px solid var(--line); border-radius:4px;
+    background:transparent; color:var(--ink2); cursor:pointer;
   }
-  .lang-btn.active { background:var(--GAP); color:var(--S2); border-color:var(--GAP); }
-  .lang-btn:hover, .theme-btn:hover { color:var(--INK); }
-  .theme-btn { min-width:2rem; }
-  /* visible keyboard focus for the interactive chrome */
-  .lang-btn:focus-visible, .theme-btn:focus-visible, .btn-primary:focus-visible, .btn-ghost:focus-visible,
-  .sim-fullscreen:focus-visible, .sim-poster:focus-visible, .nav-links a:focus-visible, .hamburger:focus-visible {
-    outline:2px solid var(--INK); outline-offset:2px;
+  .lang-btn:hover, .theme-btn:hover { color:var(--ink); }
+  .lang-btn.active { color:var(--ink); border-color:var(--ink2); }
+  .theme-btn { min-width:2.1rem; }
+  .lang-toggle { display:flex; gap:0.25rem; }
+  a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visible {
+    outline:2px solid var(--accent); outline-offset:2px;
   }
-  html[data-theme="dark"] .lang-btn:focus-visible, html[data-theme="dark"] .theme-btn:focus-visible,
-  html[data-theme="dark"] .btn-primary:focus-visible, html[data-theme="dark"] .btn-ghost:focus-visible,
-  html[data-theme="dark"] .sim-fullscreen:focus-visible, html[data-theme="dark"] .sim-poster:focus-visible,
-  html[data-theme="dark"] .nav-links a:focus-visible { outline-color:var(--ACC); }
 
   .hamburger {
     display:none; flex-direction:column; justify-content:center; gap:5px;
-    width:32px; height:32px; background:transparent; border:none;
-    cursor:pointer; padding:4px; z-index:60; -webkit-tap-highlight-color:transparent;
+    width:34px; height:34px; background:transparent; border:none; cursor:pointer; padding:6px;
   }
-  .hamburger span { display:block; height:1.5px; background:var(--INK); transition:all 0.25s; }
-  .hamburger.open span:nth-child(1) { transform:translateY(6px) rotate(45deg); }
+  .hamburger span { display:block; height:1.5px; background:var(--ink); transition:transform 0.2s, opacity 0.2s; }
+  .hamburger.open span:nth-child(1) { transform:translateY(6.5px) rotate(45deg); }
   .hamburger.open span:nth-child(2) { opacity:0; }
-  .hamburger.open span:nth-child(3) { transform:translateY(-6px) rotate(-45deg); }
-
+  .hamburger.open span:nth-child(3) { transform:translateY(-6.5px) rotate(-45deg); }
   .mobile-menu {
-    display:none; position:fixed; inset:0; z-index:40;
-    background:var(--S1); flex-direction:column;
-    padding:3.6rem 0 2rem; opacity:0; pointer-events:none; transition:opacity 0.2s;
+    display:none; position:fixed; inset:3.2rem 0 0 0; z-index:49;
+    background:var(--bg); flex-direction:column; padding:0.5rem 0 2rem;
   }
-  .mobile-menu.open { display:flex; opacity:1; pointer-events:all; }
-  .mobile-menu a {
-    font-family:var(--MONO); font-size:0.8rem; letter-spacing:0.12em;
-    text-transform:uppercase; color:var(--INK);
-    text-decoration:none; padding:1rem 1.5rem;
-    border-bottom:1px solid var(--S3); opacity:0.85; transition:opacity 0.1s;
-  }
-  .mobile-menu a:hover { opacity:1; }
-  .mobile-menu-footer { margin-top:auto; display:flex; gap:2px; padding:1rem 1.5rem; }
+  .mobile-menu.open { display:flex; }
+  .mobile-menu a { font-size:1.05rem; text-decoration:none; padding:0.9rem 2rem; border-bottom:1px solid var(--line); }
 
   /* LAYOUT */
-  .wrap { max-width:960px; margin:0 auto; padding:0 3rem; }
-  section { padding:5rem 0 4rem; background-color:var(--BG); }
-
-  /* GAP LINE between sections */
-  hr {
-    border: none;
-    height: 3px;
-    background: var(--GAP);
+  .wrap { max-width:1080px; margin:0 auto; padding:0 2rem; }
+  section { padding:4.5rem 0; border-top:1px solid var(--line); }
+  section, .viewer { scroll-margin-top:3.6rem; }
+  .sec { display:grid; grid-template-columns:200px 1fr; gap:2.5rem; }
+  h2 {
+    font-family:var(--head); font-weight:700; font-size:2rem; line-height:1.1;
+    letter-spacing:0.005em;
   }
+  .sec > h2 { position:sticky; top:4.6rem; align-self:start; }
+  h3 { font-family:var(--head); font-weight:700; font-size:1.45rem; line-height:1.2; }
+  p + p { margin-top:0.9rem; }
+  .lead { font-size:1.12rem; }
+  .muted { color:var(--ink2); }
+  .prose { max-width:42rem; }
 
   /* HERO */
-  .hero {
-    min-height:100svh; display:flex; align-items:center;
-    padding:8rem 3rem 5rem; max-width:960px; margin:0 auto;
-    background-color: var(--BG);
-  }
-  .hero-inner {
-    width:100%; display:grid;
-    grid-template-columns:1fr 260px; gap:5rem; align-items:start;
-  }
-
-  .hero-label {
-    font-family:var(--MONO); font-size:0.6rem; letter-spacing:0.2em;
-    text-transform:uppercase; color:var(--INK2);
-    margin-bottom:1.4rem; opacity:0; animation:rise 0.6s 0.05s forwards;
-  }
-
+  .hero { padding:5.5rem 0 4.5rem; }
+  .hero-grid { display:grid; grid-template-columns:1fr 300px; gap:4rem; align-items:end; }
   h1 {
-    font-family:var(--SANS); font-size:clamp(4rem,9vw,7rem);
-    font-weight:800; line-height:0.9; letter-spacing:-0.01em;
-    text-transform:uppercase; color:var(--INK);
-    margin-bottom:1.6rem; opacity:0; animation:rise 0.6s 0.15s forwards;
-    /* Embossed effect */
-    text-shadow: var(--EMBOSS);
+    font-family:var(--head); font-weight:800; line-height:0.92;
+    font-size:clamp(3.6rem, 9vw, 6.6rem); letter-spacing:-0.01em; margin-bottom:1.6rem;
   }
-  h1 em {
-    display:block; font-style:normal; font-weight:300;
-    color:var(--INK2); font-size:0.85em;
-    text-shadow: var(--EMBOSS2);
+  .hero-intro { font-size:1.3rem; line-height:1.5; max-width:36rem; margin-bottom:1.1rem; }
+  .hero-text { max-width:36rem; color:var(--ink2); }
+  .hero-actions { display:flex; flex-wrap:wrap; gap:0.7rem; margin-top:2rem; }
+  .btn {
+    display:inline-block; font-family:var(--sans); font-size:0.95rem; font-weight:600;
+    padding:0.7rem 1.3rem; border-radius:4px; text-decoration:none; cursor:pointer;
+    border:1px solid var(--ink); background:var(--ink); color:var(--bg);
   }
+  .btn:hover { opacity:0.88; }
+  .btn.secondary { background:transparent; color:var(--ink); border-color:var(--line); }
+  .btn.secondary:hover { border-color:var(--ink2); opacity:1; }
+  .btn:disabled { opacity:0.5; cursor:default; }
 
-  /* Stamped-into-steel lettering — dark recess above, light catch below.
-     Applied to headings/labels only; small body text stays shadow-free for crispness. */
-  .sec-title, .exp-company, .app-name, .proj-name, .skill-label, .dp-v, .nav-name, .exp-date {
-    text-shadow: var(--STAMP);
-  }
-
-  .hero-bio {
-    font-family:var(--MONO); font-size:0.84rem; color:var(--INK2);
-    line-height:1.85; max-width:26rem; margin-bottom:2rem;
-    border-left:3px solid var(--GAP); padding-left:1rem;
-    opacity:0; animation:rise 0.6s 0.25s forwards;
-  }
-
-  .hero-actions { display:flex; gap:0.5rem; flex-wrap:wrap; opacity:0; animation:rise 0.6s 0.35s forwards; }
-
-  .btn-primary {
-    font-family:var(--MONO); font-size:0.63rem; font-weight:600;
-    letter-spacing:0.12em; text-transform:uppercase; padding:0.65rem 1.6rem;
-    background:var(--GAP); color:var(--S2); text-decoration:none;
-    border:1px solid var(--GAP);
-    box-shadow:inset 0 1px 0 rgba(255,255,255,0.08);
-    display:inline-block; transition:all 0.15s;
-    cursor:pointer; -webkit-appearance:none; appearance:none;
-  }
-  .btn-primary:hover { background:#0d1518; color:var(--S1); }
-
-  .btn-ghost {
-    font-family:var(--MONO); font-size:0.63rem; font-weight:400;
-    letter-spacing:0.12em; text-transform:uppercase; padding:0.65rem 1.6rem;
-    background:rgba(0,0,0,0.12); color:var(--INK2); text-decoration:none;
-    border:1px solid var(--S3); display:inline-block; transition:all 0.15s;
-  }
-  .btn-ghost:hover { background:rgba(0,0,0,0.2); }
-
-  /* DATA PLATE — bolted-on spec sheet */
-  .data-plate {
-    background: linear-gradient(135deg, var(--S2) 0%, var(--S1) 40%, var(--S) 100%);
-    border-top:3px solid var(--S2);
-    border-left:1px solid rgba(255,255,255,0.25);
-    border-right:2px solid var(--S3);
-    border-bottom:3px solid var(--S4);
-    box-shadow:
-      4px 5px 24px rgba(0,0,0,0.45),
-      inset 0 1px 0 rgba(255,255,255,0.2),
-      inset 1px 0 0 rgba(255,255,255,0.1);
-    opacity:0; animation:rise 0.6s 0.2s forwards;
-  }
-  .dp-row {
-    display:flex; flex-direction:column; align-items:flex-start; gap:0.15rem;
-    padding:0.6rem 1rem; border-bottom:1px solid rgba(0,0,0,0.12);
-  }
-  .dp-row:last-child { border-bottom:none; }
-  .dp-k { font-family:var(--MONO); font-size:0.6rem; letter-spacing:0.12em; text-transform:uppercase; color:var(--INK2); font-weight:500; }
-  .dp-v { font-family:var(--MONO); font-size:0.7rem; font-weight:700; color:var(--INK); text-align:left; }
-
-  /* SECTION HEAD */
-  .sec-head {
-    display:flex; align-items:center; gap:1.2rem;
-    padding:0.5rem 0; margin-bottom:0;
-    border-bottom:4px solid var(--GAP);
-  }
-  .sec-num { font-family:var(--MONO); font-size:0.6rem; color:var(--INK2); letter-spacing:0.1em; opacity:0.75; }
-  .sec-title { margin:0; font-family:var(--MONO); font-size:0.72rem; font-weight:700; letter-spacing:0.18em; text-transform:uppercase; color:var(--INK); }
-
-  /* PLATE — panel surface for sections */
-  .plate {
-    background: linear-gradient(170deg, var(--S1) 0%, var(--S) 70%, var(--SD) 100%);
-    border-left:1px solid rgba(255,255,255,0.2);
-    border-right:2px solid var(--EDGE);
-    border-bottom:4px solid var(--GAP);
-    box-shadow:
-      2px 4px 16px rgba(0,0,0,0.35),
-      inset 0 1px 0 rgba(255,255,255,0.15);
-    overflow:hidden;
-  }
-
-  /* Embedded app frame (shared by the live demo sections) */
-  .sim-app { display:none; }
-  .sim-app.open { display:block; }
-  .sim-app-bar {
-    display:flex; align-items:center; justify-content:space-between;
-    padding:0.5rem 0.9rem; background:var(--GAP);
-    border-bottom:1px solid #000;
-  }
-  .sim-app-tag {
-    font-family:var(--MONO); font-size:0.58rem; letter-spacing:0.12em;
-    text-transform:uppercase; color:var(--S2);
-  }
-  .sim-app-actions { display:flex; gap:0.4rem; align-items:center; }
-  .sim-fullscreen {
-    font-family:var(--MONO); font-size:0.58rem; letter-spacing:0.1em;
-    text-transform:uppercase; color:var(--S1); text-decoration:none;
-    padding:0.3rem 0.6rem; border:1px solid var(--S3); background:transparent;
-    cursor:pointer; transition:all 0.12s; white-space:nowrap;
-  }
-  .sim-fullscreen:hover { color:var(--S2); background:rgba(255,255,255,0.06); }
-  .sim-frame-wrap { background:#09090b; line-height:0; }
-  .sim-frame { width:100%; height:760px; border:0; display:block; background:#09090b; }
-  @media (max-width:640px){ .sim-frame { height:600px; } }
-  /* Click-to-load poster — demo only boots when the visitor asks for it */
-  .sim-poster { position:relative; display:block; width:100%; padding:0; border:0; background:#09090b; cursor:pointer; }
-  .sim-poster img { width:100%; height:auto; display:block; opacity:0.8; transition:opacity 0.15s; }
-  .sim-poster:hover img, .sim-poster:focus-visible img { opacity:1; }
-  .sim-poster-btn {
-    position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
-    font-family:var(--MONO); font-size:0.72rem; font-weight:600;
-    letter-spacing:0.14em; text-transform:uppercase; white-space:nowrap;
-    color:#e4e4e7; background:rgba(9,9,11,0.88); border:1px solid #52525b;
-    padding:0.85rem 1.7rem;
-  }
-  .sim-poster:hover .sim-poster-btn, .sim-poster:focus-visible .sim-poster-btn { background:#18181b; border-color:#a1a1aa; }
-  /* true fullscreen — the whole app fills the screen, toolbar stays on top */
-  #motion-app:fullscreen, #packline-app:fullscreen, #workflow-app:fullscreen, #rotary-app:fullscreen { display:flex; flex-direction:column; width:100vw; height:100vh; height:100dvh; background:#09090b; }
-  #motion-app:-webkit-full-screen, #packline-app:-webkit-full-screen, #workflow-app:-webkit-full-screen, #rotary-app:-webkit-full-screen { display:flex; flex-direction:column; width:100vw; height:100vh; background:#09090b; }
-  #motion-app:fullscreen .sim-frame-wrap, #motion-app:-webkit-full-screen .sim-frame-wrap,
-  #packline-app:fullscreen .sim-frame-wrap, #packline-app:-webkit-full-screen .sim-frame-wrap,
-  #workflow-app:fullscreen .sim-frame-wrap, #workflow-app:-webkit-full-screen .sim-frame-wrap,
-  #rotary-app:fullscreen .sim-frame-wrap, #rotary-app:-webkit-full-screen .sim-frame-wrap { flex:1 1 auto; }
-  #motion-app:fullscreen .sim-frame, #motion-app:-webkit-full-screen .sim-frame,
-  #packline-app:fullscreen .sim-frame, #packline-app:-webkit-full-screen .sim-frame,
-  #workflow-app:fullscreen .sim-frame, #workflow-app:-webkit-full-screen .sim-frame,
-  #rotary-app:fullscreen .sim-frame, #rotary-app:-webkit-full-screen .sim-frame { height:100%; }
-
-  /* SKILLS */
-  .skills-grid { display:grid; grid-template-columns:1fr 1fr; gap:2px; background:var(--GAP); }
-  .skill-row {
-    display:flex; justify-content:space-between; align-items:center;
-    padding:0.65rem 1rem;
-    background: linear-gradient(90deg, var(--S) 0%, var(--S1) 100%);
-    gap:0.5rem; transition:filter 0.12s;
-  }
-  .skill-row:hover { filter:brightness(1.06); }
-  .skill-label { font-family:var(--MONO); font-size:0.82rem; color:var(--INK); font-weight:600; min-width:0; }
-  .skill-pill { flex-shrink:0; }
-  @media (max-width:640px){ .skills-grid { grid-template-columns:1fr; } }
-  .skill-pill {
-    font-family:var(--MONO); font-size:0.6rem; font-weight:600;
-    letter-spacing:0.1em; text-transform:uppercase; padding:0.12rem 0.5rem;
-    white-space:nowrap; background:rgba(0,0,0,0.15);
-    border:1px solid var(--S3); color:var(--INK2);
-  }
-  .skill-pill.core { background:var(--GAP); color:var(--S1); border-color:var(--GAP); }
+  .facts { border-top:2px solid var(--ink); }
+  .facts div { display:grid; grid-template-columns:6.8rem 1fr; gap:0.8rem; padding:0.6rem 0; border-bottom:1px solid var(--line); font-size:0.92rem; }
+  .facts dt { color:var(--ink2); }
+  .facts dd { font-weight:600; }
+  .nw { white-space:nowrap; }
 
   /* EXPERIENCE */
-  .exp-block { border-bottom:2px solid var(--GAP); }
-  .exp-block:last-child { border-bottom:none; }
-  .exp-grid { display:grid; grid-template-columns:190px 1fr; }
-  .exp-meta {
-    padding:1.4rem 1.2rem; border-right:2px solid var(--GAP);
-    background:linear-gradient(180deg, var(--S1) 0%, var(--S) 100%);
-  }
-  .exp-date { font-family:var(--MONO); font-size:0.6rem; letter-spacing:0.08em; text-transform:uppercase; color:var(--INK2); margin-bottom:0.5rem; font-weight:600; }
-  .exp-company { font-family:var(--SANS); font-size:1rem; font-weight:800; text-transform:uppercase; color:var(--INK); line-height:1.15; margin-bottom:0.2rem;
-    text-shadow:var(--STAMP);
-  }
-  .exp-location { font-family:var(--MONO); font-size:0.6rem; color:var(--INK2); margin-bottom:0.9rem; }
-  .exp-role {
-    font-family:var(--MONO); font-size:0.6rem; font-weight:700;
-    letter-spacing:0.1em; text-transform:uppercase; color:var(--INK2);
-    padding:0.15rem 0.5rem; background:rgba(0,0,0,0.18);
-    border:1px solid var(--S3); display:inline-block;
-  }
-  .exp-content { padding:1.4rem; background:linear-gradient(180deg, var(--S) 0%, var(--SD) 100%); }
-  .exp-list { list-style:none; display:flex; flex-direction:column; gap:0.3rem; }
-  .exp-list li { font-family:var(--MONO); font-size:0.8rem; color:var(--INK); padding-left:1rem; position:relative; line-height:1.7; opacity:1; }
-  .exp-list li::before { content:"—"; position:absolute; left:0; color:var(--INK2); opacity:1; }
+  .job { padding-bottom:2.4rem; margin-bottom:2.4rem; border-bottom:1px solid var(--line); }
+  .job:last-child { border-bottom:none; margin-bottom:0; padding-bottom:0; }
+  .job-meta { font-family:var(--mono); font-size:0.8rem; color:var(--ink2); margin:0.2rem 0 0.9rem; }
+  .job p { max-width:44rem; }
+  .job h4 { font-size:0.95rem; font-weight:600; margin:1.3rem 0 0.5rem; }
+  .list { list-style:none; max-width:44rem; }
+  .list li { position:relative; padding-left:1.1rem; margin-bottom:0.5rem; }
+  .list li::before { content:""; position:absolute; left:0; top:0.68em; width:6px; height:6px; background:var(--accent); border-radius:1px; }
+  .list strong { font-weight:600; }
 
-  /* PROJECTS */
-  .proj-header { display:grid; grid-template-columns:145px 1fr 86px; background:linear-gradient(90deg, var(--SD) 0%, var(--S) 100%); border-bottom:2px solid var(--GAP); }
-  .proj-th { padding:0.4rem 0.8rem; font-family:var(--MONO); font-size:0.6rem; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; color:var(--INK2); border-right:1px solid var(--S3); }
-  .proj-th:last-child { border-right:none; text-align:right; }
-  .proj-row { display:grid; grid-template-columns:145px 1fr 86px; border-bottom:1px solid rgba(0,0,0,0.15); transition:filter 0.1s; }
-  .proj-row:last-child { border-bottom:none; }
-  .proj-row:hover { filter:brightness(1.06); }
-  .proj-cell { padding:0.7rem 0.8rem; border-right:1px solid rgba(0,0,0,0.1); font-family:var(--MONO); font-size:0.72rem; }
-  .proj-cell:last-child { border-right:none; text-align:right; }
-  .proj-co { color:var(--INK2); font-size:0.58rem; letter-spacing:0.06em; text-transform:uppercase; font-weight:700; }
-  .proj-name { font-family:var(--SANS); font-size:0.92rem; font-weight:700; color:var(--INK); margin-bottom:0.25rem; text-transform:uppercase; letter-spacing:0.02em; line-height:1.2; }
-  .proj-desc { font-size:0.78rem; color:var(--INK); opacity:1; line-height:1.6; }
-  .proj-tech { font-family:var(--MONO); font-size:0.6rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:var(--INK2); }
+  /* SKILLS */
+  .skills { width:100%; border-collapse:collapse; max-width:48rem; }
+  .skills th, .skills td { text-align:left; vertical-align:top; padding:0.75rem 0; border-bottom:1px solid var(--line); }
+  .skills tr:first-child th, .skills tr:first-child td { border-top:2px solid var(--ink); }
+  .skills th { width:9.5rem; font-weight:600; padding-right:1rem; }
 
-  /* APPS */
-  .apps-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:2px; background:var(--GAP); }
-  .app-card { background:linear-gradient(135deg, var(--S1) 0%, var(--S) 55%, var(--S3) 100%); padding:1.5rem 1.3rem; transition:filter 0.15s; }
-  .app-card:hover { filter:brightness(1.07); }
-  .app-icon { font-size:1.3rem; margin-bottom:0.9rem; display:block; filter:grayscale(1) contrast(0.7); }
-  .app-badge { font-family:var(--MONO); font-size:0.57rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; padding:0.12rem 0.5rem; background:rgba(0,0,0,0.15); border:1px solid var(--S3); color:var(--INK2); display:inline-block; margin-bottom:0.8rem; }
-  .app-badge.live { background:var(--GAP); color:var(--S1); border-color:var(--GAP); }
-  .app-name { font-family:var(--SANS); font-size:0.9rem; font-weight:800; text-transform:uppercase; color:var(--INK); margin-bottom:0.4rem; }
-  .app-desc { font-family:var(--MONO); font-size:0.78rem; color:var(--INK); opacity:1; line-height:1.7; }
-  .app-cta { margin-top:0.9rem; display:inline-block; font-family:var(--MONO); font-size:0.58rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--INK2); padding:0.25rem 0.65rem; background:rgba(0,0,0,0.15); border:1px solid var(--S3); text-decoration:none; transition:all 0.1s; }
-  .app-cta:hover { background:rgba(0,0,0,0.28); color:var(--INK); }
+  /* MACHINE (rotary knife on the S7-1500T) */
+  .two-col { display:grid; grid-template-columns:1fr 1fr; gap:2rem; margin-top:2rem; }
+  .two-col h4 { font-size:1rem; font-weight:600; margin-bottom:0.7rem; padding-bottom:0.4rem; border-bottom:2px solid var(--ink); }
+  figure { margin-top:2.2rem; }
+  figure img { border:1px solid var(--line); border-radius:6px; box-shadow:var(--shot-shadow); background:#fff; }
+  figcaption { font-size:0.88rem; color:var(--ink2); margin-top:0.7rem; max-width:44rem; }
+  .note { margin-top:2rem; padding:1rem 1.2rem; background:var(--surface2); border-radius:6px; max-width:44rem; font-size:0.95rem; }
 
-  /* EXAMPLE PROJECTS — get-in-contact CTA line under the embedded demos */
-  .repo-cta-line { font-family:var(--MONO); font-size:0.8rem; color:var(--INK); line-height:1.75; text-align:center; margin-top:2rem; padding:1.1rem 1.2rem; background:linear-gradient(170deg, var(--S1) 0%, var(--S) 100%); border-left:1px solid rgba(255,255,255,0.2); border-right:2px solid var(--EDGE); border-bottom:4px solid var(--GAP); box-shadow: 2px 4px 16px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.15); }
-  .repo-cta-line a { color:var(--INK); font-weight:600; border-bottom:1px solid var(--INK2); text-decoration:none; padding-bottom:1px; }
-  .repo-cta-line a:hover { border-color:var(--INK); }
+  /* DEMOS */
+  .demo-grid { display:grid; grid-template-columns:1fr 1fr; gap:1.4rem; margin-top:1.8rem; }
+  .demo-card { background:var(--surface); border:1px solid var(--line); border-radius:6px; overflow:hidden; display:flex; flex-direction:column; }
+  .demo-shot { display:block; width:100%; padding:0; border:0; background:#09090b; cursor:pointer; position:relative; }
+  .demo-shot img { width:100%; aspect-ratio:1240/760; object-fit:cover; opacity:0.92; transition:opacity 0.15s; }
+  .demo-shot:hover img { opacity:1; }
+  .demo-body { padding:1rem 1.1rem 1.15rem; display:flex; flex-direction:column; flex:1; }
+  .demo-body p { font-size:0.94rem; color:var(--ink2); margin-top:0.35rem; flex:1; }
+  .demo-links { display:flex; flex-wrap:wrap; gap:0.4rem 1.1rem; margin-top:0.9rem; font-size:0.9rem; }
+  .demo-links a, .demo-links button { color:var(--ink); text-decoration:underline; text-decoration-color:var(--line); text-underline-offset:3px; background:none; border:0; font:inherit; cursor:pointer; padding:0; }
+  .demo-links a:hover, .demo-links button:hover { text-decoration-color:var(--ink); }
+  .demo-links .run { font-weight:600; }
 
-  /* LANGUAGES */
-  .lang-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:2px; background:var(--GAP); }
-  .lang-cell { background:linear-gradient(135deg, var(--S1) 0%, var(--S) 100%); padding:1.2rem 1rem; transition:filter 0.12s; }
-  .lang-cell:hover { filter:brightness(1.07); }
-  .lang-name { font-family:var(--SANS); font-size:0.95rem; font-weight:800; text-transform:uppercase; color:var(--INK); margin-bottom:0.25rem; text-shadow:var(--STAMP); }
-  .lang-lvl { font-family:var(--MONO); font-size:0.62rem; font-weight:700; letter-spacing:0.1em; color:var(--INK2); }
-  .lang-sub { font-family:var(--MONO); font-size:0.6rem; color:var(--INK2); margin-top:0.1rem; opacity:0.8; }
+  .viewer { display:none; margin-top:1.8rem; border:1px solid var(--line); border-radius:6px; overflow:hidden; background:#09090b; }
+  .viewer.open { display:block; }
+  .viewer-bar { display:flex; align-items:center; justify-content:space-between; gap:1rem; padding:0.55rem 0.9rem; background:var(--surface); border-bottom:1px solid var(--line); font-size:0.9rem; }
+  .viewer-bar strong { font-weight:600; }
+  .viewer-actions { display:flex; gap:1rem; }
+  .viewer-actions a, .viewer-actions button { background:none; border:0; font:inherit; color:var(--ink); cursor:pointer; text-decoration:underline; text-decoration-color:var(--line); text-underline-offset:3px; padding:0; }
+  .viewer iframe { width:100%; height:760px; border:0; display:block; background:#09090b; }
+  .viewer:fullscreen { display:flex; flex-direction:column; width:100vw; height:100vh; height:100dvh; border-radius:0; }
+  .viewer:-webkit-full-screen { display:flex; flex-direction:column; width:100vw; height:100vh; }
+  .viewer:fullscreen iframe, .viewer:-webkit-full-screen iframe { flex:1 1 auto; height:100%; }
 
   /* CONTACT */
-  .contact-halves { display:grid; grid-template-columns:1fr 1fr; gap:2px; background:var(--GAP); }
-  .ch-left { background:linear-gradient(135deg, var(--S1) 0%, var(--S) 100%); padding:2rem 1.8rem; }
-  .ch-right { background:linear-gradient(135deg, var(--S) 0%, var(--S3) 100%); padding:2rem 1.8rem; }
-  .contact-title { font-family:var(--SANS); font-size:clamp(2rem,4vw,3rem); font-weight:800; letter-spacing:0.04em; text-transform:uppercase; line-height:0.95; color:var(--INK); margin-bottom:1.2rem; text-shadow:var(--STAMP); }
-  .contact-title em { font-style:normal; font-weight:300; color:var(--INK2); text-shadow:none; }
-  .contact-text { font-family:var(--MONO); font-size:0.8rem; color:var(--INK); opacity:1; line-height:1.85; margin-bottom:1.4rem; }
-  .contact-line { display:flex; align-items:center; gap:0.7rem; margin-bottom:0.5rem; }
-  .contact-icon { width:22px; height:22px; background:rgba(0,0,0,0.15); border:1px solid var(--S3); display:flex; align-items:center; justify-content:center; font-size:0.62rem; flex-shrink:0; color:var(--INK2); }
-  .contact-val { font-family:var(--MONO); font-size:0.74rem; color:var(--INK2); }
-  .contact-val a { color:var(--INK); text-decoration:none; border-bottom:1px solid var(--S3); }
-  .contact-val a:hover { border-color:var(--INK); }
-
-  .form { display:flex; flex-direction:column; gap:0.4rem; }
+  .contact-grid { display:grid; grid-template-columns:1fr 1fr; gap:2.5rem; }
+  .contact-links { list-style:none; margin-top:1.4rem; }
+  .contact-links li { padding:0.55rem 0; border-bottom:1px solid var(--line); display:grid; grid-template-columns:6.5rem 1fr; }
+  .contact-links li:first-child { border-top:2px solid var(--ink); }
+  .contact-links .k { color:var(--ink2); }
+  code { font-family:var(--mono); font-size:0.88em; }
+  .contact-links a { text-decoration:underline; text-decoration-color:var(--line); text-underline-offset:3px; }
+  .contact-links a:hover { text-decoration-color:var(--ink); }
+  .form { display:flex; flex-direction:column; gap:0.6rem; }
+  .form label { font-size:0.88rem; color:var(--ink2); }
   .form input, .form textarea {
-    background:rgba(0,0,0,0.18); border:1px solid var(--S3); border-top-color:rgba(0,0,0,0.25);
-    color:var(--INK); font-family:var(--MONO); font-size:0.8rem;
-    padding:0.6rem 0.8rem; outline:none; resize:none; transition:border-color 0.15s;
-    -webkit-appearance:none; appearance:none;
+    width:100%; font-family:var(--sans); font-size:1rem; color:var(--ink);
+    background:var(--surface); border:1px solid var(--line); border-radius:4px;
+    padding:0.65rem 0.8rem; resize:vertical; -webkit-appearance:none; appearance:none;
   }
-  .form input::placeholder, .form textarea::placeholder { color:var(--INK2); opacity:1; }
-  .form input:focus, .form textarea:focus { border-color:var(--GAP); background:rgba(0,0,0,0.25); }
-  .form .btn-primary:disabled { opacity:0.55; cursor:default; }
-  .form-status { font-family:var(--MONO); font-size:0.74rem; letter-spacing:0.03em; min-height:1.2em; }
-  /* 16px floor stops iOS Safari from auto-zooming when a field gets focus */
-  @media (max-width:640px){ .form input, .form textarea { font-size:16px; } }
-  .form-status.ok  { color:var(--OK); }
-  .form-status.err { color:var(--ERR); }
+  .form input:focus, .form textarea:focus { border-color:var(--ink2); outline:none; }
+  .form .btn { align-self:flex-start; margin-top:0.3rem; }
+  .form-status { font-size:0.92rem; min-height:1.3em; }
+  .form-status.ok { color:var(--ok); }
+  .form-status.err { color:var(--err); }
+
+  /* GUESTBOOK */
+  .comments-body { margin-top:1.4rem; background:#0d1117; border-radius:6px; padding:1rem; display:none; }
+  .comments-body.open { display:block; }
+  .comments-loading { font-size:0.9rem; color:#8b949e; text-align:center; padding:1.4rem 1rem; }
+  .comments-loading a { color:#c9d1d9; }
+  #comments-thread .utterances { max-width:100%; }
 
   /* FOOTER */
-  footer {
-    border-top:4px solid var(--GAP);
-    background:linear-gradient(180deg, var(--SD) 0%, var(--EDGE) 100%);
-    padding:0.8rem 3rem;
-    display:flex; justify-content:space-between; align-items:center;
-    box-shadow:0 -3px 16px rgba(0,0,0,0.4);
-  }
-  .foot-name { font-family:var(--MONO); font-size:0.66rem; font-weight:600; color:var(--S1); letter-spacing:0.08em; }
-  .foot-copy { font-family:var(--MONO); font-size:0.58rem; color:var(--S); }
-  /* owner door: the separator dot links to the stats panel — looks and behaves like punctuation */
+  footer { border-top:1px solid var(--line); }
+  .foot { max-width:1080px; margin:0 auto; padding:1.4rem 2rem 2rem; display:flex; justify-content:space-between; gap:1rem; font-size:0.85rem; color:var(--ink2); }
+  /* the separator dot links to the stats panel; it looks and behaves like punctuation */
   .foot-dot { color:inherit; text-decoration:none; cursor:default; padding:0 0.4em; margin:0 -0.2em; }
 
-  /* REVEAL */
-  .reveal { opacity:0; transform:translateY(12px); transition:opacity 0.55s, transform 0.55s; }
-  .reveal.in { opacity:1; transform:translateY(0); }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior:auto; } * { transition:none !important; } }
 
-  /* COMMENTS */
-  .comments-inner { padding:1.6rem 1.5rem; }
-  .comments-note { font-family:var(--MONO); font-size:0.74rem; color:var(--INK2); line-height:1.75; max-width:560px; margin-bottom:1.1rem; }
-  .code-note { font-family:var(--MONO); font-size:0.74rem; color:var(--INK2); line-height:1.75; max-width:640px; margin:1rem 0 1.2rem; }
-  .comments-body { background:#0d1117; padding:1.2rem 1rem 1.4rem; }
-  .comments-loading { font-family:var(--MONO); font-size:0.72rem; color:#8b949e; text-align:center; padding:1.6rem 1rem; }
-  .comments-loading a { color:#b8c8d0; text-decoration:none; border-bottom:1px solid #3f4954; }
-  .comments-loading a:hover { color:#dfe7eb; border-color:#dfe7eb; }
-  #comments-thread .utterances { max-width:100%; margin:0 auto; }
-
-  /* Respect visitors who prefer reduced motion: show everything immediately */
-  @media (prefers-reduced-motion: reduce) {
-    html { scroll-behavior:auto; }
-    * { animation:none !important; transition:none !important; }
-    .hero-label, h1, .hero-bio, .hero-actions, .data-plate { opacity:1 !important; }
-    .reveal { opacity:1 !important; transform:none !important; }
-  }
-  @keyframes rise { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
-
-  /* LARGE SCREENS — scale the whole design up so 1440p/4K monitors don't get a tiny ribbon */
+  /* LARGE SCREENS: scale up so 1440p / 4K monitors don't get a narrow strip */
   @media (min-width:1600px) {
-    html { font-size:160%; }
-    .wrap, .hero { max-width:1320px; }
+    html { font-size:128%; }
+    .wrap, .nav-inner, .foot { max-width:1320px; }
+    .viewer iframe { height:860px; }
   }
   @media (min-width:2200px) {
-    html { font-size:210%; }
-    .wrap, .hero { max-width:1780px; }
-    .hero-inner { grid-template-columns:1fr 460px; }
-    .exp-grid { grid-template-columns:365px 1fr; }
-    .proj-header, .proj-row { grid-template-columns:260px 1fr 165px; }
-    .sim-frame { height:960px; }
+    html { font-size:170%; }
+    .wrap, .nav-inner, .foot { max-width:1780px; }
+    .sec { grid-template-columns:300px 1fr; }
+    .hero-grid { grid-template-columns:1fr 440px; }
+    .viewer iframe { height:1100px; }
   }
   @media (min-width:3200px) {
-    html { font-size:260%; }
-    .wrap, .hero { max-width:2240px; }
-    .hero-inner { grid-template-columns:1fr 590px; }
-    .exp-grid { grid-template-columns:455px 1fr; }
-    .proj-header, .proj-row { grid-template-columns:325px 1fr 205px; }
-    .sim-frame { height:1250px; }
+    html { font-size:230%; }
+    .wrap, .nav-inner, .foot { max-width:2300px; }
+    .viewer iframe { height:1400px; }
   }
 
-  /* collapse nav to hamburger before the links can crowd the bar */
-  @media (max-width:1060px) {
+  @media (max-width:980px) {
     .nav-links { display:none; }
     .hamburger { display:flex; }
+    .sec { grid-template-columns:1fr; gap:1.4rem; }
+    .sec > h2 { position:static; }
+    .hero-grid { grid-template-columns:1fr; gap:2.5rem; }
+    .facts { max-width:30rem; }
   }
-  @media (max-width:768px) {
-    nav { padding:0 1.2rem; }
-    .nav-links { display:none; }
-    .hamburger { display:flex; }
-    .hero { padding:5.5rem 1.2rem 4rem; }
-    h1 { font-size:clamp(3rem,14vw,5rem); }
-    .hero-inner { grid-template-columns:1fr; gap:2rem; }
-    .hero { padding:5.5rem 1.2rem 3.5rem; min-height:auto; }
-    .data-plate { display:none; }
-    .wrap { padding:0 1.2rem; }
-    section { padding:3.5rem 0 3rem; background-color:var(--BG); }
-    .exp-grid { grid-template-columns:1fr; }
-    .exp-meta { border-right:none; border-bottom:2px solid var(--GAP); }
-    .proj-header { display:none; }
-    .proj-row { grid-template-columns:1fr; }
-    .proj-cell { border-right:none; border-bottom:1px solid rgba(0,0,0,0.1); }
-    .proj-cell:last-child { border-bottom:none; text-align:left; }
-    .apps-grid { grid-template-columns:1fr; }
-    .lang-grid { grid-template-columns:repeat(2,1fr); }
-    .contact-halves { grid-template-columns:1fr; }
-    footer { flex-direction:column; gap:0.3rem; text-align:center; padding:0.8rem 1.2rem; }
-  }
-  @media (max-width:380px) {
-    h1 { font-size:2.9rem; }
-    .hero { padding:5.5rem 0.9rem 3rem; }
-    .wrap { padding:0 0.9rem; }
+  @media (max-width:720px) {
+    .wrap, .nav-inner, .foot { padding-left:1rem; padding-right:1rem; }
+    section { padding:3.2rem 0; }
+    .hero { padding:3.5rem 0 3rem; }
+    .hero-intro { font-size:1.15rem; }
+    .two-col, .demo-grid, .contact-grid { grid-template-columns:1fr; }
+    .viewer iframe { height:600px; }
+    .skills th { width:7rem; }
+    .form input, .form textarea { font-size:16px; } /* stops iOS zoom on focus */
+    .foot { flex-direction:column; }
   }
 </style>
 </head>
 <body>
 
 <nav>
-  <a href="#" class="nav-name">Lehel Balog</a>
-  <ul class="nav-links">
-    <li><a href="#skills"     data-en="Skills"      data-de="Fähigkeiten">Skills</a></li>
-    <li><a href="#experience" data-en="Experience"  data-de="Erfahrung">Experience</a></li>
-    <li><a href="#education"  data-en="Education"   data-de="Ausbildung">Education</a></li>
-    <li><a href="#projects"   data-en="Projects"    data-de="Projekte">Projects</a></li>
-    <li><a href="#apps"       data-en="Apps"        data-de="Apps">Apps</a></li>
-    <li><a href="#code"       data-en="Code"        data-de="Code">Code</a></li>
-    <li><a href="#contact"    data-en="Contact"     data-de="Kontakt">Contact</a></li>
-    <li><a href="#comments"   data-en="Comments"    data-de="Kommentare">Comments</a></li>
-  </ul>
-  <div class="nav-right">
-    <div class="lang-toggle">
-      <button class="lang-btn active" onclick="setLang('en')">EN</button>
-      <button class="lang-btn"        onclick="setLang('de')">DE</button>
+  <div class="nav-inner">
+    <a href="#top" class="nav-name">Lehel Balog</a>
+    <ul class="nav-links">
+      <li><a href="#experience"><span data-l="en">Experience</span><span data-l="de">Erfahrung</span></a></li>
+      <li><a href="#skills"><span data-l="en">Skills</span><span data-l="de">Kenntnisse</span></a></li>
+      <li><a href="#rotary-knife"><span data-l="en">Side project</span><span data-l="de">Eigenes Projekt</span></a></li>
+      <li><a href="#demos">Demos</a></li>
+      <li><a href="#contact"><span data-l="en">Contact</span><span data-l="de">Kontakt</span></a></li>
+    </ul>
+    <div class="nav-right">
+      <div class="lang-toggle">
+        <button type="button" class="lang-btn" data-set-lang="en">EN</button>
+        <button type="button" class="lang-btn" data-set-lang="de">DE</button>
+      </div>
+      <button type="button" class="theme-btn" aria-label="Switch theme">☾</button>
+      <button type="button" class="hamburger" id="hamburger" aria-label="Menu"><span></span><span></span><span></span></button>
     </div>
-    <button type="button" class="theme-btn" aria-label="Switch design">☾</button>
-    <button class="hamburger" id="hamburger" aria-label="Menu">
-      <span></span><span></span><span></span>
-    </button>
   </div>
 </nav>
 
 <div class="mobile-menu" id="mobileMenu">
-  <a href="#skills"     onclick="closeMenu()" data-en="Skills"      data-de="Fähigkeiten">Skills</a>
-  <a href="#experience" onclick="closeMenu()" data-en="Experience"  data-de="Erfahrung">Experience</a>
-  <a href="#education"  onclick="closeMenu()" data-en="Education"   data-de="Ausbildung">Education</a>
-  <a href="#projects"   onclick="closeMenu()" data-en="Projects"    data-de="Projekte">Projects</a>
-  <a href="#apps"       onclick="closeMenu()" data-en="Apps"        data-de="Apps">Apps</a>
-  <a href="#code"       onclick="closeMenu()" data-en="Code"        data-de="Code">Code</a>
-  <a href="#contact"    onclick="closeMenu()" data-en="Contact"     data-de="Kontakt">Contact</a>
-  <a href="#comments"   onclick="closeMenu()" data-en="Comments"    data-de="Kommentare">Comments</a>
-  <div class="mobile-menu-footer">
-    <button class="lang-btn active" onclick="setLang('en')">EN</button>
-    <button class="lang-btn"        onclick="setLang('de')">DE</button>
-    <button type="button" class="theme-btn" aria-label="Switch design">☾</button>
-  </div>
+  <a href="#experience"><span data-l="en">Experience</span><span data-l="de">Erfahrung</span></a>
+  <a href="#skills"><span data-l="en">Skills</span><span data-l="de">Kenntnisse</span></a>
+  <a href="#rotary-knife"><span data-l="en">Side project</span><span data-l="de">Eigenes Projekt</span></a>
+  <a href="#demos">Demos</a>
+  <a href="#how-i-work"><span data-l="en">How I work</span><span data-l="de">Arbeitsweise</span></a>
+  <a href="#contact"><span data-l="en">Contact</span><span data-l="de">Kontakt</span></a>
+  <a href="#comments"><span data-l="en">Guestbook</span><span data-l="de">Gästebuch</span></a>
 </div>
+
+<main id="top">
 
 <!-- HERO -->
-<div class="hero">
-  <div class="hero-inner">
+<header class="hero">
+  <div class="wrap hero-grid">
     <div>
-      <p class="hero-label" data-en="PLC Programmer · Siemens TIA Portal" data-de="SPS-Programmierer · Siemens TIA Portal">PLC Programmer · Siemens TIA Portal</p>
-      <h1>Lehel<br><em>Balog</em></h1>
-      <p class="hero-bio" data-en="PLC programmer at Metzner Maschinenbau GmbH with over twelve years of experience in Siemens STEP7 / TIA Portal. Main focus: machine programming in SCL, LAD and FBD, plus servo motion control with S7-1500T, safety programming with F-CPUs and industrial communication (OPC UA, PROFINET). Based in the Ulm / Neu-Ulm area, Germany." data-de="SPS-Programmierer bei der Metzner Maschinenbau GmbH mit über zwölf Jahren Erfahrung mit Siemens STEP7 / TIA Portal. Schwerpunkt: Maschinenprogrammierung in SCL, KOP und FUP, dazu Servo-Bewegungsführung mit S7-1500T, Sicherheitsprogrammierung mit F-CPUs und industrielle Kommunikation (OPC UA, PROFINET). Wohnhaft im Raum Ulm / Neu-Ulm.">PLC programmer at Metzner Maschinenbau GmbH with over twelve years of experience in Siemens STEP7 / TIA Portal. Main focus: machine programming in SCL, LAD and FBD, plus servo motion control with S7-1500T, safety programming with F-CPUs and industrial communication (OPC UA, PROFINET). Based in the Ulm / Neu-Ulm area, Germany.</p>
+      <h1>Lehel Balog</h1>
+      <p class="hero-intro" data-l="en">I write the control software for special-purpose machines on Siemens S7. Mostly in SCL, often with servo motion and safety.</p>
+      <p class="hero-intro" data-l="de">Ich schreibe die Steuerungssoftware für Sondermaschinen auf Siemens S7. Meistens in SCL, oft mit Servoachsen und Sicherheitstechnik.</p>
+      <p class="hero-text" data-l="en">I have been programming PLCs since 2014, first in Romania and since 2019 in Germany: water treatment, flour silos, gravel dosing, and since 2022 cutting and forming machines at Metzner Maschinenbau in Neu-Ulm. I take a machine from the first talk with the customer to commissioning on site.</p>
+      <p class="hero-text" data-l="de">Ich programmiere SPS seit 2014, zuerst in Rumänien und seit 2019 in Deutschland: Kläranlagen, Mehlsilos, Dosieranlagen für Schotterwerke und seit 2022 Schneide- und Umformmaschinen bei der Metzner Maschinenbau GmbH in Neu-Ulm. Ich begleite eine Maschine vom ersten Gespräch mit dem Kunden bis zur Inbetriebnahme vor Ort.</p>
       <div class="hero-actions">
-        <a href="#projects" class="btn-primary" data-en="View work"  data-de="Projekte">View work</a>
-        <a href="#contact"  class="btn-ghost"   data-en="Contact"    data-de="Kontakt">Contact</a>
+        <a href="#contact" class="btn"><span data-l="en">Get in touch</span><span data-l="de">Kontakt aufnehmen</span></a>
+        <a href="#rotary-knife" class="btn secondary"><span data-l="en">See a project</span><span data-l="de">Projekt ansehen</span></a>
       </div>
     </div>
-    <div class="data-plate">
-      <div class="dp-row"><span class="dp-k" data-en="Role"       data-de="Position">Role</span>      <span class="dp-v" data-en="PLC Programmer" data-de="SPS-Programmierer">PLC Programmer</span></div>
-      <div class="dp-row"><span class="dp-k" data-en="Company"    data-de="Firma">Company</span>      <span class="dp-v">Metzner Maschinenbau</span></div>
-      <div class="dp-row"><span class="dp-k" data-en="Experience" data-de="Erfahrung">Experience</span><span class="dp-v" data-en="12+ years" data-de="12+ Jahre">12+ years</span></div>
-      <div class="dp-row"><span class="dp-k" data-en="Location"   data-de="Standort">Location</span>  <span class="dp-v">Ulm / Neu-Ulm, DE</span></div>
-      <div class="dp-row"><span class="dp-k">Stack</span>                                              <span class="dp-v">TIA Portal · S7-1500T</span></div>
-      <div class="dp-row"><span class="dp-k" data-en="Focus"      data-de="Fokus">Focus</span>        <span class="dp-v">SCL · Motion · Safety</span></div>
-      <div class="dp-row"><span class="dp-k" data-en="Languages"  data-de="Sprachen">Languages</span> <span class="dp-v">HU · DE · EN · RO</span></div>
-    </div>
+    <dl class="facts">
+      <div><dt data-l="en">Now</dt><dt data-l="de">Aktuell</dt><dd><span data-l="en">PLC programmer at Metzner Maschinenbau</span><span data-l="de">SPS-Programmierer bei Metzner Maschinenbau</span></dd></div>
+      <div><dt data-l="en">Experience</dt><dt data-l="de">Erfahrung</dt><dd><span data-l="en">12 years, since 2014</span><span data-l="de">12 Jahre, seit 2014</span></dd></div>
+      <div><dt data-l="en">Machines</dt><dt data-l="de">Maschinen</dt><dd><span data-l="en">nearly 40 at Metzner alone</span><span data-l="de">knapp 40 allein bei Metzner</span></dd></div>
+      <div><dt data-l="en">Main tools</dt><dt data-l="de">Werkzeuge</dt><dd>TIA Portal, <span class="nw">S7-1500T</span>, F-CPU</dd></div>
+      <div><dt data-l="en">Based in</dt><dt data-l="de">Wohnort</dt><dd><span data-l="en">Ulm / Neu-Ulm, Germany</span><span data-l="de">Raum Ulm / Neu-Ulm</span></dd></div>
+      <div><dt data-l="en">Languages</dt><dt data-l="de">Sprachen</dt><dd><span data-l="en">Hungarian, German, English, Romanian</span><span data-l="de">Ungarisch, Deutsch, Englisch, Rumänisch</span></dd></div>
+    </dl>
   </div>
-</div>
-
-<hr>
-
-<!-- SKILLS -->
-<section id="skills">
-  <div class="wrap">
-    <div class="sec-head reveal">
-      <span class="sec-num">01</span>
-      <h2 class="sec-title" data-en="Skills &amp; Tools" data-de="Fähigkeiten &amp; Tools">Skills &amp; Tools</h2>
-    </div>
-    <div class="plate reveal">
-      <div class="skills-grid">
-        <div class="skill-row"><span class="skill-label">Siemens STEP7 / TIA Portal</span> <span class="skill-pill core" data-en="Core" data-de="Kern">Core</span></div>
-        <div class="skill-row"><span class="skill-label" data-en="SCL · LAD · FBD · STL" data-de="SCL · KOP · FUP · AWL">SCL · LAD · FBD · STL</span> <span class="skill-pill core" data-en="Core" data-de="Kern">Core</span></div>
-        <div class="skill-row"><span class="skill-label">S7-1200 / S7-1500 / S7-1500T</span> <span class="skill-pill core" data-en="Core" data-de="Kern">Core</span></div>
-        <div class="skill-row"><span class="skill-label">Motion Control · TOs · MC_</span> <span class="skill-pill core" data-en="Core" data-de="Kern">Core</span></div>
-        <div class="skill-row"><span class="skill-label">SIMATIC Safety · F-CPUs</span>   <span class="skill-pill core" data-en="Core" data-de="Kern">Core</span></div>
-        <div class="skill-row"><span class="skill-label">WinCC · WinCC flexible · SCADA</span> <span class="skill-pill core" data-en="Core" data-de="Kern">Core</span></div>
-        <div class="skill-row"><span class="skill-label">OPC UA · PROFINET · PROFIBUS</span> <span class="skill-pill core" data-en="Core" data-de="Kern">Core</span></div>
-        <div class="skill-row"><span class="skill-label" data-en="CAN bus · Modbus · IO-Link" data-de="CAN-Bus · Modbus · IO-Link">CAN bus · Modbus · IO-Link</span> <span class="skill-pill core" data-en="Core" data-de="Kern">Core</span></div>
-        <div class="skill-row"><span class="skill-label">S7-PLCSIM Advanced</span>        <span class="skill-pill core" data-en="Core" data-de="Kern">Core</span></div>
-        <div class="skill-row"><span class="skill-label">Python · Java · C# · SQL</span>  <span class="skill-pill" data-en="Basic" data-de="Grundkenntnisse">Basic</span></div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<hr>
+</header>
 
 <!-- EXPERIENCE -->
 <section id="experience">
-  <div class="wrap">
-    <div class="sec-head reveal"><span class="sec-num">02</span><h2 class="sec-title" data-en="Experience" data-de="Erfahrung">Experience</h2></div>
-    <div class="plate reveal">
-      <div class="exp-block"><div class="exp-grid">
-        <div class="exp-meta">
-          <div class="exp-date">09.2022 – <span data-en="Present" data-de="Heute">Present</span></div>
-          <div class="exp-company">Metzner Maschinenbau GmbH</div>
-          <div class="exp-location" data-en="Neu-Ulm, Germany" data-de="Neu-Ulm, Deutschland">Neu-Ulm, Germany</div>
-          <div class="exp-role" data-en="PLC Programmer" data-de="SPS-Programmierer">PLC Programmer</div>
-        </div>
-        <div class="exp-content"><ul class="exp-list">
-          <li data-en="Development of control software for 25+ special-purpose machines with Siemens TIA Portal (SCL, FBD, LAD)" data-de="Entwicklung von Steuerungssoftware für über 25 Sondermaschinen mit Siemens TIA Portal (SCL, FUP, KOP)">Development of control software for 25+ special-purpose machines with Siemens TIA Portal (SCL, FBD, LAD)</li>
-          <li data-en="Design of operator interfaces (HMI) and parameterization of stepper and servo motors" data-de="HMI-Gestaltung und Parametrierung von Schritt- und Servomotoren">Design of operator interfaces (HMI) and parameterization of stepper and servo motors</li>
-          <li data-en="Selection and sizing of individual components (motor controllers, PLCs, sensors)" data-de="Auswahl und Auslegung von Einzelkomponenten (Motorregler, Steuerungen, Sensorik)">Selection and sizing of individual components (motor controllers, PLCs, sensors)</li>
-          <li data-en="Implementation of OPC UA communication; connection via PROFINET incl. PN/PN coupler, PROFIBUS, CAN bus, Modbus and IO-Link" data-de="Umsetzung von OPC-UA-Kommunikation; Anbindung über PROFINET inkl. PN/PN-Koppler, PROFIBUS, CAN-Bus, Modbus und IO-Link">Implementation of OPC UA communication; connection via PROFINET incl. PN/PN coupler, PROFIBUS, CAN bus, Modbus and IO-Link</li>
-          <li data-en="Commissioning in-house and at the customer&#x27;s site, international customer support" data-de="Inbetriebnahme im Haus und beim Kunden, internationale Kundenbetreuung">Commissioning in-house and at the customer's site, international customer support</li>
-          <li data-en="Independent project execution with customers and suppliers according to company standards" data-de="Selbständige Projektabwicklung mit Kunden und Lieferanten nach Firmenstandards">Independent project execution with customers and suppliers according to company standards</li>
-          <li data-en="Documentation and archiving of programs and motor parameters" data-de="Dokumentation und Archivierung von Programmen und Motorparametern">Documentation and archiving of programs and motor parameters</li>
-        </ul></div>
-      </div></div>
-      <div class="exp-block"><div class="exp-grid">
-        <div class="exp-meta">
-          <div class="exp-date">09.2019 – 08.2022</div>
-          <div class="exp-company">Rothenbacher GmbH</div>
-          <div class="exp-location" data-en="Dornstadt, Germany" data-de="Dornstadt, Deutschland">Dornstadt, Germany</div>
-          <div class="exp-role" data-en="PLC Programmer / SW Dev" data-de="SPS-Programmierer / SW-Entwickler">PLC Programmer / SW Dev</div>
-        </div>
-        <div class="exp-content"><ul class="exp-list">
-          <li data-en="Design, development and optimization of control programs (Siemens S7) – standardized and modular" data-de="Konzeption, Entwicklung und Optimierung von Regel- und Steuerprogrammen (Siemens S7) – standardisiert und modular">Design, development and optimization of control programs (Siemens S7) – standardized and modular</li>
-          <li data-en="Process visualization (WinCC, SCADA)" data-de="Visualisierung von Abläufen (WinCC, SCADA)">Process visualization (WinCC, SCADA)</li>
-          <li data-en="Independent fault analysis and troubleshooting" data-de="Eigenständige Fehleranalyse und Fehlerbehebung">Independent fault analysis and troubleshooting</li>
-          <li data-en="Further development of existing plants and customer consulting" data-de="Weiterentwicklung bestehender Anlagen und Kundenberatung">Further development of existing plants and customer consulting</li>
-          <li data-en="Close collaboration with other departments in project execution" data-de="Enge Zusammenarbeit mit anderen Abteilungen in der Projektabwicklung">Close collaboration with other departments in project execution</li>
-        </ul></div>
-      </div></div>
-      <div class="exp-block"><div class="exp-grid">
-        <div class="exp-meta">
-          <div class="exp-date">09.2014 – 08.2019</div>
-          <div class="exp-company">Technosam SRL</div>
-          <div class="exp-location" data-en="Satu Mare, Romania" data-de="Satu Mare, Rumänien">Satu Mare, Romania</div>
-          <div class="exp-role" data-en="PLC Programmer / SW Dev" data-de="SPS-Programmierer / SW-Entwickler">PLC Programmer / SW Dev</div>
-        </div>
-        <div class="exp-content"><ul class="exp-list">
-          <li data-en="Development, optimization and modification of control programs – from clarifying requirements through concept and schedule to implementation, often as project lead including coordination of colleagues and external companies" data-de="Entwicklung, Optimierung und Änderung von Steuerprogrammen – von der Anforderungsklärung über Konzept und Zeitplan bis zur Umsetzung, häufig in der Projektleitung inkl. Koordination von Mitarbeitern und externen Firmen">Development, optimization and modification of control programs – from clarifying requirements through concept and schedule to implementation, often as project lead including coordination of colleagues and external companies</li>
-          <li data-en="Lead programmer for two programmers: technical guidance, training and support" data-de="Leitender Programmierer für zwei Programmierer: fachliche Anleitung, Einarbeitung und Unterstützung">Lead programmer for two programmers: technical guidance, training and support</li>
-          <li data-en="Simulation, testing and commissioning at the customer&#x27;s site; program documentation and operating manuals" data-de="Simulation, Test und Inbetriebnahme beim Kunden; Programmdokumentation und Bedienhandbuch">Simulation, testing and commissioning at the customer's site; program documentation and operating manuals</li>
-          <li data-en="Maintenance: servicing, repair and installation; fault diagnosis and troubleshooting on controllers and components" data-de="Instandhaltung: Wartung, Reparatur und Montage; Störungsanalyse und -behebung an Steuerungen und Komponenten">Maintenance: servicing, repair and installation; fault diagnosis and troubleshooting on controllers and components</li>
-          <li data-en="Process visualization and customer consulting" data-de="Visualisierung von Abläufen und Kundenberatung">Process visualization and customer consulting</li>
-        </ul></div>
-      </div></div>
+  <div class="wrap sec">
+    <h2><span data-l="en">Experience</span><span data-l="de">Erfahrung</span></h2>
+    <div>
+      <article class="job">
+        <h3>Metzner Maschinenbau GmbH</h3>
+        <p class="job-meta"><span data-l="en">PLC programmer, Neu-Ulm, since 09.2022</span><span data-l="de">SPS-Programmierer, Neu-Ulm, seit 09.2022</span></p>
+        <p data-l="en">Control software for nearly 40 special-purpose machines in TIA Portal (SCL, FBD, LAD). Besides the program I size the drives, PLCs and sensors, design the HMI, set up the stepper and servo drives and connect the machine over OPC UA, PROFINET (also with PN/PN couplers), PROFIBUS, CAN bus, Modbus or IO-Link. Commissioning happens in our hall and at the customer's site, in Germany and abroad.</p>
+        <p data-l="de">Steuerungssoftware für knapp 40 Sondermaschinen in TIA Portal (SCL, FUP, KOP). Neben dem Programm lege ich Antriebe, Steuerungen und Sensorik aus, gestalte die HMI, parametriere Schritt- und Servomotoren und binde die Maschine über OPC UA, PROFINET (auch mit PN/PN-Koppler), PROFIBUS, CAN-Bus, Modbus oder IO-Link an. Die Inbetriebnahme mache ich im Haus und beim Kunden, im In- und Ausland.</p>
+        <h4><span data-l="en">Machines I worked on</span><span data-l="de">Maschinen, an denen ich gearbeitet habe</span></h4>
+        <ul class="list" data-l="en">
+          <li><strong>Production line for aluminium parts.</strong> Feed belt, eccentric knife on a cam disc and a punch. Every part is checked for length and hole position, and bad ones are blown out by a fast valve. Synchronizing the belt with the knife raised the parts per minute.</li>
+          <li><strong>Dynamite cutting machine.</strong> High-speed cutting of explosives with servo motion and an F-CPU.</li>
+          <li><strong>Pipe, cable and rubber processing.</strong> Servo cutting, stripping and forming. On one rubber cutter we went from 57 to 63 m/min, about 10 % more, together with the mechanical designers.</li>
+          <li><strong>Better cam profiles.</strong> S-curves instead of trapezoid ramps, so the motion is smoother and motors and mechanics wear less.</li>
+          <li><strong>Calculation tools for sales and design.</strong> Machine limits like line speed and parts per minute on the spot, so sales can answer a customer straight away.</li>
+        </ul>
+        <ul class="list" data-l="de">
+          <li><strong>Fertigungsanlage für Aluminiumteile.</strong> Zuführband, Exzentermesser mit Kurvenscheibe und Locher. Jedes Teil wird auf Länge und Lochposition geprüft, Ausschuss wird über ein schnelles Ventil ausgeblasen. Durch die Synchronisierung von Band und Messer stieg die Stückzahl pro Minute.</li>
+          <li><strong>Dynamit-Schneidemaschine.</strong> Schnelles Schneiden von Sprengstoff mit Servoachsen und F-CPU.</li>
+          <li><strong>Rohr-, Kabel- und Gummiverarbeitung.</strong> Servogesteuertes Schneiden, Abisolieren und Umformen. An einer Gummischneidemaschine ging es zusammen mit der Konstruktion von 57 auf 63 m/min, also etwa 10 % mehr.</li>
+          <li><strong>Bessere Kurvenscheiben.</strong> S-Kurven statt Trapezrampen, damit die Bewegung ruhiger läuft und Motoren und Mechanik weniger verschleißen.</li>
+          <li><strong>Berechnungstools für Vertrieb und Konstruktion.</strong> Maschinengrenzen wie Liniengeschwindigkeit und Stück pro Minute sofort, damit der Vertrieb dem Kunden direkt antworten kann.</li>
+        </ul>
+      </article>
+
+      <article class="job">
+        <h3>Rothenbacher GmbH</h3>
+        <p class="job-meta"><span data-l="en">PLC programmer and software developer, Dornstadt, 09.2019 to 08.2022</span><span data-l="de">SPS-Programmierer und Softwareentwickler, Dornstadt, 09.2019 bis 08.2022</span></p>
+        <p data-l="en">Standardized, modular S7 programs, visualization in WinCC and SCADA, fault finding, extensions of existing plants and advice for customers, in close contact with the other departments.</p>
+        <p data-l="de">Standardisierte, modulare S7-Programme, Visualisierung in WinCC und SCADA, Fehlersuche, Erweiterung bestehender Anlagen und Kundenberatung, in enger Abstimmung mit den anderen Abteilungen.</p>
+        <h4><span data-l="en">Plants and machines</span><span data-l="de">Anlagen und Maschinen</span></h4>
+        <ul class="list" data-l="en">
+          <li><strong>Flour silo plant.</strong> Transport into the silos, storage of mixtures and truck loading, with its own visualization.</li>
+          <li><strong>Dosing and mixing plant for gravel works.</strong> Different aggregate mixtures, S7 with WinCC 7.3.</li>
+          <li><strong>Tube end forming machine.</strong> Several shapes on the tube end, S7 with a WinCC panel.</li>
+          <li><strong>Grain puffing plant.</strong> Grains expanded with steam and pressure.</li>
+          <li><strong>SQL to PLC link.</strong> Production and recipe data in both directions between an SQL database and the S7.</li>
+        </ul>
+        <ul class="list" data-l="de">
+          <li><strong>Mehlsiloanlage.</strong> Transport in die Silos, Lagerung von Mischungen und Lkw-Verladung, mit eigener Visualisierung.</li>
+          <li><strong>Dosier- und Mischanlage für Schotterwerke.</strong> Verschiedene Korngemische, S7 mit WinCC 7.3.</li>
+          <li><strong>Rohrendenumformmaschine.</strong> Verschiedene Formen am Rohrende, S7 mit WinCC-Panel.</li>
+          <li><strong>Puffing-Anlage.</strong> Expansion von Körnern mit Dampf und Druck.</li>
+          <li><strong>SQL-SPS-Kopplung.</strong> Produktions- und Rezeptdaten in beide Richtungen zwischen SQL-Datenbank und S7.</li>
+        </ul>
+      </article>
+
+      <article class="job">
+        <h3>Technosam SRL</h3>
+        <p class="job-meta"><span data-l="en">PLC programmer and software developer, Satu Mare (Romania), 09.2014 to 08.2019</span><span data-l="de">SPS-Programmierer und Softwareentwickler, Satu Mare (Rumänien), 09.2014 bis 08.2019</span></p>
+        <p data-l="en">Often the project lead: requirements, concept, schedule and implementation, with colleagues and outside companies to coordinate. Lead programmer for two programmers. Simulation, tests and commissioning on site, program documentation and operating manuals, plus maintenance and repair.</p>
+        <p data-l="de">Häufig in der Projektleitung: Anforderungen, Konzept, Zeitplan und Umsetzung, inklusive Koordination von Kollegen und Fremdfirmen. Leitender Programmierer für zwei Programmierer. Simulation, Test und Inbetriebnahme vor Ort, Programmdokumentation und Bedienhandbücher, dazu Wartung und Reparatur.</p>
+        <h4><span data-l="en">Plants and machines</span><span data-l="de">Anlagen und Maschinen</span></h4>
+        <ul class="list" data-l="en">
+          <li><strong>Wastewater treatment plants.</strong> Mechanical, biological and chemical stages, alarm handling and remote access.</li>
+          <li><strong>Municipal water supply.</strong> SCADA for monitoring and controlling the network.</li>
+          <li><strong>Flour transport and bread baking plants.</strong></li>
+          <li><strong>Gomma T gluing machine.</strong> Adhesive sprayed onto car parts, ATEX rotary table, recipe handling, operating manual.</li>
+        </ul>
+        <ul class="list" data-l="de">
+          <li><strong>Kläranlagen.</strong> Mechanische, biologische und chemische Reinigungsstufen, Alarmmanagement und Fernzugriff.</li>
+          <li><strong>Städtische Wasserversorgung.</strong> SCADA zur Überwachung und Steuerung des Netzes.</li>
+          <li><strong>Mehltransport und Brotbackanlagen.</strong></li>
+          <li><strong>Klebemaschine Gomma T.</strong> Sprühauftrag von Klebstoff auf Autoteile, ATEX-Drehteller, Rezepturverwaltung, Bedienhandbuch.</li>
+        </ul>
+      </article>
+
+      <article class="job" id="education">
+        <h3>Sapientia Hungarian University of Transylvania</h3>
+        <p class="job-meta"><span data-l="en">Târgu Mureș (Romania), 10.2010 to 06.2014</span><span data-l="de">Târgu Mureș (Rumänien), 10.2010 bis 06.2014</span></p>
+        <p data-l="en">Bachelor of Engineering in Automation and Applied Informatics.</p>
+        <p data-l="de">Bachelor of Engineering, Automatisierung und Angewandte Informatik.</p>
+      </article>
     </div>
   </div>
 </section>
 
-<hr>
-
-<!-- EDUCATION -->
-<section id="education">
-  <div class="wrap">
-    <div class="sec-head reveal"><span class="sec-num">03</span><h2 class="sec-title" data-en="Education" data-de="Ausbildung">Education</h2></div>
-    <div class="plate reveal">
-      <div class="exp-block"><div class="exp-grid">
-        <div class="exp-meta">
-          <div class="exp-date">10.2010 – 06.2014</div>
-          <div class="exp-company">Sapientia University</div>
-          <div class="exp-location" data-en="Târgu Mureș, Romania" data-de="Târgu Mureș, Rumänien">Târgu Mureș, Romania</div>
-          <div class="exp-role">B.Eng. Automation</div>
-        </div>
-        <div class="exp-content"><ul class="exp-list">
-          <li data-en="Bachelor of Engineering — Automation and Applied Informatics, Sapientia Hungarian University of Transylvania" data-de="Bachelor of Engineering — Automation und Angewandte Informatik, Sapientia Ungarische Universität Siebenbürgen">Bachelor of Engineering — Automation and Applied Informatics, Sapientia Hungarian University of Transylvania</li>
-        </ul></div>
-      </div></div>
+<!-- SKILLS -->
+<section id="skills">
+  <div class="wrap sec">
+    <h2><span data-l="en">Skills</span><span data-l="de">Kenntnisse</span></h2>
+    <div>
+      <table class="skills">
+        <tr><th>PLC</th><td>S7-1200, S7-1500, S7-1500T, ET 200, F-CPUs, S7-PLCSIM Advanced</td></tr>
+        <tr><th><span data-l="en">Programming</span><span data-l="de">Programmierung</span></th><td><span data-l="en">STEP 7 and TIA Portal in SCL, LAD, FBD and STL</span><span data-l="de">STEP 7 und TIA Portal in SCL, KOP, FUP und AWL</span></td></tr>
+        <tr><th>Motion</th><td><span data-l="en">Technology objects and MC instructions, camming and gearing, stepper and servo setup, drive sizing</span><span data-l="de">Technologieobjekte und MC-Befehle, Kurvenscheiben und Gleichlauf, Inbetriebnahme von Schritt- und Servoantrieben, Antriebsauslegung</span></td></tr>
+        <tr><th>Safety</th><td><span data-l="en">SIMATIC Safety, F-programs, STO and SS1</span><span data-l="de">SIMATIC Safety, F-Programme, STO und SS1</span></td></tr>
+        <tr><th>HMI</th><td>WinCC, WinCC flexible, SCADA</td></tr>
+        <tr><th><span data-l="en">Networks</span><span data-l="de">Kommunikation</span></th><td><span data-l="en">OPC UA, PROFINET with PN/PN couplers, PROFIBUS, CAN bus, Modbus, IO-Link, S7-1500 Web API</span><span data-l="de">OPC UA, PROFINET mit PN/PN-Koppler, PROFIBUS, CAN-Bus, Modbus, IO-Link, S7-1500 Web API</span></td></tr>
+        <tr><th><span data-l="en">Electrical</span><span data-l="de">Elektrik</span></th><td><span data-l="en">Reading circuit diagrams every day for I/O assignment, commissioning and fault finding</span><span data-l="de">Stromlaufpläne lesen, täglich: E/A-Belegung, Inbetriebnahme und Fehlersuche</span></td></tr>
+        <tr><th>Software</th><td><span data-l="en">C# and .NET 8, Python, SQL, TypeScript. Good enough for tools and the side projects below, not my main job.</span><span data-l="de">C# und .NET 8, Python, SQL, TypeScript. Genug für Tools und die eigenen Projekte unten, nicht mein Hauptberuf.</span></td></tr>
+        <tr><th><span data-l="en">Languages</span><span data-l="de">Sprachen</span></th><td><span data-l="en">Hungarian (native), English (C1), German (B2), Romanian (B2)</span><span data-l="de">Ungarisch (Muttersprache), Englisch (C1), Deutsch (B2), Rumänisch (B2)</span></td></tr>
+      </table>
     </div>
   </div>
 </section>
 
-<hr>
-
-<!-- PROJECTS -->
-<section id="projects">
-  <div class="wrap">
-    <div class="sec-head reveal"><span class="sec-num">04</span><h2 class="sec-title" data-en="Projects" data-de="Projekte">Projects</h2></div>
-    <div class="plate reveal">
-      <div class="proj-header">
-        <div class="proj-th" data-en="Company" data-de="Firma">Company</div>
-        <div class="proj-th" data-en="Project" data-de="Projekt">Project</div>
-        <div class="proj-th" data-en="Stack"   data-de="Technologie">Stack</div>
+<!-- SIDE PROJECT: ROTARY KNIFE ON A REAL S7-1500T -->
+<section id="rotary-knife">
+  <div class="wrap sec">
+    <h2><span data-l="en">Side project</span><span data-l="de">Eigenes Projekt</span></h2>
+    <div>
+      <h3><span data-l="en">A rotary knife, from a browser simulation to an S7-1500T</span><span data-l="de">Ein Rotationsmesser, von der Browser-Simulation zur S7-1500T</span></h3>
+      <div class="prose" style="margin-top:0.9rem">
+        <p data-l="en">It started as a simulation of a synchronous rotary knife that runs in the browser (you can try it in the demos below). Then I took the same machine onto real Siemens hardware. Motion and safety now run in an S7-1500T(F), and a .NET 8 operator panel talks to the CPU over the S7-1500 Web API, with Siemens' own client library.</p>
+        <p data-l="de">Angefangen hat es als Simulation eines synchronen Rotationsmessers im Browser (unten bei den Demos zum Ausprobieren). Danach habe ich dieselbe Maschine auf echte Siemens-Hardware gebracht. Bewegung und Sicherheit laufen jetzt in einer S7-1500T(F), und ein .NET-8-Bedienpanel spricht über die S7-1500 Web API mit der CPU, mit der Client-Bibliothek von Siemens.</p>
       </div>
-      <div class="proj-row"><div class="proj-cell"><div class="proj-co">Metzner Maschinenbau</div></div><div class="proj-cell"><div class="proj-name" data-en="Production Line for Aluminium Parts" data-de="Fertigungsanlage für Aluminiumteile">Production Line for Aluminium Parts</div><div class="proj-desc" data-en="Feed belt, eccentric knife with cam disc and punch; inspection of length and hole, rejection of faulty parts via a fast valve mechanism. Maximized output per minute by synchronizing feed belt and knife." data-de="Zuführband, Exzentermesser mit Kurvenscheibe und Locher; Prüfung von Länge und Loch, Ausschleusung fehlerhafter Teile per schnellem Ventilmechanismus. Maximierte Stückzahl pro Minute durch Synchronisierung von Zuführband und Messer.">Feed belt, eccentric knife with cam disc and punch; inspection of length and hole, rejection of faulty parts via a fast valve mechanism. Maximized output per minute by synchronizing feed belt and knife.</div></div><div class="proj-cell"><div class="proj-tech">S7 + Cam</div></div></div>
-      <div class="proj-row"><div class="proj-cell"><div class="proj-co">Metzner Maschinenbau</div></div><div class="proj-cell"><div class="proj-name" data-en="Dynamite Cutting Machine" data-de="Dynamit-Schneidemaschine">Dynamite Cutting Machine</div><div class="proj-desc" data-en="High-speed cutting machine for explosives with servo motion control and strict safety requirements." data-de="Hochgeschwindigkeits-Schneidemaschine für Sprengstoff mit Servo-Bewegungsführung und hohen Sicherheitsanforderungen.">High-speed cutting machine for explosives with servo motion control and strict safety requirements.</div></div><div class="proj-cell"><div class="proj-tech">Servo + F-CPU</div></div></div>
-      <div class="proj-row"><div class="proj-cell"><div class="proj-co">Metzner Maschinenbau</div></div><div class="proj-cell"><div class="proj-name" data-en="Pipe, Cable &amp; Rubber Processing" data-de="Rohr-, Kabel- und Gummiverarbeitung">Pipe, Cable &amp; Rubber Processing</div><div class="proj-desc" data-en="Several machines with servo-controlled cutting, stripping and forming. On a rubber cutting machine, helped raise line speed from 57 to 63 m/min (about +10 %) together with the mechanical design team." data-de="Mehrere Maschinen mit servogesteuertem Schneiden, Abisolieren und Umformen. An einer Gummischneidemaschine Steigerung der Liniengeschwindigkeit von 57 auf 63 m/min (ca. +10 %) gemeinsam mit der Konstruktion.">Several machines with servo-controlled cutting, stripping and forming. On a rubber cutting machine, helped raise line speed from 57 to 63 m/min (about +10 %) together with the mechanical design team.</div></div><div class="proj-cell"><div class="proj-tech">S7 + Servo</div></div></div>
-      <div class="proj-row"><div class="proj-cell"><div class="proj-co">Metzner Maschinenbau</div></div><div class="proj-cell"><div class="proj-name" data-en="Calculation Tools for Sales &amp; Design" data-de="Berechnungstools für Vertrieb und Konstruktion">Calculation Tools for Sales &amp; Design</div><div class="proj-desc" data-en="Quick calculation of machine limits such as speed and parts per minute, so sales can tell customers right away what a machine can achieve." data-de="Schnelle Berechnung der Maschinengrenzen wie Geschwindigkeit und Stück pro Minute, damit der Vertrieb dem Kunden sofort sagen kann, was eine Maschine leistet.">Quick calculation of machine limits such as speed and parts per minute, so sales can tell customers right away what a machine can achieve.</div></div><div class="proj-cell"><div class="proj-tech">Sizing</div></div></div>
-      <div class="proj-row"><div class="proj-cell"><div class="proj-co">Metzner Maschinenbau</div></div><div class="proj-cell"><div class="proj-name" data-en="Improved Cam Calculation" data-de="Verbesserte Kurvenscheibenberechnung">Improved Cam Calculation</div><div class="proj-desc" data-en="S-curve motion profiles instead of simple trapezoidal ramps, for smoother motion and less wear on motors and mechanics." data-de="S-Kurven-Bewegungsprofile statt einfacher Trapezrampen, für ruhigere Bewegungen und weniger Verschleiß an Motoren und Mechanik.">S-curve motion profiles instead of simple trapezoidal ramps, for smoother motion and less wear on motors and mechanics.</div></div><div class="proj-cell"><div class="proj-tech">Motion</div></div></div>
-      <div class="proj-row"><div class="proj-cell"><div class="proj-co">Rothenbacher GmbH</div></div><div class="proj-cell"><div class="proj-name" data-en="Flour Silo Plant" data-de="Mehlsiloanlage">Flour Silo Plant</div><div class="proj-desc" data-en="Flour transport into the silos, storage of mixtures and truck loading, with custom visualization." data-de="Mehltransport in die Silos, Lagerung von Mischungen und Lkw-Verladung, mit eigener Visualisierung.">Flour transport into the silos, storage of mixtures and truck loading, with custom visualization.</div></div><div class="proj-cell"><div class="proj-tech">Siemens S7</div></div></div>
-      <div class="proj-row"><div class="proj-cell"><div class="proj-co">Rothenbacher GmbH</div></div><div class="proj-cell"><div class="proj-name" data-en="Dosing &amp; Mixing Plant for Gravel Works" data-de="Dosier- und Mischanlage für Schotterwerke">Dosing &amp; Mixing Plant for Gravel Works</div><div class="proj-desc" data-en="Dosing of different aggregate mixtures with process visualization." data-de="Dosierung verschiedener Korngemische mit Prozessvisualisierung.">Dosing of different aggregate mixtures with process visualization.</div></div><div class="proj-cell"><div class="proj-tech">S7 + WinCC 7.3</div></div></div>
-      <div class="proj-row"><div class="proj-cell"><div class="proj-co">Rothenbacher GmbH</div></div><div class="proj-cell"><div class="proj-name" data-en="Tube End Forming Machine" data-de="Rohrendenumformmaschine">Tube End Forming Machine</div><div class="proj-desc" data-en="Forming various shapes on the tube end – PLC control and HMI visualization." data-de="Anformen verschiedener Formen am Rohrende – SPS-Steuerung und HMI-Visualisierung.">Forming various shapes on the tube end – PLC control and HMI visualization.</div></div><div class="proj-cell"><div class="proj-tech">S7 + WinCC</div></div></div>
-      <div class="proj-row"><div class="proj-cell"><div class="proj-co">Rothenbacher GmbH</div></div><div class="proj-cell"><div class="proj-name" data-en="Puffing Plant" data-de="Puffing-Anlage">Puffing Plant</div><div class="proj-desc" data-en="Expansion of grains using steam and pressure, with process control and visualization." data-de="Expansion von Körnern mittels Dampf und Druck, mit Prozesssteuerung und Visualisierung.">Expansion of grains using steam and pressure, with process control and visualization.</div></div><div class="proj-cell"><div class="proj-tech">S7 + WinCC</div></div></div>
-      <div class="proj-row"><div class="proj-cell"><div class="proj-co">Rothenbacher GmbH</div></div><div class="proj-cell"><div class="proj-name" data-en="SQL–PLC Communication" data-de="SQL–SPS-Kommunikation">SQL–PLC Communication</div><div class="proj-desc" data-en="Bidirectional data exchange between an SQL database and a Siemens S7 PLC for production data and recipe management." data-de="Bidirektionaler Datenaustausch zwischen SQL-Datenbank und Siemens S7 für Produktionsdaten und Rezeptverwaltung.">Bidirectional data exchange between an SQL database and a Siemens S7 PLC for production data and recipe management.</div></div><div class="proj-cell"><div class="proj-tech">SQL + S7</div></div></div>
-      <div class="proj-row"><div class="proj-cell"><div class="proj-co">Technosam SRL</div></div><div class="proj-cell"><div class="proj-name" data-en="Wastewater Treatment Plants" data-de="Kläranlagen">Wastewater Treatment Plants</div><div class="proj-desc" data-en="Control of mechanical, biological and chemical treatment stages, including alarm management and remote access." data-de="Steuerung mechanischer, biologischer und chemischer Reinigungsstufen inkl. Alarmmanagement und Fernzugriff.">Control of mechanical, biological and chemical treatment stages, including alarm management and remote access.</div></div><div class="proj-cell"><div class="proj-tech">S7 + WinCC</div></div></div>
-      <div class="proj-row"><div class="proj-cell"><div class="proj-co">Technosam SRL</div></div><div class="proj-cell"><div class="proj-name" data-en="Municipal Water Supply" data-de="Städtische Wasserversorgung">Municipal Water Supply</div><div class="proj-desc" data-en="SCADA system for monitoring and controlling the water supply network." data-de="SCADA-System zur Überwachung und Steuerung des Versorgungsnetzes.">SCADA system for monitoring and controlling the water supply network.</div></div><div class="proj-cell"><div class="proj-tech">SCADA</div></div></div>
-      <div class="proj-row"><div class="proj-cell"><div class="proj-co">Technosam SRL</div></div><div class="proj-cell"><div class="proj-name" data-en="Flour Transport &amp; Bread Baking" data-de="Mehltransport und Brotbackanlagen">Flour Transport &amp; Bread Baking</div><div class="proj-desc" data-en="Automation of flour transport and bread-baking plants." data-de="Automatisierung von Mehltransport und Brotbackanlagen.">Automation of flour transport and bread-baking plants.</div></div><div class="proj-cell"><div class="proj-tech">Siemens S7</div></div></div>
-      <div class="proj-row"><div class="proj-cell"><div class="proj-co">Technosam SRL</div></div><div class="proj-cell"><div class="proj-name" data-en="Gluing Machine Gomma T" data-de="Klebemaschine Gomma T">Gluing Machine Gomma T</div><div class="proj-desc" data-en="Spraying of adhesive onto car parts, ATEX rotary table, recipe management; program documentation and operating manual." data-de="Sprühauftrag von Klebstoff auf Autoteile, ATEX-Drehteller, Rezepturverwaltung; Programmdokumentation und Bedienhandbuch.">Spraying of adhesive onto car parts, ATEX rotary table, recipe management; program documentation and operating manual.</div></div><div class="proj-cell"><div class="proj-tech">S7 + HMI</div></div></div>
-    </div>
-  </div>
-</section>
 
-<hr>
-
-<!-- APPS -->
-<section id="apps">
-  <div class="wrap">
-    <div class="sec-head reveal"><span class="sec-num">05</span><h2 class="sec-title" data-en="Apps &amp; Tools" data-de="Apps &amp; Tools">Apps &amp; Tools</h2></div>
-    <div class="plate reveal">
-      <div class="apps-grid">
-        <div class="app-card" style="cursor:pointer" onclick="window.open('https://github.com/Lehel4321','_blank','noopener')">
-          <span class="app-icon">⌨</span>
-          <div><span class="app-badge live" data-en="Open source" data-de="Open Source">Open source</span></div>
-          <div class="app-name" data-en="GitHub Profile" data-de="GitHub-Profil">GitHub Profile</div>
-          <div class="app-desc" data-en="All public projects in one place — rotary knife simulator, packaging line simulator and more, with full source code." data-de="Alle öffentlichen Projekte an einem Ort — Rotationsmesser-Simulator, Verpackungslinien-Simulator und mehr, mit vollständigem Quellcode.">All public projects in one place — rotary knife simulator, packaging line simulator and more, with full source code.</div>
-          <span class="app-cta" data-en="Open GitHub ↗" data-de="GitHub öffnen ↗">Open GitHub ↗</span>
+      <div class="two-col">
+        <div>
+          <h4><span data-l="en">In the PLC (SCL, TIA Portal V21)</span><span data-l="de">In der SPS (SCL, TIA Portal V21)</span></h4>
+          <ul class="list" data-l="en">
+            <li>Four technology objects. The knife follows the feed through <code>MC_CamIn</code>, with homing, phasing and a STOP that always finishes the part in progress.</li>
+            <li>F-program for E-stop, guard locking, SS1 and STO. The panel only reads the safety state and can never acknowledge anything.</li>
+            <li>Watchdog on the panel's heartbeat, and a command handshake with sequence number and acknowledge.</li>
+            <li>OPC UA interface for the customer's MES: machine status, active recipe, recipe load from outside.</li>
+            <li>No global data inside any FB or FC, everything goes through the block interface.</li>
+            <li>The whole program imports and compiles in TIA Portal V21 with 0 errors on a CPU 1511T-1 PN.</li>
+          </ul>
+          <ul class="list" data-l="de">
+            <li>Vier Technologieobjekte. Das Messer folgt dem Vorschub über <code>MC_CamIn</code>, mit Referenzieren, Phasing und einem STOP, der das angefangene Teil immer fertig schneidet.</li>
+            <li>F-Programm für Not-Halt, Zuhaltung, SS1 und STO. Das Panel liest den Sicherheitszustand nur und kann nichts quittieren.</li>
+            <li>Watchdog auf den Heartbeat des Panels und ein Befehls-Handshake mit Sequenznummer und Quittung.</li>
+            <li>OPC-UA-Schnittstelle für das MES des Kunden: Maschinenstatus, aktive Rezeptur, Rezeptur von außen laden.</li>
+            <li>Keine globalen Daten in FBs und FCs, alles läuft über die Bausteinschnittstelle.</li>
+            <li>Das gesamte Programm lässt sich in TIA Portal V21 auf einer CPU 1511T-1 PN importieren und übersetzt mit 0 Fehlern.</li>
+          </ul>
         </div>
-        <div class="app-card" style="cursor:pointer" onclick="document.getElementById('workflow-app').scrollIntoView({behavior:'smooth'})">
-          <span class="app-icon">🗂️</span>
-          <div><span class="app-badge live" data-en="Available" data-de="Verfügbar">Available</span></div>
-          <div class="app-name" data-en="Workflow Tracker" data-de="Workflow Tracker">Workflow Tracker</div>
-          <div class="app-desc" data-en="Automation workflow blueprint tracker with 4-level task hierarchy, timers, problem log and progress dashboards." data-de="Workflow-Blueprint-Tracker mit 4-stufiger Aufgabenhierarchie, Timern, Problem-Log und Fortschritts-Dashboards.">Automation workflow blueprint tracker with 4-level task hierarchy, timers, problem log and progress dashboards.</div>
-          <span class="app-cta" data-en="Open live demo" data-de="Live-Demo öffnen">Open live demo</span>
+        <div>
+          <h4><span data-l="en">In the operator panel (.NET 8, Blazor)</span><span data-l="de">Im Bedienpanel (.NET 8, Blazor)</span></h4>
+          <ul class="list" data-l="en">
+            <li>Cam calculation (synchronous window, VDI 2143 return, a compensated cam for straight cut faces), downloaded to the PLC as a point table.</li>
+            <li>Operator screen with an animated machine, recipes, cut statistics and an alarm history with the Siemens alarm texts.</li>
+            <li>A trend screen modelled on TIA Trace: the last 30 minutes of every signal, cursors, zoom, CSV export.</li>
+            <li>Users and rights like on a Siemens HMI, German and English texts, and an audit log of every changed value.</li>
+            <li>"Ask the machine", a prototype assistant: an operator asks "why did it stop?", it reads alarms, cuts and trends and answers. It can only propose a change, a person has to confirm it.</li>
+            <li>End-to-end tests through the Siemens client against a simulated PLC: cuts within ±0.05 mm, E-stop, overspeed, watchdog.</li>
+          </ul>
+          <ul class="list" data-l="de">
+            <li>Kurvenscheibenberechnung (Synchronbereich, Rücklauf nach VDI 2143, kompensierte Kurve für gerade Schnittflächen), als Stützpunkttabelle in die SPS geladen.</li>
+            <li>Bedienbild mit animierter Maschine, Rezepturen, Schnittstatistik und Alarmhistorie mit den Siemens-Meldetexten.</li>
+            <li>Ein Trendbild nach dem Vorbild von TIA Trace: die letzten 30 Minuten jedes Signals, Cursor, Zoom, CSV-Export.</li>
+            <li>Benutzer und Rechte wie auf einem Siemens-HMI, deutsche und englische Texte und ein Änderungsprotokoll für jeden geänderten Wert.</li>
+            <li>„Frag die Maschine“, ein Assistent als Prototyp: Der Bediener fragt „Warum hat sie angehalten?“, der Assistent liest Alarme, Schnitte und Trends und antwortet. Er kann Änderungen nur vorschlagen, bestätigen muss ein Mensch.</li>
+            <li>End-to-End-Tests über den Siemens-Client gegen eine simulierte SPS: Schnitte innerhalb ±0,05 mm, Not-Halt, Überdrehzahl, Watchdog.</li>
+          </ul>
         </div>
       </div>
+
+      <figure>
+        <img src="/assets/hmi-operator.webp" width="1500" height="1000" loading="lazy" alt="Operator screen of the rotary knife HMI: control buttons, safety state, animated machine, axes table, trend and production counters">
+        <figcaption data-l="en">Operator screen. The knife is cam coupled and running at 60 m/min, 150 cuts per minute.</figcaption>
+        <figcaption data-l="de">Bedienbild. Das Messer ist über die Kurvenscheibe gekoppelt und läuft mit 60 m/min, 150 Schnitte pro Minute.</figcaption>
+      </figure>
+      <figure>
+        <img src="/assets/hmi-trend.webp" width="1600" height="1195" loading="lazy" alt="Trend screen of the rotary knife HMI with speed, following error, torque, feed position and cut length error over time">
+        <figcaption data-l="en">Trend screen. Speeds, following error, torque, cut positions and the length error of every cut.</figcaption>
+        <figcaption data-l="de">Trendbild. Geschwindigkeiten, Schleppfehler, Moment, Schnittpositionen und der Längenfehler jedes Schnitts.</figcaption>
+      </figure>
+
+      <p class="note" data-l="en">The code of this project is not public. A demo package runs on any Windows PC without a PLC, and I am happy to send it. <a href="#contact">Just ask.</a> Next step is a full run on PLCSIM Advanced.</p>
+      <p class="note" data-l="de">Der Code dieses Projekts ist nicht öffentlich. Ein Demo-Paket läuft auf jedem Windows-PC ohne SPS, das schicke ich gerne. <a href="#contact">Einfach fragen.</a> Als Nächstes kommt ein vollständiger Lauf auf PLCSIM Advanced.</p>
     </div>
   </div>
 </section>
 
-<hr>
+<!-- DEMOS -->
+<section id="demos">
+  <div class="wrap sec">
+    <h2>Demos</h2>
+    <div>
+      <div class="prose">
+        <p data-l="en">Machine simulations that run in your browser. Each one has a PLC-style program structure: a fixed scan cycle, function blocks, a safety chain. The concept and the control logic are mine, the code was written with AI support.</p>
+        <p data-l="de">Maschinensimulationen, die im Browser laufen. Jede hat eine SPS-typische Programmstruktur: fester Zyklus, Funktionsbausteine, Sicherheitskette. Konzept und Steuerungslogik sind von mir, der Code ist mit KI-Unterstützung entstanden.</p>
+      </div>
 
-<!-- EXAMPLE PROJECTS — LIVE APPS HOSTED FROM THE OPEN-SOURCE REPOS -->
-<section id="code">
-  <div class="wrap">
-    <div class="sec-head reveal"><span class="sec-num">05e</span><h2 class="sec-title" data-en="Example Projects" data-de="Beispielprojekte">Example Projects</h2></div>
-    <p class="code-note reveal" data-en="My own browser-based machine simulations with a PLC-style program structure. Concept and control logic by me, code written with AI support. Everything runs in the browser." data-de="Eigene browserbasierte Maschinensimulationen mit SPS-typischer Programmstruktur. Konzept und Steuerungslogik von mir, Code KI-gestützt erstellt. Alles läuft direkt im Browser.">My own browser-based machine simulations with a PLC-style program structure. Concept and control logic by me, code written with AI support. Everything runs in the browser.</p>
+      <div class="demo-grid">
+        <article class="demo-card">
+          <button type="button" class="demo-shot" data-demo="/rotary-knife/" data-title="RotaryKnife SYNC" aria-label="Run RotaryKnife SYNC">
+            <img src="/assets/poster-rotary.png" alt="RotaryKnife SYNC preview" width="1240" height="760" loading="lazy">
+          </button>
+          <div class="demo-body">
+            <h3>RotaryKnife SYNC</h3>
+            <p data-l="en">A cam-coupled rotary knife cutting running material. Shows how fast it can cut, how exact every cut is, and why a plain synchronous cam leaves a slanted cut face on thick material.</p>
+            <p data-l="de">Ein über Kurvenscheibe gekoppeltes Rotationsmesser schneidet laufendes Material. Zeigt, wie schnell geschnitten werden kann, wie genau jeder Schnitt ist und warum eine reine Synchronkurve bei dickem Material eine schräge Schnittfläche hinterlässt.</p>
+            <div class="demo-links">
+              <button type="button" class="run" data-demo="/rotary-knife/" data-title="RotaryKnife SYNC"><span data-l="en">Run here</span><span data-l="de">Hier starten</span></button>
+              <a href="/rotary-knife/" target="_blank" rel="noopener"><span data-l="en">New tab</span><span data-l="de">Neuer Tab</span></a>
+              <a href="https://github.com/Lehel4321/rotary-knife" target="_blank" rel="noopener"><span data-l="en">Source</span><span data-l="de">Quellcode</span></a>
+            </div>
+          </div>
+        </article>
 
-    <div class="plate reveal">
-      <div id="motion-app" class="sim-app open">
-        <div class="sim-app-bar">
-          <span class="sim-app-tag">Precision Motion Solver · <span data-en="live demo" data-de="Live-Demo">live demo</span></span>
-          <span class="sim-app-actions">
-            <button type="button" id="motion-fs-btn" class="sim-fullscreen" data-en="⛶ Fullscreen" data-de="⛶ Vollbild">⛶ Fullscreen</button>
-            <a href="/motion-solver/" target="_blank" rel="noopener" class="sim-fullscreen" data-en="New tab ↗" data-de="Neuer Tab ↗">New tab ↗</a>
+        <article class="demo-card">
+          <button type="button" class="demo-shot" data-demo="/packline/" data-title="PackLine CP-6" aria-label="Run PackLine CP-6">
+            <img src="/assets/poster-packline.png" alt="PackLine CP-6 preview" width="1240" height="760" loading="lazy">
+          </button>
+          <div class="demo-body">
+            <h3>PackLine CP-6</h3>
+            <p data-l="en">A six-station carton packing line on an indexing chain: erect, fill, weigh, seal, label, discharge. Sensors, interlocks, faults and OEE react in real time.</p>
+            <p data-l="de">Eine Kartonverpackungslinie mit sechs Stationen an einer Taktkette: Aufrichten, Füllen, Wiegen, Verschließen, Etikettieren, Ausschleusen. Sensoren, Verriegelungen, Störungen und OEE reagieren in Echtzeit.</p>
+            <div class="demo-links">
+              <button type="button" class="run" data-demo="/packline/" data-title="PackLine CP-6"><span data-l="en">Run here</span><span data-l="de">Hier starten</span></button>
+              <a href="/packline/" target="_blank" rel="noopener"><span data-l="en">New tab</span><span data-l="de">Neuer Tab</span></a>
+              <a href="https://github.com/Lehel4321/PackegingSystem" target="_blank" rel="noopener"><span data-l="en">Source</span><span data-l="de">Quellcode</span></a>
+            </div>
+          </div>
+        </article>
+
+        <article class="demo-card">
+          <button type="button" class="demo-shot" data-demo="/motion-solver/" data-title="Precision Motion Solver" aria-label="Run Precision Motion Solver">
+            <img src="/assets/poster-motion.png" alt="Precision Motion Solver preview" width="1240" height="760" loading="lazy">
+          </button>
+          <div class="demo-body">
+            <h3>Precision Motion Solver</h3>
+            <p data-l="en">Jerk-limited S-curve planner for several axes. Enter distance and limits, get the seven-phase profile, the cycle time and which axis is the bottleneck. The other simulations use its math.</p>
+            <p data-l="de">Ruckbegrenzter S-Kurven-Planer für mehrere Achsen. Weg und Grenzwerte eingeben, dann gibt es das Profil mit sieben Phasen, die Taktzeit und die Achse, die bremst. Die anderen Simulationen rechnen damit.</p>
+            <div class="demo-links">
+              <button type="button" class="run" data-demo="/motion-solver/" data-title="Precision Motion Solver"><span data-l="en">Run here</span><span data-l="de">Hier starten</span></button>
+              <a href="/motion-solver/" target="_blank" rel="noopener"><span data-l="en">New tab</span><span data-l="de">Neuer Tab</span></a>
+            </div>
+          </div>
+        </article>
+
+        <article class="demo-card">
+          <button type="button" class="demo-shot" data-demo="/workflow-tracker/" data-title="Workflow Tracker" aria-label="Run Workflow Tracker">
+            <img src="/assets/poster-workflow.png" alt="Workflow Tracker preview" width="1240" height="760" loading="lazy">
+          </button>
+          <div class="demo-body">
+            <h3>Workflow Tracker</h3>
+            <p data-l="en">A planner for automation projects: tasks in four levels, timers, a problem log and progress per project.</p>
+            <p data-l="de">Ein Planer für Automatisierungsprojekte: Aufgaben in vier Ebenen, Timer, ein Problemprotokoll und Fortschritt pro Projekt.</p>
+            <div class="demo-links">
+              <button type="button" class="run" data-demo="/workflow-tracker/" data-title="Workflow Tracker"><span data-l="en">Run here</span><span data-l="de">Hier starten</span></button>
+              <a href="/workflow-tracker/" target="_blank" rel="noopener"><span data-l="en">New tab</span><span data-l="de">Neuer Tab</span></a>
+            </div>
+          </div>
+        </article>
+      </div>
+
+      <div class="viewer" id="viewer">
+        <div class="viewer-bar">
+          <strong id="viewer-title"></strong>
+          <span class="viewer-actions">
+            <button type="button" id="viewer-fs"><span data-l="en">Fullscreen</span><span data-l="de">Vollbild</span></button>
+            <a id="viewer-tab" href="#" target="_blank" rel="noopener"><span data-l="en">New tab</span><span data-l="de">Neuer Tab</span></a>
+            <button type="button" id="viewer-close"><span data-l="en">Close</span><span data-l="de">Schließen</span></button>
           </span>
         </div>
-        <div class="sim-frame-wrap">
-          <button type="button" class="sim-poster" data-frame-id="motion-frame" data-src="/motion-solver/" data-title="Precision Motion Solver">
-            <img src="/assets/poster-motion.png" alt="Precision Motion Solver — app preview" loading="lazy" width="1240" height="760">
-            <span class="sim-poster-btn" data-en="▶&nbsp; Load live demo" data-de="▶&nbsp; Live-Demo laden">▶&nbsp; Load live demo</span>
-          </button>
-        </div>
       </div>
-    </div>
 
-    <div class="plate reveal" style="margin-top:2rem;">
-      <div id="packline-app" class="sim-app open">
-        <div class="sim-app-bar">
-          <span class="sim-app-tag">PackLine CP-6 · <span data-en="live demo" data-de="Live-Demo">live demo</span></span>
-          <span class="sim-app-actions">
-            <a href="https://github.com/Lehel4321/PackegingSystem" target="_blank" rel="noopener" class="sim-fullscreen" data-en="Source ↗" data-de="Quellcode ↗">Source ↗</a>
-            <button type="button" id="packline-fs-btn" class="sim-fullscreen" data-en="⛶ Fullscreen" data-de="⛶ Vollbild">⛶ Fullscreen</button>
-            <a href="/packline/" target="_blank" rel="noopener" class="sim-fullscreen" data-en="New tab ↗" data-de="Neuer Tab ↗">New tab ↗</a>
-          </span>
-        </div>
-        <div class="sim-frame-wrap">
-          <button type="button" class="sim-poster" data-frame-id="packline-frame" data-src="/packline/" data-title="PackLine CP-6">
-            <img src="/assets/poster-packline.png" alt="PackLine CP-6 packaging line simulator — app preview" loading="lazy" width="1240" height="760">
-            <span class="sim-poster-btn" data-en="▶&nbsp; Load live demo" data-de="▶&nbsp; Live-Demo laden">▶&nbsp; Load live demo</span>
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <div class="plate reveal" style="margin-top:2rem;">
-      <div id="workflow-app" class="sim-app open">
-        <div class="sim-app-bar">
-          <span class="sim-app-tag">Workflow Tracker · <span data-en="live demo" data-de="Live-Demo">live demo</span></span>
-          <span class="sim-app-actions">
-            <button type="button" id="workflow-fs-btn" class="sim-fullscreen" data-en="⛶ Fullscreen" data-de="⛶ Vollbild">⛶ Fullscreen</button>
-            <a href="/workflow-tracker/" target="_blank" rel="noopener" class="sim-fullscreen" data-en="New tab ↗" data-de="Neuer Tab ↗">New tab ↗</a>
-          </span>
-        </div>
-        <div class="sim-frame-wrap">
-          <button type="button" class="sim-poster" data-frame-id="workflow-frame" data-src="/workflow-tracker/" data-title="Workflow Tracker">
-            <img src="/assets/poster-workflow.png" alt="Workflow Tracker — app preview" loading="lazy" width="1240" height="760">
-            <span class="sim-poster-btn" data-en="▶&nbsp; Load live demo" data-de="▶&nbsp; Live-Demo laden">▶&nbsp; Load live demo</span>
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <div class="plate reveal" style="margin-top:2rem;">
-      <div id="rotary-app" class="sim-app open">
-        <div class="sim-app-bar">
-          <span class="sim-app-tag">RotaryKnife SYNC · <span data-en="live demo" data-de="Live-Demo">live demo</span></span>
-          <span class="sim-app-actions">
-            <a href="https://github.com/Lehel4321/rotary-knife" target="_blank" rel="noopener" class="sim-fullscreen" data-en="Source ↗" data-de="Quellcode ↗">Source ↗</a>
-            <button type="button" id="rotary-fs-btn" class="sim-fullscreen" data-en="⛶ Fullscreen" data-de="⛶ Vollbild">⛶ Fullscreen</button>
-            <a href="/rotary-knife/" target="_blank" rel="noopener" class="sim-fullscreen" data-en="New tab ↗" data-de="Neuer Tab ↗">New tab ↗</a>
-          </span>
-        </div>
-        <div class="sim-frame-wrap">
-          <button type="button" class="sim-poster" data-frame-id="rotary-frame" data-src="/rotary-knife/" data-title="RotaryKnife SYNC">
-            <img src="/assets/poster-rotary.png" alt="RotaryKnife SYNC — synchronous rotary knife cutting simulator, app preview" loading="lazy" width="1240" height="760">
-            <span class="sim-poster-btn" data-en="▶&nbsp; Load live demo" data-de="▶&nbsp; Live-Demo laden">▶&nbsp; Load live demo</span>
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <p class="repo-cta-line" data-en="Interested in these projects, a collaboration or a similar build? Feel free to <a href='#contact'>get in contact</a>." data-de="Interesse an diesen Projekten, einer Zusammenarbeit oder einem ähnlichen Aufbau? Gerne <a href='#contact'>Kontakt aufnehmen</a>.">Interested in these projects, a collaboration or a similar build? Feel free to <a href="#contact">get in contact</a>.</p>
-  </div>
-</section>
-
-<hr>
-
-<!-- LANGUAGES -->
-<section id="languages">
-  <div class="wrap">
-    <div class="sec-head reveal"><span class="sec-num">06</span><h2 class="sec-title" data-en="Languages" data-de="Sprachen">Languages</h2></div>
-    <div class="plate reveal">
-      <div class="lang-grid">
-        <div class="lang-cell"><div class="lang-name" data-en="Hungarian" data-de="Ungarisch">Hungarian</div><div class="lang-lvl" data-en="Native" data-de="Muttersprache">Native</div></div>
-        <div class="lang-cell"><div class="lang-name" data-en="German" data-de="Deutsch">German</div><div class="lang-lvl">B2</div><div class="lang-sub" data-en="Independent" data-de="Selbstständig">Independent</div></div>
-        <div class="lang-cell"><div class="lang-name" data-en="English" data-de="Englisch">English</div><div class="lang-lvl">C1</div><div class="lang-sub" data-en="Proficient" data-de="Kompetent">Proficient</div></div>
-        <div class="lang-cell"><div class="lang-name" data-en="Romanian" data-de="Rumänisch">Romanian</div><div class="lang-lvl">B2</div><div class="lang-sub" data-en="Independent" data-de="Selbstständig">Independent</div></div>
-      </div>
+      <p class="prose" style="margin-top:1.8rem" data-l="en">Also on GitHub: <a href="https://github.com/Lehel4321/flyingSaw" target="_blank" rel="noopener">Flying Saw</a>, a sizing tool for flying saws that tells you whether the cycle fits and which limit stops it (Windows app or a single HTML file). Two browser games are on the <a href="/demos/">demo page</a>.</p>
+      <p class="prose" style="margin-top:1.8rem" data-l="de">Außerdem auf GitHub: <a href="https://github.com/Lehel4321/flyingSaw" target="_blank" rel="noopener">Flying Saw</a>, ein Auslegungstool für fliegende Sägen, das zeigt, ob der Takt passt und welche Grenze ihn begrenzt (Windows-App oder eine einzelne HTML-Datei). Zwei Browserspiele gibt es auf der <a href="/demos/">Demo-Seite</a>.</p>
     </div>
   </div>
 </section>
 
-<hr>
+<!-- HOW I WORK -->
+<section id="how-i-work">
+  <div class="wrap sec">
+    <h2><span data-l="en">How I work</span><span data-l="de">Arbeitsweise</span></h2>
+    <div class="prose">
+      <p data-l="en">I keep a written rule book for my SCL, based on the Siemens Programming Guideline and Styleguide. No global data inside FBs and FCs, everything passes through the block interface. One condition per line in IF statements. Every block starts with a header and a change log. A small script checks each block against these rules before it goes into TIA Portal.</p>
+      <p data-l="de">Für mein SCL habe ich ein schriftliches Regelwerk, angelehnt an den Siemens Programmierleitfaden und Styleguide. Keine globalen Daten in FBs und FCs, alles läuft über die Bausteinschnittstelle. Eine Bedingung pro Zeile in IF-Anweisungen. Jeder Baustein beginnt mit Kopf und Änderungshistorie. Ein kleines Skript prüft jeden Baustein gegen diese Regeln, bevor er ins TIA Portal geht.</p>
+      <p data-l="en">For the import I wrote a tool on TIA Openness. It creates the CPU and the technology objects, imports the blocks and tags, compiles and reads the errors back. A complete desk project builds from an empty TIA project in about two minutes. LAD and FBD blocks come out as SimaticML XML that TIA imports directly.</p>
+      <p data-l="de">Für den Import habe ich ein Tool auf Basis von TIA Openness geschrieben. Es legt CPU und Technologieobjekte an, importiert Bausteine und Variablen, übersetzt und liest die Fehler zurück. Ein komplettes Tischprojekt entsteht so aus einem leeren TIA-Projekt in etwa zwei Minuten. KOP- und FUP-Bausteine kommen als SimaticML-XML heraus, das TIA direkt importiert.</p>
+      <p data-l="en">Everything I learn along the way goes into a private knowledge base: Siemens motion control, OPC UA setup, cam design, drive sizing, commissioning notes. That way the next machine starts from what the last one taught me.</p>
+      <p data-l="de">Was ich dabei lerne, landet in einer privaten Wissensdatenbank: Siemens Motion Control, OPC-UA-Einrichtung, Kurvenscheiben, Antriebsauslegung, Notizen aus der Inbetriebnahme. So startet die nächste Maschine mit dem, was die letzte mir beigebracht hat.</p>
+    </div>
+  </div>
+</section>
 
 <!-- CONTACT -->
 <section id="contact">
-  <div class="wrap">
-    <div class="sec-head reveal"><span class="sec-num">07</span><h2 class="sec-title" data-en="Contact" data-de="Kontakt">Contact</h2></div>
-    <div class="plate reveal">
-      <div class="contact-halves">
-        <div class="ch-left">
-          <h2 class="contact-title" data-en="Say<br><em>hello.</em>" data-de="Schreib<br><em>mir.</em>">Say<br><em>hello.</em></h2>
-          <p class="contact-text" data-en="Interested in discussing industrial automation, exchanging ideas, or connecting with fellow engineers? Feel free to reach out." data-de="Sie möchten über industrielle Automation sprechen, Ideen austauschen oder sich mit anderen Ingenieuren vernetzen? Schreiben Sie mir gerne.">Interested in discussing industrial automation, exchanging ideas, or connecting with fellow engineers? Feel free to reach out.</p>
-
-          <div class="contact-line"><div class="contact-icon">◎</div><div class="contact-val" data-en="Ulm / Neu-Ulm area, Germany" data-de="Raum Ulm / Neu-Ulm, Deutschland">Ulm / Neu-Ulm area, Germany</div></div>
-          <div class="contact-line"><div class="contact-icon">in</div><div class="contact-val"><a href="https://www.linkedin.com/in/lehel-balog-75b9b2129/" target="_blank" rel="noopener">LinkedIn</a></div></div>
-        </div>
-        <div class="ch-right">
-          <form class="form" id="contact-form">
-            <input type="text"  id="contact-name"    data-placeholder-en="Name"    data-placeholder-de="Name"      placeholder="Name" autocomplete="name" required>
-            <input type="email" id="contact-email"   data-placeholder-en="Email"   data-placeholder-de="E-Mail"    placeholder="Email" autocomplete="email" required>
-            <textarea rows="5"  id="contact-message" data-placeholder-en="Message" data-placeholder-de="Nachricht" placeholder="Message" required></textarea>
-            <input type="text" name="_honey" style="display:none" tabindex="-1" autocomplete="off">
-            <button type="submit" class="btn-primary" id="contact-submit" data-en="Send message" data-de="Nachricht senden">Send message</button>
-            <div class="form-status" id="contact-status" role="status" aria-live="polite"></div>
-          </form>
-        </div>
+  <div class="wrap sec">
+    <h2><span data-l="en">Contact</span><span data-l="de">Kontakt</span></h2>
+    <div class="contact-grid">
+      <div>
+        <p class="lead" data-l="en">Questions about a machine, a project or a job? Write me here or on LinkedIn.</p>
+        <p class="lead" data-l="de">Fragen zu einer Maschine, einem Projekt oder einer Stelle? Schreiben Sie mir hier oder auf LinkedIn.</p>
+        <ul class="contact-links">
+          <li><span class="k">LinkedIn</span><a href="https://www.linkedin.com/in/lehel-balog-75b9b2129/" target="_blank" rel="noopener">lehel-balog</a></li>
+          <li><span class="k">GitHub</span><a href="https://github.com/Lehel4321" target="_blank" rel="noopener">Lehel4321</a></li>
+          <li><span class="k"><span data-l="en">Location</span><span data-l="de">Ort</span></span><span><span data-l="en">Ulm / Neu-Ulm, Germany</span><span data-l="de">Raum Ulm / Neu-Ulm</span></span></li>
+        </ul>
       </div>
+      <form class="form" id="contact-form">
+        <label for="contact-name">Name</label>
+        <input type="text" id="contact-name" autocomplete="name" required>
+        <label for="contact-email"><span data-l="en">Email</span><span data-l="de">E-Mail</span></label>
+        <input type="email" id="contact-email" autocomplete="email" required>
+        <label for="contact-message"><span data-l="en">Message</span><span data-l="de">Nachricht</span></label>
+        <textarea rows="5" id="contact-message" required></textarea>
+        <input type="text" name="_honey" style="display:none" tabindex="-1" autocomplete="off">
+        <button type="submit" class="btn" id="contact-submit"><span data-l="en">Send</span><span data-l="de">Senden</span></button>
+        <div class="form-status" id="contact-status" role="status" aria-live="polite"></div>
+      </form>
     </div>
   </div>
 </section>
 
-<hr>
-
-<!-- COMMENTS / GUESTBOOK (utterances — comments live as GitHub issue comments) -->
+<!-- GUESTBOOK (utterances: comments live as GitHub issue comments) -->
 <section id="comments">
-  <div class="wrap">
-    <div class="sec-head reveal"><span class="sec-num">08</span><h2 class="sec-title" data-en="Comments" data-de="Kommentare">Comments</h2></div>
-    <div class="plate reveal">
-      <div class="comments-inner">
-        <p class="comments-note" data-en="Leave a note, question or feedback below. Comments are public and are posted with your GitHub account — nothing loads from external servers until you click." data-de="Hinterlassen Sie unten eine Nachricht, Frage oder Feedback. Kommentare sind öffentlich und werden mit Ihrem GitHub-Konto veröffentlicht — es werden erst nach dem Klick externe Inhalte geladen.">Leave a note, question or feedback below. Comments are public and are posted with your GitHub account — nothing loads from external servers until you click.</p>
-        <button type="button" id="comments-load" class="btn-primary" data-en="💬 Load comments" data-de="💬 Kommentare laden">💬 Load comments</button>
-      </div>
-      <div id="comments-app" class="sim-app">
-        <div class="sim-app-bar">
-          <span class="sim-app-tag">Guestbook · <span data-en="public comments" data-de="öffentliche Kommentare">public comments</span></span>
-          <span class="sim-app-actions">
-            <a href="https://github.com/Lehel4321/lbideas.de/issues" target="_blank" rel="noopener" class="sim-fullscreen" data-en="GitHub ↗" data-de="GitHub ↗">GitHub ↗</a>
-          </span>
-        </div>
-        <div class="comments-body">
-          <div id="comments-loading" class="comments-loading" data-en="Loading comments…" data-de="Kommentare werden geladen…">Loading comments…</div>
-          <div id="comments-thread"></div>
-        </div>
+  <div class="wrap sec">
+    <h2><span data-l="en">Guestbook</span><span data-l="de">Gästebuch</span></h2>
+    <div>
+      <p class="prose muted" data-l="en">Leave a note or a question. Comments are public and are posted with your GitHub account. Nothing is loaded from GitHub until you click.</p>
+      <p class="prose muted" data-l="de">Hinterlassen Sie eine Nachricht oder Frage. Kommentare sind öffentlich und laufen über Ihr GitHub-Konto. Von GitHub wird erst etwas geladen, wenn Sie klicken.</p>
+      <button type="button" id="comments-load" class="btn secondary" style="margin-top:1.2rem"><span data-l="en">Show comments</span><span data-l="de">Kommentare anzeigen</span></button>
+      <div class="comments-body" id="comments-app">
+        <div id="comments-loading" class="comments-loading"><span data-l="en">Loading comments…</span><span data-l="de">Kommentare werden geladen…</span></div>
+        <div id="comments-thread"></div>
       </div>
     </div>
   </div>
 </section>
+
+</main>
 
 <footer>
-  <span class="foot-name">Lehel Balog</span>
-  <span class="foot-copy">© <span id="foot-year">2026</span> <a href="/panel-fc60330a/" class="foot-dot" rel="nofollow" aria-hidden="true" tabindex="-1">·</a> lehelbalog.de</span>
+  <div class="foot">
+    <span>© <span id="foot-year">2026</span> Lehel Balog <a href="/panel-fc60330a/" class="foot-dot" rel="nofollow" aria-hidden="true" tabindex="-1">·</a> lehelbalog.de</span>
+    <span><a href="/demos/"><span data-l="en">All demos</span><span data-l="de">Alle Demos</span></a></span>
+  </div>
 </footer>
 
 <script>
+  const isDe = () => document.documentElement.lang === 'de';
+
+  // MOBILE MENU
   const hamburger = document.getElementById('hamburger');
   const mobileMenu = document.getElementById('mobileMenu');
-  hamburger.addEventListener('click', () => {
-    const isOpen = mobileMenu.classList.toggle('open');
-    hamburger.classList.toggle('open', isOpen);
-    document.body.style.overflow = isOpen ? 'hidden' : '';
-  });
   function closeMenu() {
     mobileMenu.classList.remove('open');
     hamburger.classList.remove('open');
     document.body.style.overflow = '';
   }
+  hamburger.addEventListener('click', () => {
+    const open = mobileMenu.classList.toggle('open');
+    hamburger.classList.toggle('open', open);
+    document.body.style.overflow = open ? 'hidden' : '';
+  });
+  mobileMenu.querySelectorAll('a').forEach(a => a.addEventListener('click', closeMenu));
   document.addEventListener('keydown', e => { if (e.key === 'Escape') closeMenu(); });
 
   document.getElementById('foot-year').textContent = new Date().getFullYear();
 
+  // LANGUAGE: the head script already set <html lang>, the buttons switch and remember it
   function setLang(lang) {
     document.documentElement.lang = lang;
-    try { localStorage.setItem('lang', lang); } catch(e) {}
-    document.querySelectorAll('.lang-btn').forEach((b,i) =>
-      b.classList.toggle('active', (i%2===0) ? lang==='en' : lang==='de')
-    );
-    document.querySelectorAll('[data-en]').forEach(el => {
-      if (el.tagName==='INPUT'||el.tagName==='TEXTAREA') return;
-      el.innerHTML = el.getAttribute('data-'+lang) || '';
-    });
-    document.querySelectorAll('[data-placeholder-en]').forEach(el => {
-      el.placeholder = el.getAttribute('data-placeholder-'+lang) || '';
-    });
+    try { localStorage.setItem('lang', lang); } catch (e) {}
+    document.querySelectorAll('.lang-btn').forEach(b => b.classList.toggle('active', b.dataset.setLang === lang));
   }
+  document.querySelectorAll('.lang-btn').forEach(b => b.addEventListener('click', () => setLang(b.dataset.setLang)));
+  setLang(isDe() ? 'de' : 'en');
 
-  // DESIGN TOGGLE — day shift (steel) / night shift (graphite + amber)
-  function setTheme(t){
-    if(t === 'dark'){ document.documentElement.setAttribute('data-theme','dark'); }
-    else { document.documentElement.removeAttribute('data-theme'); }
-    try { localStorage.setItem('theme', t); } catch(e) {}
-    const meta = document.querySelector('meta[name="theme-color"]');
-    if(meta) meta.setAttribute('content', t === 'dark' ? '#0f1417' : '#1e2c33');
+  // THEME
+  function syncThemeButtons() {
+    const dark = document.documentElement.getAttribute('data-theme') === 'dark';
     document.querySelectorAll('.theme-btn').forEach(b => {
-      b.textContent = t === 'dark' ? '☀' : '☾';
-      b.setAttribute('aria-label', t === 'dark' ? 'Switch to light design' : 'Switch to dark design');
+      b.textContent = dark ? '☀' : '☾';
+      b.setAttribute('aria-label', dark ? 'Switch to light theme' : 'Switch to dark theme');
     });
+    const meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) meta.setAttribute('content', dark ? '#111518' : '#f3f1ec');
   }
   document.querySelectorAll('.theme-btn').forEach(b => b.addEventListener('click', () => {
-    setTheme(document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+    const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    if (next === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+    else document.documentElement.removeAttribute('data-theme');
+    try { localStorage.setItem('theme', next); } catch (e) {}
+    syncThemeButtons();
   }));
-  // sync button labels with whatever the head guard applied
-  document.querySelectorAll('.theme-btn').forEach(b => {
-    const dark = document.documentElement.getAttribute('data-theme') === 'dark';
-    b.textContent = dark ? '☀' : '☾';
-    b.setAttribute('aria-label', dark ? 'Switch to light design' : 'Switch to dark design');
-  });
+  syncThemeButtons();
 
-  // First visit: German browsers start in German; returning visitors keep their choice
-  (function initLang(){
-    let saved = null;
-    try { saved = localStorage.getItem('lang'); } catch(e) {}
-    const lang = saved || ((navigator.language||'').toLowerCase().startsWith('de') ? 'de' : 'en');
-    if (lang !== 'en') setLang(lang);
-  })();
-
-  const obs = new IntersectionObserver(entries => {
-    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('in'); });
-  }, { threshold: 0.01 });
-  document.querySelectorAll('.reveal').forEach(el => {
-    if (el.getBoundingClientRect().top < window.innerHeight) el.classList.add('in');
-    else obs.observe(el);
-  });
-  // Fallback: force all reveals visible after 600ms in case observer misfires on mobile
-  setTimeout(() => {
-    document.querySelectorAll('.reveal').forEach(el => el.classList.add('in'));
-  }, 600);
-
-  // Click-to-load demo posters — keeps the page light until a demo is requested
-  function loadDemo(poster){
-    const f=document.createElement('iframe');
-    f.className='sim-frame';
-    f.id=poster.dataset.frameId;
-    f.title=poster.dataset.title;
-    f.src=poster.dataset.src;
-    poster.replaceWith(f);
-  }
-  document.querySelectorAll('.sim-poster').forEach(p=>{
-    p.addEventListener('click',()=>loadDemo(p),{once:true});
-  });
-
-  // Fullscreen toggle for embedded live demos
-  (function setupDemoFullscreens(){
-    const demos=[
-      {btnId:'motion-fs-btn',   targetId:'motion-app',   fallback:'/motion-solver/'},
-      {btnId:'packline-fs-btn', targetId:'packline-app', fallback:'/packline/'},
-      {btnId:'workflow-fs-btn', targetId:'workflow-app', fallback:'/workflow-tracker/'},
-      {btnId:'rotary-fs-btn',   targetId:'rotary-app',   fallback:'/rotary-knife/'}
-    ];
-    const btns=[];
-    demos.forEach(({btnId,targetId,fallback})=>{
-      const btn=document.getElementById(btnId);
-      const target=document.getElementById(targetId);
-      if(!btn||!target)return;
-      btns.push(btn);
-      btn.addEventListener('click',()=>{
-        const fsEl=document.fullscreenElement||document.webkitFullscreenElement;
-        if(fsEl){ (document.exitFullscreen||document.webkitExitFullscreen||function(){}).call(document); }
-        else {
-          const poster=target.querySelector('.sim-poster');
-          if(poster) loadDemo(poster);
-          const req=target.requestFullscreen||target.webkitRequestFullscreen;
-          if(req){ req.call(target); } else { window.open(fallback,'_blank','noopener'); }
-        }
-      });
-    });
-    function lbl(){
-      const on=!!(document.fullscreenElement||document.webkitFullscreenElement);
-      const de=document.querySelectorAll('.lang-btn')[1]&&document.querySelectorAll('.lang-btn')[1].classList.contains('active');
-      btns.forEach(btn=>{
-        btn.setAttribute('data-en', on?'⤢ Exit':'⛶ Fullscreen');
-        btn.setAttribute('data-de', on?'⤢ Beenden':'⛶ Vollbild');
-        btn.textContent=btn.getAttribute('data-'+(de?'de':'en'));
-      });
+  // DEMO VIEWER: one shared frame, loaded only when a visitor asks for a demo
+  (function setupViewer() {
+    const viewer = document.getElementById('viewer');
+    const title = document.getElementById('viewer-title');
+    const tab = document.getElementById('viewer-tab');
+    let frame = null;
+    function open(src, name) {
+      if (!frame) {
+        frame = document.createElement('iframe');
+        viewer.appendChild(frame);
+      }
+      if (frame.getAttribute('src') !== src) frame.src = src;
+      frame.title = name;
+      title.textContent = name;
+      tab.href = src;
+      viewer.classList.add('open');
+      viewer.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
-    document.addEventListener('fullscreenchange',lbl);
-    document.addEventListener('webkitfullscreenchange',lbl);
+    document.querySelectorAll('[data-demo]').forEach(el =>
+      el.addEventListener('click', () => open(el.dataset.demo, el.dataset.title)));
+    document.getElementById('viewer-close').addEventListener('click', () => {
+      if (frame) { frame.remove(); frame = null; }
+      viewer.classList.remove('open');
+      document.getElementById('demos').scrollIntoView({ behavior: 'smooth' });
+    });
+    document.getElementById('viewer-fs').addEventListener('click', () => {
+      const fsEl = document.fullscreenElement || document.webkitFullscreenElement;
+      if (fsEl) { (document.exitFullscreen || document.webkitExitFullscreen).call(document); return; }
+      const req = viewer.requestFullscreen || viewer.webkitRequestFullscreen;
+      if (req) req.call(viewer); else window.open(tab.href, '_blank', 'noopener');
+    });
   })();
 
-  // COMMENTS — utterances widget (GitHub issue comments), loaded only on request
-  (function setupComments(){
+  // GUESTBOOK: utterances widget, loaded only on request
+  (function setupComments() {
     const btn = document.getElementById('comments-load');
-    if(!btn) return;
     let loaded = false;
-    function load(){
-      if(loaded) return;
+    function load() {
+      if (loaded) return;
       loaded = true;
       document.getElementById('comments-app').classList.add('open');
       const s = document.createElement('script');
@@ -1118,55 +799,47 @@ try {
       s.setAttribute('theme', 'github-dark');
       document.getElementById('comments-thread').appendChild(s);
       btn.remove();
-      // widget messages us when it renders — drop the loading note then
-      function onMsg(e){
-        if(e.origin !== 'https://utteranc.es') return;
+      function onMsg(e) {
+        if (e.origin !== 'https://utteranc.es') return;
         const l = document.getElementById('comments-loading');
-        if(l) l.remove();
+        if (l) l.remove();
         window.removeEventListener('message', onMsg);
       }
       window.addEventListener('message', onMsg);
-      // still nothing after 8s (blocked network etc.) — point to GitHub directly
+      // nothing after 8 s (blocked network etc.): point to GitHub directly
       setTimeout(() => {
         const l = document.getElementById('comments-loading');
-        if(!l) return;
-        l.setAttribute('data-en', 'Comments did not load. <a href="https://github.com/Lehel4321/lbideas.de/issues" target="_blank" rel="noopener">Read &amp; post directly on GitHub ↗</a>');
-        l.setAttribute('data-de', 'Kommentare konnten nicht geladen werden. <a href="https://github.com/Lehel4321/lbideas.de/issues" target="_blank" rel="noopener">Direkt auf GitHub lesen &amp; schreiben ↗</a>');
-        l.innerHTML = l.getAttribute('data-' + (document.documentElement.lang === 'de' ? 'de' : 'en'));
+        if (!l) return;
+        l.innerHTML = '<span data-l="en">Comments did not load. <a href="https://github.com/Lehel4321/lbideas.de/issues" target="_blank" rel="noopener">Read and post on GitHub</a>.</span>' +
+                      '<span data-l="de">Kommentare konnten nicht geladen werden. <a href="https://github.com/Lehel4321/lbideas.de/issues" target="_blank" rel="noopener">Direkt auf GitHub lesen und schreiben</a>.</span>';
       }, 8000);
     }
     btn.addEventListener('click', load);
-    if(location.hash === '#comments') load();
+    if (location.hash === '#comments') load();
   })();
 
-  // CONTACT FORM — static site, submits via FormSubmit.co (no backend to host)
-  (function setupContactForm(){
+  // CONTACT FORM: static site, sent through FormSubmit.co
+  (function setupContactForm() {
     const form = document.getElementById('contact-form');
-    if(!form) return;
     const submitBtn = document.getElementById('contact-submit');
     const status = document.getElementById('contact-status');
-    const isDe = () => document.querySelectorAll('.lang-btn')[1] &&
-                        document.querySelectorAll('.lang-btn')[1].classList.contains('active');
     const MSG = {
-      sending: { en:'Sending…',                                   de:'Wird gesendet…' },
-      ok:      { en:'Message sent — thanks, I’ll reply soon.', de:'Nachricht gesendet — danke, ich melde mich bald.' },
-      err:     { en:'Something went wrong. Please email me directly at baloglehel91@gmail.com.',
-                 de:'Etwas ist schiefgelaufen. Bitte schreiben Sie mir direkt an baloglehel91@gmail.com.' }
+      sending: { en: 'Sending…', de: 'Wird gesendet…' },
+      ok:      { en: 'Thanks, your message is on its way. I will reply soon.', de: 'Danke, die Nachricht ist unterwegs. Ich melde mich bald.' },
+      err:     { en: 'That did not work. Please email me directly at baloglehel91@gmail.com.',
+                 de: 'Das hat nicht geklappt. Bitte schreiben Sie mir direkt an baloglehel91@gmail.com.' }
     };
     const setStatus = (key, cls) => {
       status.textContent = MSG[key][isDe() ? 'de' : 'en'];
       status.className = 'form-status' + (cls ? ' ' + cls : '');
     };
-
     form.addEventListener('submit', async e => {
       e.preventDefault();
       const name = document.getElementById('contact-name').value.trim();
       const email = document.getElementById('contact-email').value.trim();
       const message = document.getElementById('contact-message').value.trim();
-
       submitBtn.disabled = true;
       setStatus('sending');
-
       try {
         const res = await fetch('https://formsubmit.co/ajax/baloglehel91@gmail.com', {
           method: 'POST',
@@ -1191,7 +864,7 @@ try {
     });
   })();
 </script>
-<!-- GoatCounter — privacy-friendly, cookie-free visit counting -->
+<!-- GoatCounter: privacy-friendly, cookie-free visit counting -->
 <script data-goatcounter="https://lbideas.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script>
 </body>
 </html>
