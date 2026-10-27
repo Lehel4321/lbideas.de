@@ -401,7 +401,7 @@ try {
         <span><i class="ladder-dot"></i><span data-l="en">Online</span><span data-l="de">Online</span></span>
         <button type="button" class="ladder-replay" id="ladder-replay"><span data-l="en">Run again</span><span data-l="de">Neu starten</span></button>
       </div>
-      <svg id="ladder-svg" role="img" aria-label="Ladder diagram in TIA Portal style that writes the name Lehel Balog"></svg>
+      <svg id="ladder-svg" role="img" aria-label="Ladder diagram in TIA Portal style: start latch, step timer, counter and LEFT instruction that write the name Lehel Balog"></svg>
     </div>
     <dl class="facts">
       <div><dt data-l="en">Now</dt><dt data-l="de">Aktuell</dt><dd><span data-l="en">PLC programmer at Metzner Maschinenbau</span><span data-l="de">SPS-Programmierer bei Metzner Maschinenbau</span></dd></div>
@@ -737,18 +737,21 @@ try {
   const isDe = () => document.documentElement.lang === 'de';
 
   // HEADER LADDER: a small LAD program in TIA online monitoring that writes the name.
-  // N1 start latch, N2 TON + CTU stepping a counter, N3/N4 one contact per letter.
-  // Power flow is dashed blue when off and solid green when on; values show live.
+  // Simulated like OB1: every 10 ms scan evaluates the networks in order.
+  //   N1 start latch, N2 self-resetting TON as step clock, N3 CTU counts characters,
+  //   N4 LEFT('Lehel Balog', Index) -> "HMI".Name, which is what the heading shows.
+  // An "operator" presses Start, and Stop a few seconds after the name is complete.
   (function heroLadder() {
     const svg = document.getElementById('ladder-svg');
     if (!svg) return;
     const NS = 'http://www.w3.org/2000/svg';
     const letters = [...document.querySelectorAll('h1 .lt')];
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const PT = 280, CYCLE = 360;   // timer preset and one counter step, ms
+    const TEXT = 'Lehel Balog', PV = TEXT.length, PT = 250, SCAN = 10;
 
-    const st = { start: false, stop: false, run: false, reset: false, et: 0, q: false, cv: 0 };
-    let ui = [];      // update functions, one per drawn element group
+    // PLC memory
+    const m = { start: false, stop: false, run: false, tIn: false, et: 0, tq: false, cuOld: false, cv: 0, done: false, name: '' };
+    let ui = [];
 
     const el = (tag, attrs, text) => {
       const e = document.createElementNS(NS, tag);
@@ -759,9 +762,11 @@ try {
     };
     const on = (e, f) => ui.push(() => e.classList.toggle('on', !!f()));
     const wire = (x1, y1, x2, y2, f) => on(el('line', { x1, y1, x2, y2, class: 'w' }), f);
+    const txt = (x, y, F, s, cls, anchor) => el('text', { x, y, 'font-size': F, class: cls || '', 'text-anchor': anchor || 'start' }, s);
+    const live = (x, y, F, f, anchor) => { const e = txt(x, y, F, '', 'val', anchor); ui.push(() => { e.textContent = f(); }); return e; };
     function contact(x, y, op, addr, F, conduct, powered, nc) {
-      el('text', { x, y: y - 22, 'font-size': F, 'text-anchor': 'middle' }, op);
-      if (addr) el('text', { x, y: y + 31, 'font-size': F - 3, 'text-anchor': 'middle', class: 'addr' }, addr);
+      txt(x, y - 22, F, op, '', 'middle');
+      if (addr) txt(x, y + 31, F - 3, addr, 'addr', 'middle');
       const lit = () => powered() && conduct();
       on(el('rect', { x: x - 8, y: y - 13, width: 16, height: 26, class: 'fill' }), lit);
       on(el('line', { x1: x - 8, y1: y - 14, x2: x - 8, y2: y + 14, class: 'el' }), lit);
@@ -769,11 +774,23 @@ try {
       if (nc) on(el('line', { x1: x - 9, y1: y + 12, x2: x + 9, y2: y - 12, class: 'el' }), lit);
     }
     function coil(x, y, op, addr, F, f) {
-      el('text', { x, y: y - 22, 'font-size': F, 'text-anchor': 'middle' }, op);
-      if (addr) el('text', { x, y: y + 31, 'font-size': F - 3, 'text-anchor': 'middle', class: 'addr' }, addr);
+      txt(x, y - 22, F, op, '', 'middle');
+      if (addr) txt(x, y + 31, F - 3, addr, 'addr', 'middle');
       on(el('circle', { cx: x, cy: y, r: 10, class: 'fill' }), f);
       on(el('path', { d: `M${x - 7} ${y - 14} Q${x - 17} ${y} ${x - 7} ${y + 14}`, class: 'el' }), f);
       on(el('path', { d: `M${x + 7} ${y - 14} Q${x + 17} ${y} ${x + 7} ${y + 14}`, class: 'el' }), f);
+    }
+    // instruction box: pins = { left: [...], right: [...] }, first left pin sits on the rung
+    function box(x, y, w, type, sub, inst, left, right, F) {
+      const rows = Math.max(left.length, right.length), h = 40 + (rows - 1) * 22 + 12;
+      if (inst) txt(x + w / 2, y - 42, F, inst, '', 'middle');
+      el('rect', { x, y: y - 34, width: w, height: h, class: 'box' });
+      el('text', { x: x + w / 2, y: y - 19, 'font-size': F - 1, 'text-anchor': 'middle', 'font-weight': 600 }, type);
+      if (sub) txt(x + w / 2, y - 7, F - 3, sub, 'pin', 'middle');
+      const py = i => y + i * 22;
+      left.forEach((p, i) => txt(x + 6, py(i) + 4, F - 2, p, 'pin'));
+      right.forEach((p, i) => txt(x + w - 6, py(i) + 4, F - 2, p, 'pin', 'end'));
+      return py;
     }
     function head(y0, W, en, de, F) {
       el('rect', { x: 0, y: y0, width: W, height: 26, class: 'head' });
@@ -782,158 +799,155 @@ try {
     }
     const rail = (y1, y2) => el('line', { x1: 12, y1, x2: 12, y2, class: 'w on' });
 
-    function letterNet(y0, W, n, F, narrow) {
-      const X0 = narrow ? 46 : 74, STEP = narrow ? 63 : 80, CX = X0 + 4 * STEP + (narrow ? 74 : 98);
-      const tag = t => narrow ? `"${t}"` : `"Name".${t}`;
-      head(y0, W, n.en, n.de, F);
-      const y = y0 + 26 + 44;
-      rail(y0 + 34, y0 + 26 + 76);
-      const closed = i => st.cv > n.first + i;
-      const pw = i => { for (let j = 0; j < i; j++) if (!closed(j)) return false; return true; };
-      n.bits.forEach((b, i) => {
-        const x = X0 + i * STEP;
-        wire(i ? x - STEP + 8 : 12, y, x - 8, y, () => pw(i));
-        contact(x, y, tag(b), `%M${n.byte}.${i}`, F, () => closed(i), () => pw(i));
-      });
-      wire(X0 + 4 * STEP + 8, y, CX - 15, y, () => pw(5));
-      coil(CX, y, tag(n.coil), n.q, F, () => pw(5));
-      return 26 + 82;
-    }
-
-    function startNet(y0, W, F) {
+    function n1(y0, W, F) {
       head(y0, W, 'Network 1: Start latch', 'Netzwerk 1: Selbsthaltung', F);
       const y = y0 + 26 + 40, y2 = y + 74;
       rail(y0 + 34, y2 + 18);
-      const p1 = () => st.start || st.run;
-      const p2 = () => p1() && !st.stop;
-      wire(12, y, 40, y, () => true);
-      wire(40, y, 78, y, () => true);
-      contact(86, y, '"Start"', '%I0.0', F, () => st.start, () => true);
-      wire(94, y, 136, y, () => st.start);
-      // parallel branch: "Run" holds itself
+      const p1 = () => m.start || m.run, p2 = () => p1() && !m.stop;
+      wire(12, y, 78, y, () => true);
+      contact(86, y, '"Start"', '%I0.0', F, () => m.start, () => true);
+      wire(94, y, 136, y, () => m.start);
       wire(40, y, 40, y2, () => true);
       wire(40, y2, 78, y2, () => true);
-      contact(86, y2, '"Run"', '%M0.0', F, () => st.run, () => true);
-      wire(94, y2, 136, y2, () => st.run);
-      wire(136, y2, 136, y, () => st.run);
+      contact(86, y2, '"Run"', '%M0.0', F, () => m.run, () => true);
+      wire(94, y2, 136, y2, () => m.run);
+      wire(136, y2, 136, y, () => m.run);
       wire(136, y, 178, y, p1);
-      contact(186, y, '"Stop"', '%I0.1', F, () => !st.stop, p1, true);
+      contact(186, y, '"Stop"', '%I0.1', F, () => !m.stop, p1, true);
       wire(194, y, 477, y, p2);
       coil(492, y, '"Run"', '%M0.0', F, p2);
       return y2 + 36 - y0;
     }
-
-    function stepNet(y0, W, F) {
-      head(y0, W, 'Network 2: Letter step', 'Netzwerk 2: Buchstabentakt', F);
-      const y = y0 + 26 + 50;
+    function n2(y0, W, F) {
+      head(y0, W, 'Network 2: Step clock', 'Netzwerk 2: Schritttakt', F);
+      const y = y0 + 26 + 58;
+      rail(y0 + 34, y + 40);
+      const a = () => m.run, b = () => a() && !m.tq, c = () => b() && !m.done;
+      wire(12, y, 58, y, () => true);
+      contact(66, y, '"Run"', null, F, () => m.run, () => true);
+      wire(74, y, 142, y, a);
+      contact(150, y, '"T_Step".Q', null, F, () => !m.tq, a, true);
+      wire(158, y, 226, y, b);
+      contact(234, y, '"Done"', null, F, () => !m.done, b, true);
+      wire(242, y, 330, y, c);
+      const bx = 330, bw = 92;
+      const py = box(bx, y, bw, 'TON', 'Time', '"T_Step"', ['IN', 'PT'], ['Q', 'ET'], F);
+      txt(bx - 6, py(1) + 4, F - 2, `T#${PT}MS`, 'lit', 'end');
+      live(bx + bw + 6, py(1) + 4, F - 2, () => `T#${m.et}MS`);
+      wire(bx + bw, y, bx + bw + 24, y, () => m.tq);
+      return y + 44 - y0;
+    }
+    function n3(y0, W, F) {
+      head(y0, W, 'Network 3: Character counter', 'Netzwerk 3: Zeichenzähler', F);
+      const y = y0 + 26 + 58;
       rail(y0 + 34, y + 56);
-      wire(12, y, 66, y, () => true);
-      contact(74, y, '"Run"', '%M0.0', F, () => st.run, () => true);
-      wire(82, y, 176, y, () => st.run);
-      // TON
-      const tx = 176, tw = 88;
-      el('text', { x: tx + tw / 2, y: y - 30, 'font-size': F, 'text-anchor': 'middle' }, '"T_Step"');
-      el('rect', { x: tx, y: y - 20, width: tw, height: 64, class: 'box' });
-      el('text', { x: tx + tw / 2, y: y - 6, 'font-size': F - 1, 'text-anchor': 'middle', 'font-weight': 600 }, 'TON');
-      el('text', { x: tx + 6, y: y + 4, 'font-size': F - 2, class: 'pin' }, 'IN');
-      el('text', { x: tx + 6, y: y + 28, 'font-size': F - 2, class: 'pin' }, 'PT');
-      el('text', { x: tx + tw - 6, y: y + 4, 'font-size': F - 2, class: 'pin', 'text-anchor': 'end' }, 'Q');
-      el('text', { x: tx + tw - 6, y: y + 28, 'font-size': F - 2, class: 'pin', 'text-anchor': 'end' }, 'ET');
-      el('text', { x: tx - 6, y: y + 28, 'font-size': F - 2, class: 'lit', 'text-anchor': 'end' }, `T#${PT}MS`);
-      const et = el('text', { x: tx + tw + 6, y: y + 28, 'font-size': F - 2, class: 'val' }, 'T#0MS');
-      ui.push(() => { et.textContent = `T#${Math.round(st.et)}MS`; });
-      // CTU
-      const cx = 392, cw = 84;
-      wire(tx + tw, y, cx, y, () => st.q);
-      el('text', { x: cx + cw / 2, y: y - 30, 'font-size': F, 'text-anchor': 'middle' }, '"C_Letter"');
-      el('rect', { x: cx, y: y - 20, width: cw, height: 76, class: 'box' });
-      el('text', { x: cx + cw / 2, y: y - 6, 'font-size': F - 1, 'text-anchor': 'middle', 'font-weight': 600 }, 'CTU');
-      el('text', { x: cx + 6, y: y + 4, 'font-size': F - 2, class: 'pin' }, 'CU');
-      el('text', { x: cx + 6, y: y + 26, 'font-size': F - 2, class: 'pin' }, 'R');
-      el('text', { x: cx + 6, y: y + 48, 'font-size': F - 2, class: 'pin' }, 'PV');
-      el('text', { x: cx + cw - 6, y: y + 4, 'font-size': F - 2, class: 'pin', 'text-anchor': 'end' }, 'Q');
-      el('text', { x: cx + cw - 6, y: y + 26, 'font-size': F - 2, class: 'pin', 'text-anchor': 'end' }, 'CV');
-      const r = el('text', { x: cx - 6, y: y + 26, 'font-size': F - 2, class: 'lit', 'text-anchor': 'end' }, 'FALSE');
-      ui.push(() => { r.textContent = st.reset ? 'TRUE' : 'FALSE'; r.setAttribute('class', st.reset ? 'val' : 'lit'); });
-      el('text', { x: cx - 6, y: y + 48, 'font-size': F - 2, class: 'lit', 'text-anchor': 'end' }, '10');
-      const cv = el('text', { x: cx + cw + 6, y: y + 26, 'font-size': F, class: 'val' }, '0');
-      ui.push(() => { cv.textContent = String(st.cv); });
-      wire(cx + cw, y, 523, y, () => st.cv >= 10);
-      coil(538, y, '"Done"', '%M0.1', F, () => st.cv >= 10);
+      wire(12, y, 58, y, () => true);
+      contact(66, y, '"T_Step".Q', null, F, () => m.tq, () => true);
+      wire(74, y, 170, y, () => m.tq);
+      const bx = 170, bw = 92;
+      const py = box(bx, y, bw, 'CTU', 'Int', '"C_Char"', ['CU', 'R', 'PV'], ['Q', 'CV'], F);
+      txt(bx - 6, py(1) + 4, F - 2, '"Stop"', '', 'end');
+      live(bx - 62, py(1) + 4, F - 2, () => m.stop ? 'TRUE' : 'FALSE', 'end');
+      txt(bx - 6, py(2) + 4, F - 2, String(PV), 'lit', 'end');
+      txt(bx + bw + 6, py(1) + 4, F - 2, '"Index"', '');
+      live(bx + bw + 64, py(1) + 4, F - 1, () => String(m.cv));
+      wire(bx + bw, y, 477, y, () => m.done);
+      coil(492, y, '"Done"', '%M0.1', F, () => m.done);
+      return y + 66 - y0;
+    }
+    function n4(y0, W, F, narrow) {
+      head(y0, W, 'Network 4: Name text', 'Netzwerk 4: Namenstext', F);
+      const y = y0 + 26 + 46;
+      rail(y0 + 34, y + 56);
+      const C = narrow ? 50 : 66, bx = narrow ? 182 : 230, bw = narrow ? 100 : 96;
+      wire(12, y, C - 8, y, () => true);
+      contact(C, y, '"Run"', null, F, () => m.run, () => true);
+      wire(C + 8, y, bx, y, () => m.run);
+      const py = box(bx, y, bw, 'LEFT', narrow ? null : 'String', null, ['EN', 'IN', 'L'], ['ENO', 'OUT'], F);
+      txt(bx - 6, py(1) + 4, F - 2, `'${TEXT}'`, 'lit', 'end');
+      txt(bx - 6, py(2) + 4, F - 2, '"Index"', '', 'end');
+      wire(bx + bw, y, bx + bw + 24, y, () => m.run);
+      txt(bx + bw + 6, py(1) + 4, F - 2, '"HMI".Name', '');
+      live(bx + bw + 6, py(2) + 4, F - 1, () => `'${m.name}'`);
       return y + 66 - y0;
     }
 
-    const names = [
-      { en: 'Network 3: First name', de: 'Netzwerk 3: Vorname', bits: ['L', 'e', 'h', 'e', 'l'], first: 0, byte: 10, coil: 'First', q: '%Q0.0' },
-      { en: 'Network 4: Last name', de: 'Netzwerk 4: Nachname', bits: ['B', 'a', 'l', 'o', 'g'], first: 5, byte: 11, coil: 'Last', q: '%Q0.1' },
-    ];
-
     function build() {
       const narrow = svg.clientWidth && svg.clientWidth < 420;
-      const W = narrow ? 420 : 580, F = narrow ? 17 : 13;
+      const W = narrow ? 420 : 580, F = narrow ? 16 : 13;
       svg.innerHTML = '';
       ui = [];
       let y = 2;
-      if (!narrow) { y += startNet(y, W, F) + 4; y += stepNet(y, W, F) + 4; }
-      names.forEach(n => { y += letterNet(y, W, n, F, narrow) + 4; });
+      if (!narrow) { y += n1(y, W, F) + 4; y += n2(y, W, F) + 4; y += n3(y, W, F) + 4; }
+      y += n4(y, W, F, narrow) + 4;
       svg.setAttribute('viewBox', `0 0 ${W} ${y}`);
       render();
     }
+    let shown = 0;
     function render() {
       ui.forEach(f => f());
-      letters.forEach((l, i) => l.classList.toggle('off', i >= st.cv));
+      // the heading is the HMI: it shows "HMI".Name, one letter per character (the space has none)
+      const n = m.name.replace(/ /g, '').length;
+      if (n > shown) {
+        const l = letters[n - 1];
+        if (l) { l.classList.add('hit'); setTimeout(() => l.classList.remove('hit'), 300); }
+      }
+      shown = n;
+      letters.forEach((l, i) => l.classList.toggle('off', i >= n));
     }
 
-    // TIMELINE (repeats): press Start, latch, one counter step per letter, hold the
-    // finished name, then press Stop and reset the counter, and start over.
-    let raf = 0, t0 = 0, pausedAt = 0, active = true;
-    const T_PRESS = 600, T_RELEASE = 1000, T_STEPS = 1150;
-    const T_DONE = T_STEPS + 10 * CYCLE - (CYCLE - PT);
-    const T_STOP = T_DONE + 4000, T_STOP_END = T_STOP + 450, T_END = T_STOP_END + 600;
+    // ONE PLC SCAN: networks in order, like OB1
+    function scan() {
+      m.run = (m.start || m.run) && !m.stop;                       // N1
+      m.tIn = m.run && !m.tq && !m.done;                           // N2: TON with its own Q as reset
+      if (m.tIn) { m.et = Math.min(PT, m.et + SCAN); m.tq = m.et >= PT; }
+      else { m.et = 0; m.tq = false; }
+      if (m.stop) m.cv = 0;                                        // N3: CTU, R dominates
+      else if (m.tq && !m.cuOld) m.cv = Math.min(32767, m.cv + 1);
+      m.cuOld = m.tq;
+      m.done = m.cv >= PV;
+      if (m.run) m.name = TEXT.slice(0, m.cv);                    // N4: LEFT only while EN is true
+    }
+
+    // OPERATOR: press Start, and Stop a while after the name is done, then again
+    let phase = 'idle', phaseT = 0;
+    const press = { idle: 700, start: 250, hold: 4500, stop: 350, pause: 900 };
+    function operator(dt) {
+      phaseT += dt;
+      if (phase === 'idle' && phaseT >= press.idle) { phase = 'start'; phaseT = 0; m.start = true; }
+      else if (phase === 'start' && phaseT >= press.start) { phase = 'running'; phaseT = 0; m.start = false; }
+      else if (phase === 'running' && m.done) { phase = 'hold'; phaseT = 0; }
+      else if (phase === 'hold' && phaseT >= press.hold) { phase = 'stop'; phaseT = 0; m.stop = true; }
+      else if (phase === 'stop' && phaseT >= press.stop) { phase = 'idle'; phaseT = press.idle - press.pause; m.stop = false; }
+    }
+
+    let raf = 0, last = 0, acc = 0, active = true;
     function frame(now) {
-      let t = now - t0;
-      if (t >= T_END) { t0 += T_END; t -= T_END; }
-      st.start = t >= T_PRESS && t < T_RELEASE;
-      st.stop = t >= T_STOP && t < T_STOP_END;
-      st.reset = st.stop;
-      st.run = t >= T_PRESS && t < T_STOP;
-      let cv = 0;
-      if (t >= T_STEPS && t < T_STOP) {
-        const u = t - T_STEPS;
-        cv = Math.min(10, Math.floor((u + CYCLE - PT) / CYCLE));
-        const local = u % CYCLE;
-        st.et = cv >= 10 ? 0 : Math.min(local, PT);
-        st.q = cv < 10 && local >= PT;
-      } else { st.et = 0; st.q = false; }
-      if (cv > st.cv) {
-        const l = letters[cv - 1];
-        if (l) { l.classList.add('hit'); setTimeout(() => l.classList.remove('hit'), 450); }
-      }
-      st.cv = cv;
+      const dt = Math.min(100, now - last);
+      last = now;
+      acc += dt;
+      while (acc >= SCAN) { operator(SCAN); scan(); acc -= SCAN; }
       render();
       raf = requestAnimationFrame(frame);
     }
+    function start() { cancelAnimationFrame(raf); last = performance.now(); acc = 0; raf = requestAnimationFrame(frame); }
     function run() {
-      cancelAnimationFrame(raf);
-      Object.assign(st, { start: false, stop: false, run: false, reset: false, et: 0, q: false, cv: 0 });
+      Object.assign(m, { start: false, stop: false, run: false, tIn: false, et: 0, tq: false, cuOld: false, cv: 0, done: false, name: '' });
+      phase = 'idle'; phaseT = 0;
       render();
-      t0 = performance.now();
-      if (active) raf = requestAnimationFrame(frame);
-      else pausedAt = t0;
+      if (active) start();
     }
-    // pause while the header is off screen or the tab is hidden, keep the phase
     function setActive(a) {
       if (a === active || reduce) return;
       active = a;
-      if (!a) { cancelAnimationFrame(raf); pausedAt = performance.now(); }
-      else { t0 += performance.now() - pausedAt; raf = requestAnimationFrame(frame); }
+      if (a) start(); else cancelAnimationFrame(raf);
     }
 
     build();
     document.documentElement.classList.remove('ladder-run');
-    if (reduce) { Object.assign(st, { run: true, cv: 10 }); render(); }
+    if (reduce) { Object.assign(m, { run: true, cv: PV, done: true, name: TEXT }); render(); }
     else run();
-    document.getElementById('ladder-replay').addEventListener('click', run);
+    document.getElementById('ladder-replay').addEventListener('click', () => { if (!reduce) run(); });
     let onScreen = true;
     new IntersectionObserver(e => { onScreen = e[0].isIntersecting; setActive(onScreen && !document.hidden); }).observe(svg);
     document.addEventListener('visibilitychange', () => setActive(onScreen && !document.hidden));
