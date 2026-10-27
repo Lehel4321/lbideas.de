@@ -747,7 +747,7 @@ try {
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const PT = 280, CYCLE = 360;   // timer preset and one counter step, ms
 
-    const st = { start: false, run: false, et: 0, q: false, cv: 0 };
+    const st = { start: false, stop: false, run: false, reset: false, et: 0, q: false, cv: 0 };
     let ui = [];      // update functions, one per drawn element group
 
     const el = (tag, attrs, text) => {
@@ -805,6 +805,7 @@ try {
       const y = y0 + 26 + 40, y2 = y + 74;
       rail(y0 + 34, y2 + 18);
       const p1 = () => st.start || st.run;
+      const p2 = () => p1() && !st.stop;
       wire(12, y, 40, y, () => true);
       wire(40, y, 78, y, () => true);
       contact(86, y, '"Start"', '%I0.0', F, () => st.start, () => true);
@@ -816,9 +817,9 @@ try {
       wire(94, y2, 136, y2, () => st.run);
       wire(136, y2, 136, y, () => st.run);
       wire(136, y, 178, y, p1);
-      contact(186, y, '"Stop"', '%I0.1', F, () => true, p1, true);
-      wire(194, y, 477, y, p1);
-      coil(492, y, '"Run"', '%M0.0', F, p1);
+      contact(186, y, '"Stop"', '%I0.1', F, () => !st.stop, p1, true);
+      wire(194, y, 477, y, p2);
+      coil(492, y, '"Run"', '%M0.0', F, p2);
       return y2 + 36 - y0;
     }
 
@@ -852,7 +853,8 @@ try {
       el('text', { x: cx + 6, y: y + 48, 'font-size': F - 2, class: 'pin' }, 'PV');
       el('text', { x: cx + cw - 6, y: y + 4, 'font-size': F - 2, class: 'pin', 'text-anchor': 'end' }, 'Q');
       el('text', { x: cx + cw - 6, y: y + 26, 'font-size': F - 2, class: 'pin', 'text-anchor': 'end' }, 'CV');
-      el('text', { x: cx - 6, y: y + 26, 'font-size': F - 2, class: 'lit', 'text-anchor': 'end' }, 'FALSE');
+      const r = el('text', { x: cx - 6, y: y + 26, 'font-size': F - 2, class: 'lit', 'text-anchor': 'end' }, 'FALSE');
+      ui.push(() => { r.textContent = st.reset ? 'TRUE' : 'FALSE'; r.setAttribute('class', st.reset ? 'val' : 'lit'); });
       el('text', { x: cx - 6, y: y + 48, 'font-size': F - 2, class: 'lit', 'text-anchor': 'end' }, '10');
       const cv = el('text', { x: cx + cw + 6, y: y + 26, 'font-size': F, class: 'val' }, '0');
       ui.push(() => { cv.textContent = String(st.cv); });
@@ -882,15 +884,21 @@ try {
       letters.forEach((l, i) => l.classList.toggle('off', i >= st.cv));
     }
 
-    // TIMELINE: press Start, latch, then one counter step per letter
-    let raf = 0, t0 = 0;
+    // TIMELINE (repeats): press Start, latch, one counter step per letter, hold the
+    // finished name, then press Stop and reset the counter, and start over.
+    let raf = 0, t0 = 0, pausedAt = 0, active = true;
     const T_PRESS = 600, T_RELEASE = 1000, T_STEPS = 1150;
+    const T_DONE = T_STEPS + 10 * CYCLE - (CYCLE - PT);
+    const T_STOP = T_DONE + 4000, T_STOP_END = T_STOP + 450, T_END = T_STOP_END + 600;
     function frame(now) {
-      const t = now - t0;
+      let t = now - t0;
+      if (t >= T_END) { t0 += T_END; t -= T_END; }
       st.start = t >= T_PRESS && t < T_RELEASE;
-      if (t >= T_PRESS) st.run = true;
+      st.stop = t >= T_STOP && t < T_STOP_END;
+      st.reset = st.stop;
+      st.run = t >= T_PRESS && t < T_STOP;
       let cv = 0;
-      if (t >= T_STEPS) {
+      if (t >= T_STEPS && t < T_STOP) {
         const u = t - T_STEPS;
         cv = Math.min(10, Math.floor((u + CYCLE - PT) / CYCLE));
         const local = u % CYCLE;
@@ -903,14 +911,22 @@ try {
       }
       st.cv = cv;
       render();
-      if (cv < 10 || st.q) raf = requestAnimationFrame(frame);
+      raf = requestAnimationFrame(frame);
     }
     function run() {
       cancelAnimationFrame(raf);
-      Object.assign(st, { start: false, run: false, et: 0, q: false, cv: 0 });
+      Object.assign(st, { start: false, stop: false, run: false, reset: false, et: 0, q: false, cv: 0 });
       render();
       t0 = performance.now();
-      raf = requestAnimationFrame(frame);
+      if (active) raf = requestAnimationFrame(frame);
+      else pausedAt = t0;
+    }
+    // pause while the header is off screen or the tab is hidden, keep the phase
+    function setActive(a) {
+      if (a === active || reduce) return;
+      active = a;
+      if (!a) { cancelAnimationFrame(raf); pausedAt = performance.now(); }
+      else { t0 += performance.now() - pausedAt; raf = requestAnimationFrame(frame); }
     }
 
     build();
@@ -918,6 +934,9 @@ try {
     if (reduce) { Object.assign(st, { run: true, cv: 10 }); render(); }
     else run();
     document.getElementById('ladder-replay').addEventListener('click', run);
+    let onScreen = true;
+    new IntersectionObserver(e => { onScreen = e[0].isIntersecting; setActive(onScreen && !document.hidden); }).observe(svg);
+    document.addEventListener('visibilitychange', () => setActive(onScreen && !document.hidden));
     let wasNarrow = svg.clientWidth < 420;
     window.addEventListener('resize', () => {
       const n = svg.clientWidth < 420;
