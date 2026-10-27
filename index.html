@@ -176,18 +176,18 @@ try {
   .ladder text { font-family:var(--mono); fill:var(--lad-ink); }
   .ladder .head { fill:var(--lad-head); }
   .ladder .addr { fill:var(--lad-dim); }
-  .ladder .w { stroke:var(--lad-off); stroke-width:2; stroke-dasharray:5 4; fill:none; transition:stroke 0.15s; }
+  .ladder .w { stroke:var(--lad-off); stroke-width:2; stroke-dasharray:5 4; fill:none; }
   .ladder .w.on { stroke:var(--lad-on); stroke-dasharray:none; stroke-width:2.6; }
-  .ladder .el { stroke:var(--lad-ink); stroke-width:2; fill:none; transition:stroke 0.15s; }
+  .ladder .el { stroke:var(--lad-ink); stroke-width:2; fill:none; }
   .ladder .el.on { stroke:var(--lad-on); }
-  .ladder .fill { fill:var(--lad-on); opacity:0; transition:opacity 0.15s; }
+  .ladder .fill { fill:var(--lad-on); opacity:0; }
   .ladder .fill.on { opacity:0.28; }
   .ladder .box { fill:var(--lad-bg); stroke:var(--lad-ink); stroke-width:1.6; }
   .ladder .pin { fill:var(--lad-dim); }
   .ladder .val { fill:var(--lad-on); font-weight:600; }
   .ladder .lit { fill:var(--lad-dim); }
   /* name letters in the heading follow the contacts */
-  h1 .lt { display:inline-block; transition:opacity 0.3s, color 0.3s; }
+  h1 .lt { display:inline-block; }  /* no fade: the letter switches in the same scan as its contact */
   h1 .lt.off { opacity:0.13; }
   h1 .lt.hit { color:var(--accent); }
   html.ladder-run h1 .lt { opacity:0.13; animation:lt-safe 0.3s 8s forwards; }
