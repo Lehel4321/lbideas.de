@@ -203,12 +203,9 @@ try {
   .skills tr:first-child th, .skills tr:first-child td { border-top:2px solid var(--ink); }
   .skills th { width:9.5rem; font-weight:600; padding-right:1rem; }
 
-  /* MACHINE (rotary knife on the S7-1500T) */
+  /* SIDE PROJECT */
   .two-col { display:grid; grid-template-columns:1fr 1fr; gap:2rem; margin-top:2rem; }
   .two-col h4 { font-size:1rem; font-weight:600; margin-bottom:0.7rem; padding-bottom:0.4rem; border-bottom:2px solid var(--ink); }
-  figure { margin-top:2.2rem; }
-  figure img { border:1px solid var(--line); border-radius:6px; box-shadow:var(--shot-shadow); background:#fff; }
-  figcaption { font-size:0.88rem; color:var(--ink2); margin-top:0.7rem; max-width:44rem; }
   .note { margin-top:2rem; padding:1rem 1.2rem; background:var(--surface2); border-radius:6px; max-width:44rem; font-size:0.95rem; }
 
   /* DEMOS */
@@ -320,7 +317,7 @@ try {
     <ul class="nav-links">
       <li><a href="#experience"><span data-l="en">Experience</span><span data-l="de">Erfahrung</span></a></li>
       <li><a href="#skills"><span data-l="en">Skills</span><span data-l="de">Kenntnisse</span></a></li>
-      <li><a href="#rotary-knife"><span data-l="en">Side project</span><span data-l="de">Eigenes Projekt</span></a></li>
+      <li><a href="#side-project"><span data-l="en">Side project</span><span data-l="de">Eigenes Projekt</span></a></li>
       <li><a href="#demos">Demos</a></li>
       <li><a href="#contact"><span data-l="en">Contact</span><span data-l="de">Kontakt</span></a></li>
     </ul>
@@ -338,7 +335,7 @@ try {
 <div class="mobile-menu" id="mobileMenu">
   <a href="#experience"><span data-l="en">Experience</span><span data-l="de">Erfahrung</span></a>
   <a href="#skills"><span data-l="en">Skills</span><span data-l="de">Kenntnisse</span></a>
-  <a href="#rotary-knife"><span data-l="en">Side project</span><span data-l="de">Eigenes Projekt</span></a>
+  <a href="#side-project"><span data-l="en">Side project</span><span data-l="de">Eigenes Projekt</span></a>
   <a href="#demos">Demos</a>
   <a href="#how-i-work"><span data-l="en">How I work</span><span data-l="de">Arbeitsweise</span></a>
   <a href="#contact"><span data-l="en">Contact</span><span data-l="de">Kontakt</span></a>
@@ -358,7 +355,7 @@ try {
       <p class="hero-text" data-l="de">Ich programmiere SPS seit 2014, zuerst in Rumänien und seit 2019 in Deutschland: Kläranlagen, Mehlsilos, Dosieranlagen für Schotterwerke und seit 2022 Schneide- und Umformmaschinen bei der Metzner Maschinenbau GmbH in Neu-Ulm. Ich begleite eine Maschine vom ersten Gespräch mit dem Kunden bis zur Inbetriebnahme vor Ort.</p>
       <div class="hero-actions">
         <a href="#contact" class="btn"><span data-l="en">Get in touch</span><span data-l="de">Kontakt aufnehmen</span></a>
-        <a href="#rotary-knife" class="btn secondary"><span data-l="en">See a project</span><span data-l="de">Projekt ansehen</span></a>
+        <a href="#side-project" class="btn secondary"><span data-l="en">See a project</span><span data-l="de">Projekt ansehen</span></a>
       </div>
     </div>
     <dl class="facts">
@@ -471,22 +468,22 @@ try {
   </div>
 </section>
 
-<!-- SIDE PROJECT: ROTARY KNIFE ON A REAL S7-1500T -->
-<section id="rotary-knife">
+<!-- SIDE PROJECT: MACHINE CONTROL ON AN S7-1500T WITH A .NET PANEL -->
+<section id="side-project">
   <div class="wrap sec">
     <h2><span data-l="en">Side project</span><span data-l="de">Eigenes Projekt</span></h2>
     <div>
-      <h3><span data-l="en">A rotary knife, from a browser simulation to an S7-1500T</span><span data-l="de">Ein Rotationsmesser, von der Browser-Simulation zur S7-1500T</span></h3>
+      <h3><span data-l="en">Machine control on an S7-1500T with a .NET operator panel</span><span data-l="de">Maschinensteuerung auf einer S7-1500T mit .NET-Bedienpanel</span></h3>
       <div class="prose" style="margin-top:0.9rem">
-        <p data-l="en">It started as a simulation of a synchronous rotary knife that runs in the browser (you can try it in the demos below). Then I took the same machine onto real Siemens hardware. Motion and safety now run in an S7-1500T(F), and a .NET 8 operator panel talks to the CPU over the S7-1500 Web API, with Siemens' own client library.</p>
-        <p data-l="de">Angefangen hat es als Simulation eines synchronen Rotationsmessers im Browser (unten bei den Demos zum Ausprobieren). Danach habe ich dieselbe Maschine auf echte Siemens-Hardware gebracht. Bewegung und Sicherheit laufen jetzt in einer S7-1500T(F), und ein .NET-8-Bedienpanel spricht über die S7-1500 Web API mit der CPU, mit der Client-Bibliothek von Siemens.</p>
+        <p data-l="en">A complete machine project of my own, from the PLC program to the operator panel. Motion and safety run in an S7-1500T(F). The operator panel is a .NET 8 application that talks to the CPU over the S7-1500 Web API, with Siemens' own client library.</p>
+        <p data-l="de">Ein komplettes eigenes Maschinenprojekt, vom SPS-Programm bis zum Bedienpanel. Bewegung und Sicherheit laufen in einer S7-1500T(F). Das Bedienpanel ist eine .NET-8-Anwendung, die über die S7-1500 Web API mit der CPU spricht, mit der Client-Bibliothek von Siemens.</p>
       </div>
 
       <div class="two-col">
         <div>
           <h4><span data-l="en">In the PLC (SCL, TIA Portal V21)</span><span data-l="de">In der SPS (SCL, TIA Portal V21)</span></h4>
           <ul class="list" data-l="en">
-            <li>Four technology objects. The knife follows the feed through <code>MC_CamIn</code>, with homing, phasing and a STOP that always finishes the part in progress.</li>
+            <li>Technology objects with electronic cam (<code>MC_CamIn</code>), homing, phasing, and a controlled stop that always finishes the running cycle.</li>
             <li>F-program for E-stop, guard locking, SS1 and STO. The panel only reads the safety state and can never acknowledge anything.</li>
             <li>Watchdog on the panel's heartbeat, and a command handshake with sequence number and acknowledge.</li>
             <li>OPC UA interface for the customer's MES: machine status, active recipe, recipe load from outside.</li>
@@ -494,7 +491,7 @@ try {
             <li>The whole program imports and compiles in TIA Portal V21 with 0 errors on a CPU 1511T-1 PN.</li>
           </ul>
           <ul class="list" data-l="de">
-            <li>Vier Technologieobjekte. Das Messer folgt dem Vorschub über <code>MC_CamIn</code>, mit Referenzieren, Phasing und einem STOP, der das angefangene Teil immer fertig schneidet.</li>
+            <li>Technologieobjekte mit elektronischer Kurvenscheibe (<code>MC_CamIn</code>), Referenzieren, Phasing und ein kontrollierter Stopp, der den laufenden Zyklus immer zu Ende fährt.</li>
             <li>F-Programm für Not-Halt, Zuhaltung, SS1 und STO. Das Panel liest den Sicherheitszustand nur und kann nichts quittieren.</li>
             <li>Watchdog auf den Heartbeat des Panels und ein Befehls-Handshake mit Sequenznummer und Quittung.</li>
             <li>OPC-UA-Schnittstelle für das MES des Kunden: Maschinenstatus, aktive Rezeptur, Rezeptur von außen laden.</li>
@@ -505,37 +502,28 @@ try {
         <div>
           <h4><span data-l="en">In the operator panel (.NET 8, Blazor)</span><span data-l="de">Im Bedienpanel (.NET 8, Blazor)</span></h4>
           <ul class="list" data-l="en">
-            <li>Cam calculation (synchronous window, VDI 2143 return, a compensated cam for straight cut faces), downloaded to the PLC as a point table.</li>
-            <li>Operator screen with an animated machine, recipes, cut statistics and an alarm history with the Siemens alarm texts.</li>
+            <li>Cam profiles calculated in the panel from the recipe and downloaded to the PLC as a point table.</li>
+            <li>Operator screen with an animated machine view, recipes, production counters and an alarm history with the Siemens alarm texts.</li>
             <li>A trend screen modelled on TIA Trace: the last 30 minutes of every signal, cursors, zoom, CSV export.</li>
             <li>Users and rights like on a Siemens HMI, German and English texts, and an audit log of every changed value.</li>
-            <li>"Ask the machine", a prototype assistant: an operator asks "why did it stop?", it reads alarms, cuts and trends and answers. It can only propose a change, a person has to confirm it.</li>
-            <li>End-to-end tests through the Siemens client against a simulated PLC: cuts within ±0.05 mm, E-stop, overspeed, watchdog.</li>
+            <li>"Ask the machine", a prototype assistant: an operator asks "why did it stop?", it reads alarms, production data and trends and answers. It can only propose a change, a person has to confirm it.</li>
+            <li>Runs on a panel PC as a Windows service with a kiosk browser, log files and a daily backup.</li>
+            <li>End-to-end tests through the Siemens client against a simulated PLC: accuracy within ±0.05 mm, E-stop, overspeed, watchdog.</li>
           </ul>
           <ul class="list" data-l="de">
-            <li>Kurvenscheibenberechnung (Synchronbereich, Rücklauf nach VDI 2143, kompensierte Kurve für gerade Schnittflächen), als Stützpunkttabelle in die SPS geladen.</li>
-            <li>Bedienbild mit animierter Maschine, Rezepturen, Schnittstatistik und Alarmhistorie mit den Siemens-Meldetexten.</li>
+            <li>Kurvenscheiben werden im Panel aus der Rezeptur berechnet und als Stützpunkttabelle in die SPS geladen.</li>
+            <li>Bedienbild mit animierter Maschinenansicht, Rezepturen, Produktionszählern und Alarmhistorie mit den Siemens-Meldetexten.</li>
             <li>Ein Trendbild nach dem Vorbild von TIA Trace: die letzten 30 Minuten jedes Signals, Cursor, Zoom, CSV-Export.</li>
             <li>Benutzer und Rechte wie auf einem Siemens-HMI, deutsche und englische Texte und ein Änderungsprotokoll für jeden geänderten Wert.</li>
-            <li>„Frag die Maschine“, ein Assistent als Prototyp: Der Bediener fragt „Warum hat sie angehalten?“, der Assistent liest Alarme, Schnitte und Trends und antwortet. Er kann Änderungen nur vorschlagen, bestätigen muss ein Mensch.</li>
-            <li>End-to-End-Tests über den Siemens-Client gegen eine simulierte SPS: Schnitte innerhalb ±0,05 mm, Not-Halt, Überdrehzahl, Watchdog.</li>
+            <li>„Frag die Maschine“, ein Assistent als Prototyp: Der Bediener fragt „Warum hat sie angehalten?“, der Assistent liest Alarme, Produktionsdaten und Trends und antwortet. Er kann Änderungen nur vorschlagen, bestätigen muss ein Mensch.</li>
+            <li>Läuft auf einem Panel-PC als Windows-Dienst mit Kiosk-Browser, Logdateien und täglicher Sicherung.</li>
+            <li>End-to-End-Tests über den Siemens-Client gegen eine simulierte SPS: Genauigkeit innerhalb ±0,05 mm, Not-Halt, Überdrehzahl, Watchdog.</li>
           </ul>
         </div>
       </div>
 
-      <figure>
-        <img src="/assets/hmi-operator.webp" width="1500" height="1000" loading="lazy" alt="Operator screen of the rotary knife HMI: control buttons, safety state, animated machine, axes table, trend and production counters">
-        <figcaption data-l="en">Operator screen. The knife is cam coupled and running at 60 m/min, 150 cuts per minute.</figcaption>
-        <figcaption data-l="de">Bedienbild. Das Messer ist über die Kurvenscheibe gekoppelt und läuft mit 60 m/min, 150 Schnitte pro Minute.</figcaption>
-      </figure>
-      <figure>
-        <img src="/assets/hmi-trend.webp" width="1600" height="1195" loading="lazy" alt="Trend screen of the rotary knife HMI with speed, following error, torque, feed position and cut length error over time">
-        <figcaption data-l="en">Trend screen. Speeds, following error, torque, cut positions and the length error of every cut.</figcaption>
-        <figcaption data-l="de">Trendbild. Geschwindigkeiten, Schleppfehler, Moment, Schnittpositionen und der Längenfehler jedes Schnitts.</figcaption>
-      </figure>
-
-      <p class="note" data-l="en">The code of this project is not public. A demo package runs on any Windows PC without a PLC, and I am happy to send it. <a href="#contact">Just ask.</a> Next step is a full run on PLCSIM Advanced.</p>
-      <p class="note" data-l="de">Der Code dieses Projekts ist nicht öffentlich. Ein Demo-Paket läuft auf jedem Windows-PC ohne SPS, das schicke ich gerne. <a href="#contact">Einfach fragen.</a> Als Nächstes kommt ein vollständiger Lauf auf PLCSIM Advanced.</p>
+      <p class="note" data-l="en">The code of this project is not public. A demo runs on any Windows PC without a PLC, and I am happy to send it. <a href="#contact">Just ask.</a></p>
+      <p class="note" data-l="de">Der Code dieses Projekts ist nicht öffentlich. Eine Demo läuft auf jedem Windows-PC ohne SPS, die schicke ich gerne. <a href="#contact">Einfach fragen.</a></p>
     </div>
   </div>
 </section>
